@@ -6,8 +6,11 @@
 // ==LICENSE-END==
 
 import * as React from "react";
+import { connect } from "react-redux";
 import { Font } from "readium-desktop/common/models/font";
 import { ReaderConfig } from "readium-desktop/common/models/reader";
+import { readerActions, toastActions } from "readium-desktop/common/redux/actions";
+import { readerConfigInitialState } from "readium-desktop/common/redux/states/reader";
 import * as AutoIcon from "readium-desktop/renderer/assets/icons/auto.svg";
 import * as ColumnIcon from "readium-desktop/renderer/assets/icons/colonne.svg";
 import * as Column2Icon from "readium-desktop/renderer/assets/icons/colonne2.svg";
@@ -21,17 +24,18 @@ import {
     TranslatorProps, withTranslator,
 } from "readium-desktop/renderer/common/components/hoc/translator";
 import SVG from "readium-desktop/renderer/common/components/SVG";
+import { TDispatch } from "readium-desktop/typings/redux";
 import fontList from "readium-desktop/utils/fontList";
 
 import { colCountEnum, textAlignEnum } from "@r2-navigator-js/electron/common/readium-css-settings";
-import { reloadContent } from "@r2-navigator-js/electron/renderer/location";
 
+import { readerLocalActionSetConfig } from "../redux/actions";
 import optionsValues, { IReaderOptionsProps } from "./options-values";
 import SideMenu from "./sideMenu/SideMenu";
 import { SectionData } from "./sideMenu/sideMenuData";
 
 import classNames = require("classnames");
-
+import { ToastType } from "readium-desktop/common/models/toast";
 // tslint:disable-next-line: no-empty-interface
 interface IBaseProps extends TranslatorProps, IReaderOptionsProps {
     focusSettingMenuButton: () => void;
@@ -42,7 +46,7 @@ interface IBaseProps extends TranslatorProps, IReaderOptionsProps {
 // ReturnType<typeof mapStateToProps>
 // ReturnType<typeof mapDispatchToProps>
 // tslint:disable-next-line: no-empty-interface
-interface IProps extends IBaseProps {
+interface IProps extends IBaseProps, ReturnType<typeof mapDispatchToProps> {
 }
 
 enum themeType {
@@ -94,8 +98,17 @@ export class ReaderOptions extends React.Component<IProps, undefined> {
                     title: "MathML",
                     content: this.mathJax(),
                 },
+                {
+                    title: __("reader.media-overlays.title"),
+                    content: this.mediaOverlays(),
+                },
             ]);
         }
+
+        sections.push({
+            title: __("reader.settings.save.title"),
+            content: this.saveConfig(),
+        });
 
         return (
             <SideMenu
@@ -109,9 +122,68 @@ export class ReaderOptions extends React.Component<IProps, undefined> {
         );
     }
 
+    private saveConfig() {
+
+        const { readerConfig, __ } = this.props;
+
+        return (
+
+            <div className={classNames(styles.line_tab_content, styles.config_save)}>
+
+                <button
+                    onClick={() => this.props.setDefaultConfig(readerConfig)}
+                    aria-hidden={false}
+                    // className={className}
+                >
+                    {
+                        __("reader.settings.save.apply")
+                    }
+                </button>
+                <button
+                    onClick={() => this.props.setDefaultConfig()}
+                    aria-hidden={false}
+                    // className={className}
+                >
+                    {
+                        __("reader.settings.save.reset")
+                    }
+                </button>
+            </div>
+        );
+    }
+
+    private mediaOverlays() {
+
+        const { readerConfig } = this.props;
+        return (<>
+            <div className={styles.mathml_section}>
+                <input
+                    id="mediaOverlaysEnableCaptionsModeCheckBox"
+                    type="checkbox"
+                    checked={readerConfig.mediaOverlaysEnableCaptionsMode}
+                    onChange={() => this.toggleMediaOverlaysEnableCaptionsMode()}
+                />
+                <label htmlFor="mediaOverlaysEnableCaptionsModeCheckBox">{
+                    this.props.__("reader.media-overlays.captions")
+                }</label>
+            </div>
+            <div className={styles.mathml_section}>
+                <input
+                    id="mediaOverlaysEnableSkippabilityCheckBox"
+                    type="checkbox"
+                    checked={readerConfig.mediaOverlaysEnableSkippability}
+                    onChange={() => this.toggleMediaOverlaysEnableSkippability()}
+                />
+                <label htmlFor="mediaOverlaysEnableSkippabilityCheckBox">{
+                    this.props.__("reader.media-overlays.skip")
+                }</label>
+            </div>
+        </>);
+    }
+
     private mathJax() {
 
-        const {readerConfig} = this.props;
+        const { readerConfig } = this.props;
         return (
             <div className={styles.mathml_section}>
                 <input
@@ -120,13 +192,13 @@ export class ReaderOptions extends React.Component<IProps, undefined> {
                     checked={readerConfig.enableMathJax}
                     onChange={() => this.toggleMathJax()}
                 />
-                <label htmlFor={"mathJaxCheckBox-"}>MathJax</label>
+                <label htmlFor="mathJaxCheckBox">MathJax</label>
             </div>
         );
     }
 
     private themeContent() {
-        const {__, readerConfig} = this.props;
+        const { __, readerConfig } = this.props;
         const withoutTheme = !readerConfig.sepia && !readerConfig.night;
         return (
             <div id={styles.themes_list}>
@@ -136,10 +208,10 @@ export class ReaderOptions extends React.Component<IProps, undefined> {
                         type="radio"
                         name="theme"
                         onChange={() => this.handleChooseTheme(themeType.Without)}
-                        {...(withoutTheme && {checked: true})}
+                        checked={withoutTheme}
                     />
                     <label htmlFor={"radio-" + themeType.Without}>
-                        {withoutTheme && <SVG svg={DoneIcon} ariaHidden/>}
+                        {withoutTheme && <SVG svg={DoneIcon} ariaHidden />}
                         { __("reader.settings.theme.name.Neutral")}
                     </label>
                 </div>
@@ -149,7 +221,7 @@ export class ReaderOptions extends React.Component<IProps, undefined> {
                         type="radio"
                         name="theme"
                         onChange={() => this.handleChooseTheme(themeType.Sepia)}
-                        {...(readerConfig.sepia && {checked: true})}
+                        checked={readerConfig.sepia}
                     />
                     <label htmlFor={"radio-" + themeType.Sepia}>
                         {readerConfig.sepia && <SVG svg={DoneIcon} ariaHidden/>}
@@ -162,7 +234,7 @@ export class ReaderOptions extends React.Component<IProps, undefined> {
                         type="radio"
                         name="theme"
                         onChange={() => this.handleChooseTheme(themeType.Night)}
-                        {...(readerConfig.night && {checked: true})}
+                        checked={readerConfig.night}
                     />
                     <label htmlFor={"radio-" + themeType.Night}>
                         {readerConfig.night && <SVG svg={DoneIcon} ariaHidden/>}
@@ -450,21 +522,47 @@ export class ReaderOptions extends React.Component<IProps, undefined> {
         </>;
     }
 
+    private toggleMediaOverlaysEnableSkippability() {
+        // TODO: smarter clone?
+        const readerConfig = JSON.parse(JSON.stringify(this.props.readerConfig));
+
+        readerConfig.mediaOverlaysEnableSkippability = !readerConfig.mediaOverlaysEnableSkippability;
+        this.props.setSettings(readerConfig);
+    }
+    private toggleMediaOverlaysEnableCaptionsMode() {
+        // TODO: smarter clone?
+        const readerConfig = JSON.parse(JSON.stringify(this.props.readerConfig));
+
+        readerConfig.mediaOverlaysEnableCaptionsMode = !readerConfig.mediaOverlaysEnableCaptionsMode;
+
+        // TTS and MO both use the same checkbox, for "Captions / clean view"
+        readerConfig.ttsEnableOverlayMode = !readerConfig.ttsEnableOverlayMode;
+
+        this.props.setSettings(readerConfig);
+    }
+    // private toggleTTSEnableOverlayMode() {
+    //     // TODO: smarter clone?
+    //     const readerConfig = JSON.parse(JSON.stringify(this.props.readerConfig));
+
+    //     readerConfig.ttsEnableOverlayMode = !readerConfig.ttsEnableOverlayMode;
+    //     this.props.setSettings(readerConfig);
+    // }
+
     private toggleMathJax() {
-        const readerConfig = this.props.readerConfig;
+        // TODO: smarter clone?
+        const readerConfig = JSON.parse(JSON.stringify(this.props.readerConfig));
+
         readerConfig.enableMathJax = !readerConfig.enableMathJax;
         if (readerConfig.enableMathJax) {
             readerConfig.paged = false;
         }
         this.props.setSettings(readerConfig);
-        setTimeout(() => {
-            // window.location.reload();
-            reloadContent();
-        }, 300);
     }
 
     private handleChooseTheme(theme: themeType) {
-        const readerConfig = this.props.readerConfig;
+        // TODO: smarter clone?
+        const readerConfig = JSON.parse(JSON.stringify(this.props.readerConfig));
+
         let sepia = false;
         let night = false;
 
@@ -483,14 +581,15 @@ export class ReaderOptions extends React.Component<IProps, undefined> {
     }
 
     // round the value to the hundredth
-    private roundRemValue(value: string) {
+    private roundRemValue(value: string | undefined) {
         if (!value) {
-            return "";
+            return "0";
         }
 
-        const nbr = parseFloat(value.replace("rem", ""));
+        // TODO: other potential CSS units?
+        const nbr = parseFloat(value.replace("rem", "").replace("em", "").replace("px", ""));
         const roundNumber = (Math.round(nbr * 100) / 100);
-        return roundNumber + " rem";
+        return roundNumber;
     }
 
     private getButtonClassName(
@@ -509,4 +608,21 @@ export class ReaderOptions extends React.Component<IProps, undefined> {
     }
 }
 
-export default withTranslator(ReaderOptions);
+const mapDispatchToProps = (dispatch: TDispatch, _props: IBaseProps) => {
+    return {
+        setDefaultConfig: (...config: Parameters<typeof readerActions.configSetDefault.build>) => {
+
+            if (config.length === 0) {
+
+                dispatch(readerActions.configSetDefault.build(readerConfigInitialState));
+                dispatch(readerLocalActionSetConfig.build(readerConfigInitialState));
+            } else {
+                dispatch(readerActions.configSetDefault.build(...config));
+            }
+
+            dispatch(toastActions.openRequest.build(ToastType.Success, "👍"));
+        },
+    };
+};
+
+export default connect(undefined, mapDispatchToProps)(withTranslator(ReaderOptions));

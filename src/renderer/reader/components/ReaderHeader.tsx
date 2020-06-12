@@ -9,6 +9,12 @@ import * as classNames from "classnames";
 import * as React from "react";
 import { ReaderMode } from "readium-desktop/common/models/reader";
 import * as BackIcon from "readium-desktop/renderer/assets/icons/baseline-arrow_back-24px-grey.svg";
+import * as PauseIcon from "readium-desktop/renderer/assets/icons/baseline-pause-24px.svg";
+import * as PlayIcon from "readium-desktop/renderer/assets/icons/baseline-play_arrow-24px.svg";
+import * as SkipNext from "readium-desktop/renderer/assets/icons/baseline-skip_next-24px.svg";
+import * as SkipPrevious from "readium-desktop/renderer/assets/icons/baseline-skip_previous-24px.svg";
+import * as StopIcon from "readium-desktop/renderer/assets/icons/baseline-stop-24px.svg";
+import * as AudioIcon from "readium-desktop/renderer/assets/icons/baseline-volume_up-24px.svg";
 import * as SettingsIcon from "readium-desktop/renderer/assets/icons/font-size.svg";
 import * as TOCIcon from "readium-desktop/renderer/assets/icons/open_book.svg";
 import * as MarkIcon from "readium-desktop/renderer/assets/icons/outline-bookmark_border-24px.svg";
@@ -22,7 +28,9 @@ import {
 } from "readium-desktop/renderer/common/components/hoc/translator";
 import SVG from "readium-desktop/renderer/common/components/SVG";
 
-import { LocatorExtended } from "@r2-navigator-js/electron/renderer/index";
+import {
+    LocatorExtended, MediaOverlaysStateEnum, TTSStateEnum,
+} from "@r2-navigator-js/electron/renderer/index";
 
 import { IReaderMenuProps, IReaderOptionsProps } from "./options-values";
 import ReaderMenu from "./ReaderMenu";
@@ -40,6 +48,28 @@ interface IBaseProps extends TranslatorProps {
     handleSettingsClick: () => void;
     fullscreen: boolean;
     handleFullscreenClick: () => void;
+
+    handleTTSPlay: () => void;
+    handleTTSPause: () => void;
+    handleTTSStop: () => void;
+    handleTTSResume: () => void;
+    handleTTSPrevious: () => void;
+    handleTTSNext: () => void;
+    handleTTSPlaybackRate: (speed: string) => void;
+    ttsState: TTSStateEnum;
+    ttsPlaybackRate: string;
+
+    publicationHasMediaOverlays: boolean;
+    handleMediaOverlaysPlay: () => void;
+    handleMediaOverlaysPause: () => void;
+    handleMediaOverlaysStop: () => void;
+    handleMediaOverlaysResume: () => void;
+    handleMediaOverlaysPrevious: () => void;
+    handleMediaOverlaysNext: () => void;
+    handleMediaOverlaysPlaybackRate: (speed: string) => void;
+    mediaOverlaysState: MediaOverlaysStateEnum;
+    mediaOverlaysPlaybackRate: string;
+
     handleReaderClose: () => void;
     handleReaderDetach: () => void;
     toggleBookmark: () => void;
@@ -107,19 +137,23 @@ export class ReaderHeader extends React.Component<IProps, undefined> {
     public render(): React.ReactElement<{}> {
         const { __ } = this.props;
 
+        const showAudioTTSToolbar = this.props.currentLocation && !this.props.currentLocation.audioPlaybackInfo;
         return (
             <nav
                 className={classNames(styles.main_navigation,
-                    this.props.fullscreen ? styles.main_navigation_fullscreen : undefined)}
+                    this.props.fullscreen ? styles.main_navigation_fullscreen : undefined,
+                    showAudioTTSToolbar ? styles.hasTtsAudio : undefined,
+                    (this.props.publicationHasMediaOverlays &&
+                    this.props.mediaOverlaysState !== MediaOverlaysStateEnum.STOPPED
+                    || !this.props.publicationHasMediaOverlays &&
+                    this.props.ttsState !== TTSStateEnum.STOPPED) ?
+                        styles.ttsAudioActivated : undefined,
+                    )}
                 role="navigation"
                 aria-label={ __("accessibility.homeMenu")}
-                {...(this.props.fullscreen && {style: {
-                    backgroundColor: "transparent",
-                    boxShadow: "none",
-                }})}
             >
                 <ul>
-                    { !this.props.fullscreen ? <>
+
                         { (this.props.mode === ReaderMode.Attached) ? (
                             <li>
                                 <button
@@ -151,6 +185,147 @@ export class ReaderHeader extends React.Component<IProps, undefined> {
                             </li>
                             ) : (<></>)
                         }
+
+                        <ul className={styles.tts_toolbar}>
+                            {(this.props.publicationHasMediaOverlays &&
+                            this.props.mediaOverlaysState === MediaOverlaysStateEnum.STOPPED ||
+                            !this.props.publicationHasMediaOverlays &&
+                            this.props.ttsState === TTSStateEnum.STOPPED) ?
+                            <li className={styles.button_audio}>
+                                <button
+                                    className={styles.menu_button}
+                                    onClick={
+                                        this.props.publicationHasMediaOverlays ?
+                                        this.props.handleMediaOverlaysPlay :
+                                        this.props.handleTTSPlay
+                                    }
+                                >
+                                    <SVG svg={AudioIcon} title={
+                                    this.props.publicationHasMediaOverlays ?
+                                    __("reader.media-overlays.activate") :
+                                    __("reader.tts.activate")
+                                    }/>
+                                </button>
+                            </li>
+                            : <>
+                            <li >
+                                <button
+                                    className={styles.menu_button}
+                                    onClick={
+                                        this.props.publicationHasMediaOverlays ?
+                                        this.props.handleMediaOverlaysStop :
+                                        this.props.handleTTSStop
+                                    }
+                                >
+                                    <SVG svg={StopIcon} title={
+                                    this.props.publicationHasMediaOverlays ?
+                                    __("reader.media-overlays.stop") :
+                                    __("reader.tts.stop")
+                                    }/>
+                                </button>
+                            </li>
+                            <li >
+                                <button
+                                    className={styles.menu_button}
+                                    onClick={
+                                        this.props.publicationHasMediaOverlays ?
+                                        this.props.handleMediaOverlaysPrevious :
+                                        this.props.handleTTSPrevious
+                                    }
+                                >
+                                    <SVG svg={SkipPrevious} title={
+                                    this.props.publicationHasMediaOverlays ?
+                                    __("reader.media-overlays.previous") :
+                                    __("reader.tts.previous")
+                                    }/>
+                                </button>
+                            </li>
+                            {(this.props.publicationHasMediaOverlays &&
+                            this.props.mediaOverlaysState === MediaOverlaysStateEnum.PLAYING ||
+                            !this.props.publicationHasMediaOverlays &&
+                            this.props.ttsState === TTSStateEnum.PLAYING) ?
+                            <li >
+                                <button
+                                    className={styles.menu_button}
+                                    onClick={
+                                        this.props.publicationHasMediaOverlays ?
+                                        this.props.handleMediaOverlaysPause :
+                                        this.props.handleTTSPause
+                                    }
+                                >
+                                    <SVG svg={PauseIcon} title={
+                                    this.props.publicationHasMediaOverlays ?
+                                    __("reader.media-overlays.pause") :
+                                    __("reader.tts.pause")
+                                    }/>
+                                </button>
+                            </li>
+                            :
+                            <li >
+                                <button
+                                    className={styles.menu_button}
+                                    onClick={
+                                        this.props.publicationHasMediaOverlays ?
+                                        this.props.handleMediaOverlaysResume :
+                                        this.props.handleTTSResume
+                                    }
+                                >
+                                    <SVG svg={PlayIcon} title={
+                                    this.props.publicationHasMediaOverlays ?
+                                    __("reader.media-overlays.play") :
+                                    __("reader.tts.play")
+                                    }/>
+                                </button>
+                            </li>
+                            }
+                            <li >
+                                <button
+                                    className={styles.menu_button}
+                                    onClick={
+                                        this.props.publicationHasMediaOverlays ?
+                                        this.props.handleMediaOverlaysNext :
+                                        this.props.handleTTSNext
+                                    }
+                                >
+                                    <SVG svg={SkipNext} title={
+                                    this.props.publicationHasMediaOverlays ?
+                                    __("reader.media-overlays.next") :
+                                    __("reader.tts.next")
+                                    }/>
+                                </button>
+                            </li>
+                            <li className={styles.ttsSelectRate}>
+                                <select title={
+                                    this.props.publicationHasMediaOverlays ?
+                                    __("reader.media-overlays.speed") :
+                                    __("reader.tts.speed")
+                                    }
+                                    onChange={(ev) => {
+                                        if (this.props.publicationHasMediaOverlays) {
+                                            this.props.handleMediaOverlaysPlaybackRate(ev.target.value.toString());
+                                        } else {
+                                            this.props.handleTTSPlaybackRate(ev.target.value.toString());
+                                        }
+                                    }}
+                                    value={
+                                        this.props.publicationHasMediaOverlays ?
+                                        this.props.mediaOverlaysPlaybackRate :
+                                        this.props.ttsPlaybackRate
+                                    }
+                                    >
+                                    <option value="2">2x</option>
+                                    <option value="1.75">1.75x</option>
+                                    <option value="1.5">1.5x</option>
+                                    <option value="1.25">1.25x</option>
+                                    <option value="1">1x</option>
+                                    <option value="0.75">0.75x</option>
+                                    <option value="0.5">0.5x</option>
+                                </select>
+                            </li>
+                            </>
+                            }
+                        </ul>
+
                         <ul className={styles.menu_option}>
                             <li
                                 {...(this.props.isOnBookmark && {style: {backgroundColor: "rgb(193, 193, 193)"}})}
@@ -199,6 +374,19 @@ export class ReaderHeader extends React.Component<IProps, undefined> {
                                 currentLocation={this.props.currentLocation}
                                 focusNaviguationMenu={this.focusNaviguationMenuButton}/>
                             </li>
+
+                            { this.props.fullscreen ?
+                            <li>
+                                <button
+                                    className={styles.menu_button}
+                                    onClick={this.props.handleFullscreenClick}
+                                    ref={this.disableFullscreenRef}
+                                >
+                                    <SVG svg={QuitFullscreenIcon}
+                                        title={ __("reader.navigation.quitFullscreenTitle")}/>
+                                </button>
+                            </li>
+                            :
                             <li  className={styles.blue}>
                                 <button
                                     className={styles.menu_button}
@@ -209,6 +397,7 @@ export class ReaderHeader extends React.Component<IProps, undefined> {
                                 <SVG svg={FullscreenIcon} title={ __("reader.navigation.fullscreenTitle")}/>
                                 </button>
                             </li>
+                            }
                         </ul>
                         {/*<li className={styles.right}>
                             <button
@@ -216,18 +405,11 @@ export class ReaderHeader extends React.Component<IProps, undefined> {
                             >
                                 <SVG svg={AudioIcon} title={ __("reader.navigation.readBookTitle")}/>
                             </button>
-                        </li>*/}
-                    </> :
-                    <li  className={styles.right}>
-                        <button
-                            className={styles.menu_button}
-                            onClick={this.props.handleFullscreenClick}
-                            ref={this.disableFullscreenRef}
-                        >
-                            <SVG svg={QuitFullscreenIcon} title={ __("reader.navigation.quitFullscreenTitle")}/>
-                        </button>
-                    </li>
-                }
+                        </li>
+
+                        { this.props.fullscreen ? <></> : () }
+                        */}
+
                 </ul>
             </nav>
         );
