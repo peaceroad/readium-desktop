@@ -11,6 +11,7 @@ import * as ramda from "ramda";
 import { ReaderMode } from "readium-desktop/common/models/reader";
 import { SenderType } from "readium-desktop/common/models/sync";
 import { ToastType } from "readium-desktop/common/models/toast";
+import { normalizeRectangle } from "readium-desktop/common/rectangle/window";
 import { readerActions, toastActions } from "readium-desktop/common/redux/actions";
 import { takeSpawnEvery } from "readium-desktop/common/redux/sagas/takeSpawnEvery";
 import { takeSpawnLeading } from "readium-desktop/common/redux/sagas/takeSpawnLeading";
@@ -27,7 +28,9 @@ import { ObjectValues } from "readium-desktop/utils/object-keys-values";
 import { all, call, put, take } from "redux-saga/effects";
 import { types } from "util";
 
-import { streamerOpenPublicationAndReturnManifestUrl } from "./publication/openPublication";
+import {
+    ERROR_MESSAGE_ON_USERKEYCHECKREQUEST, streamerOpenPublicationAndReturnManifestUrl,
+} from "./publication/openPublication";
 
 // Logger
 const filename_ = "readium-desktop:main:saga:reader";
@@ -122,7 +125,6 @@ function* readerFullscreenRequest(action: readerActions.fullScreenRequest.TActio
 function* readerDetachRequest(action: readerActions.detachModeRequest.TAction) {
 
     const libWin = yield* callTyped(() => getLibraryWindowFromDi());
-
     if (libWin) {
 
         // try-catch to do not trigger an error message when the winbound is not handle by the os
@@ -130,12 +132,12 @@ function* readerDetachRequest(action: readerActions.detachModeRequest.TAction) {
         try {
             // get an bound with offset
             libBound = yield* callTyped(getWinBound, undefined);
+            debug("getWinBound(undefined)", libBound);
             if (libBound) {
                 libWin.setBounds(libBound);
             }
         } catch (e) {
-
-            debug("cannot set libBound", libBound, e);
+            debug("error libWin.setBounds(libBound)", e);
         }
 
         // this should never occur, but let's do it for certainty
@@ -163,47 +165,77 @@ function* readerDetachRequest(action: readerActions.detachModeRequest.TAction) {
     yield put(readerActions.detachModeSuccess.build());
 }
 
-function* getWinBound(publicationIdentifier: string) {
+function* getWinBound(publicationIdentifier: string | undefined) {
 
     const readers = yield* selectTyped((state: RootState) => state.win.session.reader);
     const library = yield* selectTyped((state: RootState) => state.win.session.library);
     const readerArray = ObjectValues(readers);
 
+    debug("library.windowBound", library.windowBound);
+    normalizeRectangle(library.windowBound);
+
     if (readerArray.length === 0) {
         return library.windowBound;
     }
 
-    let winBound = yield* selectTyped(
+    let winBound = (yield* selectTyped(
         (state: RootState) => state.win.registry.reader[publicationIdentifier]?.windowBound,
-    );
+    )) as Electron.Rectangle | undefined;
+
+    debug("reader[publicationIdentifier]?.winBound", winBound);
+    if (winBound) {
+        normalizeRectangle(winBound);
+    }
 
     const winBoundArray = [];
     winBoundArray.push(library.windowBound);
-    readerArray.forEach(
-        (reader) => reader && winBoundArray.push(reader.windowBound));
-    const winBoundAlreadyTaken = !!winBoundArray.find((bound) => ramda.equals(winBound, bound));
+    readerArray.forEach((reader) => {
+        if (reader) {
+            debug("reader.windowBound", reader.windowBound);
+            normalizeRectangle(reader.windowBound);
+            winBoundArray.push(reader.windowBound);
+        }
+    });
+    const winBoundAlreadyTaken = !winBound || !!winBoundArray.find((bound) => ramda.equals(winBound, bound));
 
     if (
         !winBound
         || winBoundAlreadyTaken
     ) {
-
         if (readerArray.length) {
 
             const displayArea = yield* callTyped(() => screen.getPrimaryDisplay().workAreaSize);
+            debug("displayArea", displayArea);
 
             const winBoundWithOffset = winBoundArray.map(
-                (reader) => {
-                    reader.x += 100;
-                    reader.x %= displayArea.width - reader.width;
-                    reader.y += 100;
-                    reader.y %= displayArea.height - reader.height;
+                (rect) => {
+                    if (!rect.x) { // NaN, undefined, null, zero (positive and negative numbers are truthy)
+                        rect.x = 0;
+                    }
+                    rect.x += 100;
+                    const wDiff = Math.abs(displayArea.width - rect.width);
+                    if (wDiff) {
+                        rect.x %= wDiff;
+                    }
 
-                    return reader;
+                    if (!rect.y) { // NaN, undefined, null, zero (positive and negative numbers are truthy)
+                        rect.y = 0;
+                    }
+                    rect.y += 100;
+                    const hDiff = Math.abs(displayArea.height - rect.height);
+                    if (hDiff) {
+                        rect.y %= hDiff;
+                    }
+
+                    debug("rect", rect);
+                    return rect;
                 },
             );
+            debug("winBoundWithOffset", winBoundWithOffset);
 
             winBound = ramda.uniq(winBoundWithOffset)[0];
+            debug("winBound", winBound);
+            normalizeRectangle(winBound);
 
         } else {
             winBound = library.windowBound;
@@ -225,20 +257,24 @@ function* readerOpenRequest(action: readerActions.openRequest.TAction) {
 
     } catch (e) {
 
-        const translator = yield* callTyped(
-            () => diMainGet("translator"));
+        if (e.toString() !== ERROR_MESSAGE_ON_USERKEYCHECKREQUEST) {
 
-        if (types.isNativeError(e)) {
-            // disable "Error: "
-            e.name = "";
+            const translator = yield* callTyped(
+                () => diMainGet("translator"));
+
+            if (types.isNativeError(e)) {
+                // disable "Error: "
+                e.name = "";
+            }
+
+            yield put(
+                toastActions.openRequest.build(
+                    ToastType.Error,
+                    translator.translate("message.open.error", { err: e.toString() }),
+                ),
+            );
         }
 
-        yield put(
-            toastActions.openRequest.build(
-                ToastType.Error,
-                translator.translate("message.open.error", {err: e.toString()}),
-            ),
-        );
     }
 
     if (manifestUrl) {
@@ -299,13 +335,18 @@ function* readerCLoseRequestFromIdentifier(action: readerActions.closeRequest.TA
 
     yield call(readerCloseRequest, action.sender.identifier);
 
-    const libWin = getLibraryWindowFromDi();
+    const libWin = yield* callTyped(() => getLibraryWindowFromDi());
     if (libWin) {
 
         const winBound = yield* selectTyped(
             (state: RootState) => state.win.session.library.windowBound,
         );
-        libWin.setBounds(winBound);
+        debug("state.win.session.library.windowBound", winBound);
+        try {
+            libWin.setBounds(winBound);
+        } catch (e) {
+            debug("error libWin.setBounds(winBound)", e);
+        }
 
         if (libWin.isMinimized()) {
             libWin.restore();
@@ -354,8 +395,11 @@ function* readerCloseRequest(identifier?: string) {
 
 function* readerSetReduxState(action: readerActions.setReduxState.TAction) {
 
-    const { identifier, reduxState } = action.payload;
-    yield put(winActions.session.setReduxState.build(identifier, reduxState));
+    const { winId, reduxState } = action.payload;
+
+    const pubId = yield* selectTyped(
+        (state: RootState) => state?.win?.session?.reader[winId]?.reduxState?.info?.publicationIdentifier);
+    yield put(winActions.session.setReduxState.build(winId, pubId, reduxState));
 }
 
 export function saga() {

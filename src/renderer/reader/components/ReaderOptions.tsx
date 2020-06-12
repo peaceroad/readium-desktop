@@ -100,7 +100,7 @@ export class ReaderOptions extends React.Component<IProps, undefined> {
                 },
                 {
                     title: __("reader.media-overlays.title"),
-                    content: this.mediaOverlaysEnableSkippability(),
+                    content: this.mediaOverlays(),
                 },
             ]);
         }
@@ -152,10 +152,21 @@ export class ReaderOptions extends React.Component<IProps, undefined> {
         );
     }
 
-    private mediaOverlaysEnableSkippability() {
+    private mediaOverlays() {
 
         const { readerConfig } = this.props;
-        return (
+        return (<>
+            <div className={styles.mathml_section}>
+                <input
+                    id="mediaOverlaysEnableCaptionsModeCheckBox"
+                    type="checkbox"
+                    checked={readerConfig.mediaOverlaysEnableCaptionsMode}
+                    onChange={() => this.toggleMediaOverlaysEnableCaptionsMode()}
+                />
+                <label htmlFor="mediaOverlaysEnableCaptionsModeCheckBox">{
+                    this.props.__("reader.media-overlays.captions")
+                }</label>
+            </div>
             <div className={styles.mathml_section}>
                 <input
                     id="mediaOverlaysEnableSkippabilityCheckBox"
@@ -167,8 +178,9 @@ export class ReaderOptions extends React.Component<IProps, undefined> {
                     this.props.__("reader.media-overlays.skip")
                 }</label>
             </div>
-        );
+        </>);
     }
+
     private mathJax() {
 
         const { readerConfig } = this.props;
@@ -517,6 +529,25 @@ export class ReaderOptions extends React.Component<IProps, undefined> {
         readerConfig.mediaOverlaysEnableSkippability = !readerConfig.mediaOverlaysEnableSkippability;
         this.props.setSettings(readerConfig);
     }
+    private toggleMediaOverlaysEnableCaptionsMode() {
+        // TODO: smarter clone?
+        const readerConfig = JSON.parse(JSON.stringify(this.props.readerConfig));
+
+        readerConfig.mediaOverlaysEnableCaptionsMode = !readerConfig.mediaOverlaysEnableCaptionsMode;
+
+        // TTS and MO both use the same checkbox, for "Captions / clean view"
+        readerConfig.ttsEnableOverlayMode = !readerConfig.ttsEnableOverlayMode;
+
+        this.props.setSettings(readerConfig);
+    }
+    // private toggleTTSEnableOverlayMode() {
+    //     // TODO: smarter clone?
+    //     const readerConfig = JSON.parse(JSON.stringify(this.props.readerConfig));
+
+    //     readerConfig.ttsEnableOverlayMode = !readerConfig.ttsEnableOverlayMode;
+    //     this.props.setSettings(readerConfig);
+    // }
+
     private toggleMathJax() {
         // TODO: smarter clone?
         const readerConfig = JSON.parse(JSON.stringify(this.props.readerConfig));

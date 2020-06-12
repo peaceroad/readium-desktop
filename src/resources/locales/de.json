@@ -34,6 +34,9 @@
                     "title": "Sitzung sichern"
                 }
             }
+        },
+        "window": {
+            "showLibrary": ""
         }
     },
     "catalog": {
@@ -227,6 +230,18 @@
             "edit": "Bearbeiten",
             "landmarks": "Navigationspunkte",
             "toc": "Inhaltsverzeichnis"
+        },
+        "media-overlays": {
+            "activate": "",
+            "captions": "",
+            "next": "",
+            "pause": "",
+            "play": "",
+            "previous": "",
+            "skip": "",
+            "speed": "",
+            "stop": "",
+            "title": ""
         },
         "navigation": {
             "backHomeTitle": "Zurück zum Bücherregal",

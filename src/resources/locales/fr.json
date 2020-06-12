@@ -34,6 +34,9 @@
                     "title": "Sauvegarder la session"
                 }
             }
+        },
+        "window": {
+            "showLibrary": "Afficher la bibliothèque"
         }
     },
     "catalog": {
@@ -228,10 +231,22 @@
             "landmarks": "Repères",
             "toc": "Table des matières"
         },
+        "media-overlays": {
+            "activate": "",
+            "captions": "",
+            "next": "",
+            "pause": "",
+            "play": "",
+            "previous": "",
+            "skip": "",
+            "speed": "",
+            "stop": "",
+            "title": ""
+        },
         "navigation": {
             "backHomeTitle": "retour à la bibliothèque",
             "bookmarkTitle": "marque-page",
-            "detachWindowTitle": "détacher la fenêtre",
+            "detachWindowTitle": "afficher la bibliothèque",
             "fullscreenTitle": "mode plein écran",
             "goTo": "Aller à",
             "goToError": "Cette page n'existe pas",

@@ -21,7 +21,6 @@ import { dialogActions, readerActions } from "readium-desktop/common/redux/actio
 import { IReaderRootState } from "readium-desktop/common/redux/states/renderer/readerRootState";
 import { formatTime } from "readium-desktop/common/utils/time";
 import { LocatorView } from "readium-desktop/common/views/locator";
-import { PublicationView } from "readium-desktop/common/views/publication";
 import {
     _APP_NAME, _APP_VERSION, _NODE_MODULE_RELATIVE_URL, _PACKAGING, _RENDERER_READER_BASE_URL,
 } from "readium-desktop/preprocessor-directives";
@@ -38,7 +37,6 @@ import { apiAction } from "readium-desktop/renderer/reader/apiAction";
 import { apiSubscribe } from "readium-desktop/renderer/reader/apiSubscribe";
 import ReaderFooter from "readium-desktop/renderer/reader/components/ReaderFooter";
 import ReaderHeader from "readium-desktop/renderer/reader/components/ReaderHeader";
-import { diReaderGet } from "readium-desktop/renderer/reader/di";
 import {
     TChangeEventOnInput, TChangeEventOnSelect, TKeyboardEventOnAnchor, TMouseEventOnAnchor,
     TMouseEventOnSpan,
@@ -48,23 +46,19 @@ import { ObjectKeys } from "readium-desktop/utils/object-keys-values";
 // import { encodeURIComponent_RFC3986 } from "readium-desktop/utils/url";
 import { Unsubscribe } from "redux";
 
-import { TaJsonDeserialize } from "@r2-lcp-js/serializable";
 import { IEventPayload_R2_EVENT_CLIPBOARD_COPY } from "@r2-navigator-js/electron/common/events";
 import {
-    convertHttpUrlToCustomScheme, READIUM2_ELECTRON_HTTP_PROTOCOL,
-} from "@r2-navigator-js/electron/common/sessions";
-import {
     getCurrentReadingLocation, handleLinkLocator, handleLinkUrl, installNavigatorDOM,
-    isLocatorVisible, LocatorExtended, mediaOverlaysEnableSkippability, mediaOverlaysListen,
-    mediaOverlaysNext, mediaOverlaysPause, mediaOverlaysPlay, mediaOverlaysPlaybackRate,
-    mediaOverlaysPrevious, mediaOverlaysResume, MediaOverlaysStateEnum, mediaOverlaysStop,
-    navLeftOrRight, publicationHasMediaOverlays, readiumCssUpdate, setEpubReadingSystemInfo,
-    setKeyDownEventHandler, setKeyUpEventHandler, setReadingLocationSaver, ttsListen, ttsNext,
-    ttsPause, ttsPlay, ttsPlaybackRate, ttsPrevious, ttsResume, TTSStateEnum, ttsStop,
+    isLocatorVisible, LocatorExtended, mediaOverlaysClickEnable, mediaOverlaysEnableCaptionsMode,
+    mediaOverlaysEnableSkippability, mediaOverlaysListen, mediaOverlaysNext, mediaOverlaysPause,
+    mediaOverlaysPlay, mediaOverlaysPlaybackRate, mediaOverlaysPrevious, mediaOverlaysResume,
+    MediaOverlaysStateEnum, mediaOverlaysStop, navLeftOrRight, publicationHasMediaOverlays,
+    readiumCssUpdate, setEpubReadingSystemInfo, setKeyDownEventHandler, setKeyUpEventHandler,
+    setReadingLocationSaver, ttsClickEnable, ttsListen, ttsNext, ttsOverlayEnable, ttsPause,
+    ttsPlay, ttsPlaybackRate, ttsPrevious, ttsResume, TTSStateEnum, ttsStop,
 } from "@r2-navigator-js/electron/renderer/index";
 import { reloadContent } from "@r2-navigator-js/electron/renderer/location";
 import { Locator as R2Locator } from "@r2-shared-js/models/locator";
-import { Publication as R2Publication } from "@r2-shared-js/models/publication";
 
 import { readerLocalActionSetConfig, readerLocalActionSetLocator } from "../redux/actions";
 import optionsValues, {
@@ -72,37 +66,6 @@ import optionsValues, {
 } from "./options-values";
 
 const capitalizedAppName = _APP_NAME.charAt(0).toUpperCase() + _APP_NAME.substring(1);
-
-// import {
-//     convertCustomSchemeToHttpUrl, READIUM2_ELECTRON_HTTP_PROTOCOL,
-// } from "@r2-navigator-js/electron/common/sessions";
-
-// import { registerProtocol } from "@r2-navigator-js/electron/renderer/common/protocol";
-// registerProtocol();
-// import { webFrame } from "electron";
-// webFrame.registerURLSchemeAsSecure(READIUM2_ELECTRON_HTTP_PROTOCOL);
-// webFrame.registerURLSchemeAsPrivileged(READIUM2_ELECTRON_HTTP_PROTOCOL, {
-//     allowServiceWorkers: false,
-//     bypassCSP: false,
-//     corsEnabled: true,
-//     secure: true,
-//     supportFetchAPI: true,
-// });
-
-// const queryParams = getURLQueryParams();
-// const lcpHint = queryParams.lcpHint;
-// pub is undefined when loaded in dependency injection by library webview.
-// Dependency injection is shared between all the renderer view
-// const publicationJsonUrl = queryParams.pub?.startsWith(READIUM2_ELECTRON_HTTP_PROTOCOL)
-//     ? convertCustomSchemeToHttpUrl(queryParams.pub)
-//     : queryParams.pub;
-
-// const pathBase64Raw = publicationJsonUrl.replace(/.*\/pub\/(.*)\/manifest.json/, "$1");
-// const pathBase64 = decodeURIComponent(pathBase64Raw);
-// const pathDecoded = window.atob(pathBase64);
-// const pathFileName = pathDecoded.substr(
-//     pathDecoded.replace(/\\/g, "/").lastIndexOf("/") + 1,
-//     pathDecoded.length - 1);
 
 // tslint:disable-next-line: no-empty-interface
 interface IBaseProps extends TranslatorProps {
@@ -116,16 +79,7 @@ interface IProps extends IBaseProps, ReturnType<typeof mapStateToProps>, ReturnT
 }
 
 interface IState {
-
-    publicationJsonUrl?: string;
-    // title?: string;
-
-    publicationView: PublicationView | undefined;
-    r2Publication: R2Publication | undefined;
     r2PublicationHasMediaOverlays: boolean;
-
-    lcpHint?: string;
-    lcpPass?: string;
 
     contentTableOpen: boolean;
     settingsOpen: boolean;
@@ -159,16 +113,12 @@ class Reader extends React.Component<IProps, IState> {
 
     private unsubscribe: Unsubscribe;
 
-    private ttsWasPlayingBeforeNavigate: boolean;
-    private ttsAutoContinuePlayTimeout: number | undefined;
-    // private mediaOverlaysWasPlayingBeforeNavigate: boolean;
-    // private mediaOverlaysAutoContinuePlayTimeout: number | undefined;
+    private ttsOverlayEnableNeedsSync: boolean;
 
     constructor(props: IProps) {
         super(props);
 
-        this.ttsWasPlayingBeforeNavigate = false;
-        // this.mediaOverlaysWasPlayingBeforeNavigate = false;
+        this.ttsOverlayEnableNeedsSync = true;
 
         this.onKeyboardPageNavigationPrevious = this.onKeyboardPageNavigationPrevious.bind(this);
         this.onKeyboardPageNavigationNext = this.onKeyboardPageNavigationNext.bind(this);
@@ -186,18 +136,12 @@ class Reader extends React.Component<IProps, IState> {
         this.refToolbar = React.createRef<HTMLAnchorElement>();
 
         this.state = {
-            publicationJsonUrl: "HTTP://URL",
-            lcpHint: "LCP hint",
-            // title: "TITLE",
-            lcpPass: "LCP pass",
             contentTableOpen: false,
             settingsOpen: false,
             shortcutEnable: true,
             landmarksOpen: false,
             landmarkTabOpen: 0,
 
-            publicationView: undefined,
-            r2Publication: undefined,
             r2PublicationHasMediaOverlays: false,
 
             menuOpen: false,
@@ -216,15 +160,9 @@ class Reader extends React.Component<IProps, IState> {
         };
 
         ttsListen((ttss: TTSStateEnum) => {
-            // if (ttss === TTSStateEnum.STOPPED) {
-            //     this.ttsWasPlayingBeforeNavigate = false;
-            // }
             this.setState({ttsState: ttss});
         });
         mediaOverlaysListen((mos: MediaOverlaysStateEnum) => {
-            // if (mos === MediaOverlaysStateEnum.STOPPED) {
-            //     this.mediaOverlaysWasPlayingBeforeNavigate = false;
-            // }
             this.setState({mediaOverlaysState: mos});
         });
 
@@ -257,40 +195,14 @@ class Reader extends React.Component<IProps, IState> {
         this.findBookmarks = this.findBookmarks.bind(this);
         this.displayPublicationInfo = this.displayPublicationInfo.bind(this);
 
-        // setReadiumCssJsonGetter(computeReadiumCssJsonMessage);
     }
 
     public async componentDidMount() {
         ensureKeyboardListenerIsInstalled();
         this.registerAllKeyboardListeners();
 
-        const store = diReaderGet("store");
-
-        const pubId = store.getState().reader.info.publicationIdentifier;
-        const locator = store.getState().reader.locator;
-        const manifestUrl = store.getState().reader.info.manifestUrl;
-        // const publicationJsonUrl = convertCustomSchemeToHttpUrl(
-        //     encodeURIComponent_RFC3986(
-        //         convertHttpUrlToCustomScheme(manifestUrl),
-        //     ),
-        // );
-        // const publicationJsonUrl = manifestUrl;
-        const publicationJsonUrl = manifestUrl.startsWith(READIUM2_ELECTRON_HTTP_PROTOCOL)
-            ? manifestUrl : convertHttpUrlToCustomScheme(manifestUrl);
-
-        this.setState({
-            publicationJsonUrl,
-        });
-
         setKeyDownEventHandler(keyDownEventHandler);
         setKeyUpEventHandler(keyUpEventHandler);
-
-        // if (lcpHint) {
-        //     this.setState({
-        //         lcpHint,
-        //         lcpPass: this.state.lcpPass + " [" + lcpHint + "]",
-        //     });
-        // }
 
         // TODO: this is a short-term hack.
         // Can we instead subscribe to Redux action type == CloseRequest,
@@ -301,27 +213,6 @@ class Reader extends React.Component<IProps, IState> {
             });
         });
 
-        // let docHref: string = queryParams.docHref;
-        // let docSelector: string = queryParams.docSelector;
-
-        // if (docHref && docSelector) {
-        //     // Decode base64
-        //     docHref = window.atob(docHref);
-        //     docSelector = window.atob(docSelector);
-        // }
-
-        // Note that CFI, etc. can optionally be restored too,
-        // but navigator currently uses cssSelector as the primary
-        // const locator: R2Locator = {
-        //     href: docHref,
-        //     locations: {
-        //         cfi: undefined,
-        //         cssSelector: docSelector,
-        //         position: undefined,
-        //         progression: undefined,
-        //     },
-        // };
-
         setReadingLocationSaver(this.handleReadingLocationChange);
 
         setEpubReadingSystemInfo({ name: _APP_NAME, version: _APP_VERSION });
@@ -331,12 +222,7 @@ class Reader extends React.Component<IProps, IState> {
             "reader/addBookmark",
         ], this.findBookmarks);
 
-        apiAction("publication/get", pubId, false)
-            .then(async (publicationView) => {
-                this.setState({ publicationView });
-                await this.loadPublicationIntoViewport(publicationView, locator.locator);
-            })
-            .catch((error) => console.error("Error to fetch api publication/get", error));
+        await this.loadPublicationIntoViewport();
 
         this.getReaderMode();
     }
@@ -364,7 +250,7 @@ class Reader extends React.Component<IProps, IState> {
 
         const readerMenuProps: IReaderMenuProps = {
             open: this.state.menuOpen,
-            r2Publication: this.state.r2Publication,
+            r2Publication: this.props.r2Publication,
             handleLinkClick: this.handleLinkClick,
             handleBookmarkClick: this.goToLocator,
             toggleMenu: this.handleMenuButtonClick,
@@ -378,7 +264,7 @@ class Reader extends React.Component<IProps, IState> {
             handleIndexChange: this.handleIndexChange.bind(this),
             setSettings: this.setSettings,
             toggleMenu: this.handleSettingsClick,
-            r2Publication: this.state.r2Publication,
+            r2Publication: this.props.r2Publication,
         };
 
         return (
@@ -466,7 +352,7 @@ class Reader extends React.Component<IProps, IState> {
                     navLeftOrRight={this.navLeftOrRight_.bind(this)}
                     fullscreen={this.state.fullscreen}
                     currentLocation={this.state.currentLocation}
-                    r2Publication={this.state.r2Publication}
+                    r2Publication={this.props.r2Publication}
                     handleLinkClick={this.handleLinkClick}
                     goToLocator={this.goToLocator}
                 />
@@ -696,52 +582,25 @@ class Reader extends React.Component<IProps, IState> {
     }
 
     private displayPublicationInfo() {
-        if (this.state.publicationView) {
+        if (this.props.publicationView) {
             // TODO: subscribe to Redux action type == CloseRequest
             // in order to reset shortcutEnable to true? Problem: must be specific to this reader window.
             // So instead we subscribe to DOM event "Thorium:DialogClose", but this is a short-term hack!
             this.setState({
                 shortcutEnable: false,
             });
-            this.props.displayPublicationInfo(this.state.publicationView.identifier);
+            this.props.displayPublicationInfo(this.props.publicationView.identifier);
         }
     }
 
-    private async loadPublicationIntoViewport(
-        publicationView: PublicationView,
-        locator: R2Locator) {
+    private async loadPublicationIntoViewport() {
 
-        // let response: Response;
-        // try {
-        //     // https://github.com/electron/electron/blob/v3.0.0/docs/api/breaking-changes.md#webframe
-        //     // queryParams.pub is READIUM2_ELECTRON_HTTP_PROTOCOL (see convertCustomSchemeToHttpUrl)
-        //     // publicationJsonUrl is https://127.0.0.1:PORT
-        //     response = await fetch(publicationJsonUrl);
-        // } catch (e) {
-        //     console.log(e);
-        //     return;
-        // }
-        // if (!response.ok) {
-        //     console.log("BAD RESPONSE?!");
-        // }
-        // let r2PublicationJson: any;
-        // try {
-        //     r2PublicationJson = await response.json();
-        // } catch (e) {
-        //     console.log(e);
-        //     return;
-        // }
-        // const r2Publication = TaJsonDeserialize<R2Publication>(r2PublicationJson, R2Publication);
-        const r2PublicationStr = Buffer.from(publicationView.r2PublicationBase64, "base64").toString("utf-8");
-        const r2PublicationJson = JSON.parse(r2PublicationStr);
-        const r2Publication = TaJsonDeserialize<R2Publication>(r2PublicationJson, R2Publication);
         this.setState({
-            r2Publication,
-            r2PublicationHasMediaOverlays: publicationHasMediaOverlays(r2Publication),
+            r2PublicationHasMediaOverlays: publicationHasMediaOverlays(this.props.r2Publication),
         });
 
-        if (r2Publication.Metadata && r2Publication.Metadata.Title) {
-            const title = this.props.translator.translateContentField(r2Publication.Metadata.Title);
+        if (this.props.r2Publication.Metadata && this.props.r2Publication.Metadata.Title) {
+            const title = this.props.translator.translateContentField(this.props.r2Publication.Metadata.Title);
 
             window.document.title = capitalizedAppName;
             if (title) {
@@ -772,24 +631,21 @@ class Reader extends React.Component<IProps, IState> {
 
         preloadPath = preloadPath.replace(/\\/g, "/");
 
-        const clipboardInterceptor = !publicationView.lcp ? undefined :
+        const clipboardInterceptor = !this.props.publicationView.lcp ? undefined :
             (clipboardData: IEventPayload_R2_EVENT_CLIPBOARD_COPY) => {
                 apiAction("reader/clipboardCopy", this.props.pubId, clipboardData)
                     .catch((error) => console.error("Error to fetch api reader/clipboardCopy", error));
             };
 
-        const store = diReaderGet("store");
-        const winId = store.getState().win.identifier;
-
         installNavigatorDOM(
-            r2Publication,
-            this.state.publicationJsonUrl,
+            this.props.r2Publication,
+            this.props.manifestUrlR2Protocol,
             "publication_viewport",
             preloadPath,
-            locator,
+            this.props.locator?.locator?.href ? this.props.locator.locator : undefined,
             true,
             clipboardInterceptor,
-            winId,
+            this.props.winId,
             computeReadiumCssJsonMessage(this.props.readerConfig),
         );
     }
@@ -803,13 +659,14 @@ class Reader extends React.Component<IProps, IState> {
     }
 
     private saveReadingLocation(loc: LocatorExtended) {
-        //        this.props.setLastReadingLocation(queryParams.pubId, loc.locator);
-        // apiAction("reader/setLastReadingLocation", this.props.pubId, loc.locator)
-        //     .catch((error) => console.error("Error to fetch api reader/setLastReadingLocation", error));
         this.props.setLocator(loc);
     }
 
     private async handleReadingLocationChange(loc: LocatorExtended) {
+        if (this.ttsOverlayEnableNeedsSync) {
+            ttsOverlayEnable(this.props.readerConfig.ttsEnableOverlayMode);
+        }
+        this.ttsOverlayEnableNeedsSync = false;
 
         this.findBookmarks();
         this.saveReadingLocation(loc);
@@ -817,33 +674,6 @@ class Reader extends React.Component<IProps, IState> {
         // No need to explicitly refresh the bookmarks status here,
         // as componentDidUpdate() will call the function after setState():
         // await this.checkBookmarks();
-
-        if (this.state.r2PublicationHasMediaOverlays) {
-
-            // if (this.mediaOverlaysWasPlayingBeforeNavigate) {
-            //     this.mediaOverlaysWasPlayingBeforeNavigate = false;
-
-            //     if (this.mediaOverlaysAutoContinuePlayTimeout) {
-            //         clearTimeout(this.mediaOverlaysAutoContinuePlayTimeout);
-            //     }
-            //     this.mediaOverlaysAutoContinuePlayTimeout = window.setTimeout(() => {
-            //         this.mediaOverlaysAutoContinuePlayTimeout = undefined;
-            //         this.handleMediaOverlaysPlay();
-            //     }, 500);
-            // }
-        } else {
-            if (this.ttsWasPlayingBeforeNavigate) {
-                this.ttsWasPlayingBeforeNavigate = false;
-
-                if (this.ttsAutoContinuePlayTimeout) {
-                    clearTimeout(this.ttsAutoContinuePlayTimeout);
-                }
-                this.ttsAutoContinuePlayTimeout = window.setTimeout(() => {
-                    this.ttsAutoContinuePlayTimeout = undefined;
-                    this.handleTTSPlay();
-                }, 500);
-            }
-        }
     }
 
     // check if a bookmark is on the screen
@@ -859,7 +689,7 @@ class Reader extends React.Component<IProps, IState> {
             // calling into the webview via IPC is expensive,
             // let's filter out ahead of time based on document href
             if (!locator || locator.href === bookmark.locator.href) {
-                if (this.state.r2Publication) { // isLocatorVisible() API only once navigator ready
+                if (this.props.r2Publication) { // isLocatorVisible() API only once navigator ready
                     const isVisible = await isLocatorVisible(bookmark.locator);
                     if (isVisible) {
                         visibleBookmarkList.push(bookmark);
@@ -884,35 +714,6 @@ class Reader extends React.Component<IProps, IState> {
         }
     }
 
-    private ensureTTSStateDuringNavigation(): boolean {
-        const wasPlaying = this.state.ttsState === TTSStateEnum.PLAYING;
-        const wasPaused = this.state.ttsState === TTSStateEnum.PAUSED;
-
-        if (wasPaused || wasPlaying) {
-            this.handleTTSStop();
-            this.setState({ ttsState: TTSStateEnum.STOPPED }); // because not emmitted when switching docs
-        }
-
-        this.ttsWasPlayingBeforeNavigate = this.ttsAutoContinuePlayTimeout ? true : wasPaused || wasPlaying;
-        return wasPaused || wasPlaying;
-    }
-
-    private ensureMediaOverlaysStateDuringNavigation(): boolean {
-        return false;
-        // const wasPlaying = this.state.mediaOverlaysState === MediaOverlaysStateEnum.PLAYING;
-        // const wasPaused = this.state.mediaOverlaysState === MediaOverlaysStateEnum.PAUSED;
-
-        // if (wasPaused || wasPlaying) {
-        //     this.handleMediaOverlaysStop();
-        //     // because not emmitted when switching docs
-        //     this.setState({ mediaOverlaysState: MediaOverlaysStateEnum.STOPPED });
-        // }
-
-        // // this.mediaOverlaysWasPlayingBeforeNavigate =
-        // //     this.mediaOverlaysAutoContinuePlayTimeout ? true : wasPaused || wasPlaying;
-        // return wasPaused || wasPlaying;
-    }
-
     private navLeftOrRight_(left: boolean, spineNav?: boolean) {
         const wasPlaying = this.state.r2PublicationHasMediaOverlays ?
             this.state.mediaOverlaysState === MediaOverlaysStateEnum.PLAYING :
@@ -921,37 +722,18 @@ class Reader extends React.Component<IProps, IState> {
             this.state.mediaOverlaysState === MediaOverlaysStateEnum.PAUSED :
             this.state.ttsState === TTSStateEnum.PAUSED;
 
-        if ((this.state.r2PublicationHasMediaOverlays ?
-                false /* this.mediaOverlaysAutoContinuePlayTimeout */ :
-                this.ttsAutoContinuePlayTimeout)
-            || wasPaused || wasPlaying) {
-            const wasStopped = this.state.r2PublicationHasMediaOverlays ?
-                this.ensureMediaOverlaysStateDuringNavigation() :
-                this.ensureTTSStateDuringNavigation();
-            const timeout = wasStopped ? 500 : 0;
-            window.setTimeout(() => {
-                navLeftOrRight(left, !this.state.r2PublicationHasMediaOverlays);
-            }, timeout);
+        if (wasPaused || wasPlaying) {
+            navLeftOrRight(left, !this.state.r2PublicationHasMediaOverlays);
         } else {
-            if (this.state.r2PublicationHasMediaOverlays) {
-                // this.mediaOverlaysWasPlayingBeforeNavigate = false;
-            } else {
-                this.ttsWasPlayingBeforeNavigate = false;
-            }
             navLeftOrRight(left, spineNav);
         }
     }
 
     private goToLocator(locator: R2Locator) {
+
         this.focusMainAreaLandmarkAndCloseMenu();
 
-        const wasStopped = this.state.r2PublicationHasMediaOverlays ?
-            this.ensureMediaOverlaysStateDuringNavigation() :
-            this.ensureTTSStateDuringNavigation();
-        const timeout = wasStopped ? 500 : 0;
-        window.setTimeout(() => {
-            handleLinkLocator(locator);
-        }, timeout);
+        handleLinkLocator(locator);
     }
 
     // tslint:disable-next-line: max-line-length
@@ -965,14 +747,8 @@ class Reader extends React.Component<IProps, IState> {
 
         this.focusMainAreaLandmarkAndCloseMenu();
 
-        const wasStopped = this.state.r2PublicationHasMediaOverlays ?
-            this.ensureMediaOverlaysStateDuringNavigation() :
-            this.ensureTTSStateDuringNavigation();
-        const newUrl = this.state.publicationJsonUrl + "/../" + url;
-        const timeout = wasStopped ? 500 : 0;
-        window.setTimeout(() => {
-            handleLinkUrl(newUrl);
-        }, timeout);
+        const newUrl = this.props.manifestUrlR2Protocol + "/../" + url;
+        handleLinkUrl(newUrl);
     }
 
     private async handleToggleBookmark(fromKeyboard?: boolean) {
@@ -1078,20 +854,14 @@ class Reader extends React.Component<IProps, IState> {
     }
 
     private handleTTSPlay() {
+        ttsClickEnable(true);
         ttsPlay(parseFloat(this.state.ttsPlaybackRate));
     }
     private handleTTSPause() {
-        this.ttsWasPlayingBeforeNavigate = false;
-        if (this.ttsAutoContinuePlayTimeout) {
-            clearTimeout(this.ttsAutoContinuePlayTimeout);
-        }
         ttsPause();
     }
     private handleTTSStop() {
-        this.ttsWasPlayingBeforeNavigate = false;
-        if (this.ttsAutoContinuePlayTimeout) {
-            clearTimeout(this.ttsAutoContinuePlayTimeout);
-        }
+        ttsClickEnable(false);
         ttsStop();
     }
     private handleTTSResume() {
@@ -1109,20 +879,14 @@ class Reader extends React.Component<IProps, IState> {
     }
 
     private handleMediaOverlaysPlay() {
+        mediaOverlaysClickEnable(true);
         mediaOverlaysPlay(parseFloat(this.state.mediaOverlaysPlaybackRate));
     }
     private handleMediaOverlaysPause() {
-        // this.mediaOverlaysWasPlayingBeforeNavigate = false;
-        // if (this.mediaOverlaysAutoContinuePlayTimeout) {
-        //     clearTimeout(this.mediaOverlaysAutoContinuePlayTimeout);
-        // }
         mediaOverlaysPause();
     }
     private handleMediaOverlaysStop() {
-        // this.mediaOverlaysWasPlayingBeforeNavigate = false;
-        // if (this.mediaOverlaysAutoContinuePlayTimeout) {
-        //     clearTimeout(this.mediaOverlaysAutoContinuePlayTimeout);
-        // }
+        mediaOverlaysClickEnable(false);
         mediaOverlaysStop();
     }
     private handleMediaOverlaysResume() {
@@ -1140,11 +904,35 @@ class Reader extends React.Component<IProps, IState> {
     }
 
     private handleSettingsSave(readerConfig: ReaderConfig) {
-        this.props.setConfig(readerConfig);
+        const moWasPlaying = this.state.r2PublicationHasMediaOverlays &&
+            this.state.mediaOverlaysState === MediaOverlaysStateEnum.PLAYING;
+        const ttsWasPlaying = this.state.ttsState !== TTSStateEnum.STOPPED;
 
         mediaOverlaysEnableSkippability(readerConfig.mediaOverlaysEnableSkippability);
+        mediaOverlaysEnableCaptionsMode(readerConfig.mediaOverlaysEnableCaptionsMode);
+        ttsOverlayEnable(readerConfig.ttsEnableOverlayMode);
 
-        if (this.state.r2Publication) {
+        if (moWasPlaying) {
+            mediaOverlaysPause();
+            setTimeout(() => {
+                mediaOverlaysResume();
+            }, 300);
+        }
+        if (ttsWasPlaying) {
+            ttsStop();
+            setTimeout(() => {
+                ttsPlay(parseFloat(this.state.ttsPlaybackRate));
+            }, 300);
+        }
+
+        apiAction("session/isEnabled")
+            .then((isEnabled) => this.props.setConfig(readerConfig, isEnabled))
+            .catch((e) => {
+                console.error("Error to fetch api session/isEnabled", e);
+                this.props.setConfig(readerConfig, false);
+            });
+
+        if (this.props.r2Publication) {
             readiumCssUpdate(computeReadiumCssJsonMessage(readerConfig));
 
             if (readerConfig.enableMathJax !== this.props.readerConfig.enableMathJax) {
@@ -1250,9 +1038,15 @@ const mapStateToProps = (state: IReaderRootState, _props: IBaseProps) => {
     }
 
     mediaOverlaysEnableSkippability(state.reader.config.mediaOverlaysEnableSkippability);
+    mediaOverlaysEnableCaptionsMode(state.reader.config.mediaOverlaysEnableCaptionsMode);
+
+    // too early in navigator lifecycle (READIUM2 context not instantiated)
+    // see this.ttsOverlayEnableNeedsSync
+    // ttsOverlayEnable(state.reader.config.ttsEnableOverlayMode);
 
     return {
-        readerInfo: state.reader.info,
+        publicationView: state.reader.info.publicationView,
+        r2Publication: state.reader.info.r2Publication,
         readerConfig: state.reader.config,
         indexes,
         keyboardShortcuts: state.keyboard.shortcuts,
@@ -1260,6 +1054,8 @@ const mapStateToProps = (state: IReaderRootState, _props: IBaseProps) => {
             state.dialog.type === DialogTypeName.PublicationInfoReader,
         pubId: state.reader.info.publicationIdentifier,
         locator: state.reader.locator,
+        manifestUrlR2Protocol: state.reader.info.manifestUrlR2Protocol,
+        winId: state.win.identifier,
     };
 };
 
@@ -1288,8 +1084,13 @@ const mapDispatchToProps = (dispatch: TDispatch, _props: IBaseProps) => {
         setLocator: (locator: LocatorExtended) => {
             dispatch(readerLocalActionSetLocator.build(locator));
         },
-        setConfig: (config: ReaderConfig) => {
+        setConfig: (config: ReaderConfig, sessionEnabled: boolean) => {
             dispatch(readerLocalActionSetConfig.build(config));
+
+            if (!sessionEnabled) {
+
+                dispatch(readerActions.configSetDefault.build(config));
+            }
         },
     };
 };

@@ -12,18 +12,18 @@ import { IReaderStateReader } from "readium-desktop/common/redux/states/renderer
 export const ID = "READER_SET_REDUXSTATE";
 
 export interface Payload {
-    reduxState: IReaderStateReader;
-    identifier: string;
+    reduxState: Partial<IReaderStateReader>;
+    winId: string;
 }
 
-export function build(id: string, reduxState: IReaderStateReader):
+export function build(winId: string, reduxState: Payload["reduxState"]):
     Action<typeof ID, Payload> {
 
     return {
         type: ID,
         payload: {
             reduxState,
-            identifier: id,
+            winId,
         },
     };
 }

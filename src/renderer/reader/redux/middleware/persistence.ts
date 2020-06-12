@@ -8,13 +8,18 @@
 import * as ramda from "ramda";
 import { ActionWithSender } from "readium-desktop/common/models/sync";
 import { readerActions } from "readium-desktop/common/redux/actions";
-import { IReaderRootState } from "readium-desktop/common/redux/states/renderer/readerRootState";
+import { IReaderRootState, IReaderStateReader } from "readium-desktop/common/redux/states/renderer/readerRootState";
 import { AnyAction, Dispatch, Middleware, MiddlewareAPI } from "redux";
 
-const dispatchSetReduxState = (store: MiddlewareAPI<Dispatch<AnyAction>, IReaderRootState>) => {
+const dispatchSetReduxState = (
+    store: MiddlewareAPI<Dispatch<AnyAction>, IReaderRootState>,
+    readerState: Partial<IReaderStateReader>,
+) => {
 
     const state = store.getState();
-    store.dispatch(readerActions.setReduxState.build(state.win.identifier, state.reader));
+    store.dispatch(
+        readerActions.setReduxState.build(state.win.identifier, readerState),
+    );
 };
 
 export const reduxPersistMiddleware: Middleware
@@ -28,9 +33,24 @@ export const reduxPersistMiddleware: Middleware
 
                 const nextState = store.getState();
 
-                if (!ramda.equals(prevState.reader, nextState.reader)) {
-                    dispatchSetReduxState(store);
+                const readerState: Partial<IReaderStateReader> = {};
+                let dispatchFlag = false;
+                if (!ramda.equals(prevState.reader.config, nextState.reader.config)) {
+
+                    readerState.config = nextState.reader.config;
+                    dispatchFlag = true;
                 }
+                if (!ramda.equals(prevState.reader.locator, nextState.reader.locator)) {
+
+                    readerState.locator = nextState.reader.locator;
+                    dispatchFlag = true;
+                }
+                if (dispatchFlag) {
+
+                    dispatchSetReduxState(store, readerState);
+                }
+
+                // readerInfo is readOnly no need to persist it
 
                 return returnValue;
             };
