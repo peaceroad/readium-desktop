@@ -7,9 +7,7 @@
 
 import { injectable } from "inversify";
 import * as moment from "moment";
-import {
-    CoverView, ITimeDuration, PublicationView,
-} from "readium-desktop/common/views/publication";
+import { CoverView, PublicationView } from "readium-desktop/common/views/publication";
 import {
     convertContributorArrayToStringArray,
 } from "readium-desktop/main/converter/tools/localisation";
@@ -26,7 +24,7 @@ export class PublicationViewConverter {
         const r2PublicationBase64 = document.resources.r2PublicationBase64;
         const r2PublicationStr = Buffer.from(r2PublicationBase64, "base64").toString("utf-8");
         const r2PublicationJson = JSON.parse(r2PublicationStr);
-        const r2Publication = TaJsonDeserialize<R2Publication>(r2PublicationJson, R2Publication);
+        const r2Publication = TaJsonDeserialize(r2PublicationJson, R2Publication);
         const publishers = convertContributorArrayToStringArray(
             r2Publication.Metadata.Publisher,
         );
@@ -64,33 +62,12 @@ export class PublicationViewConverter {
             lcpRightsCopies: document.lcpRightsCopies,
 
             RDFType: r2Publication.Metadata.RDFType,
-            duration: r2Publication.Metadata.Duration
-                ? this.convertSecondToHMS(r2Publication.Metadata.Duration)
-                : undefined,
+            duration: r2Publication.Metadata.Duration,
             nbOfTracks: r2Publication.Metadata.AdditionalJSON?.tracks as number | undefined,
 
             // doc: r2Publiction.Metadata,
 
             r2PublicationBase64,
-        };
-    }
-
-    private convertSecondToHMS(seconds: number): ITimeDuration {
-
-        const secondsPerMinute = 60;
-        const minutesPerHours = 60;
-        const secondsPerHour = minutesPerHours * secondsPerMinute;
-
-        const hours = Math.floor(seconds / secondsPerHour);
-        seconds %= secondsPerHour;
-
-        const minutes = Math.floor(seconds / secondsPerMinute);
-        seconds %= secondsPerMinute;
-
-        return {
-            hours,
-            minutes,
-            seconds,
         };
     }
 }

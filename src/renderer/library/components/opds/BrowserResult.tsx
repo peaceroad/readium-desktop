@@ -20,7 +20,6 @@ import { DisplayType } from "readium-desktop/renderer/library/routing";
 import PublicationCard from "../publication/PublicationCard";
 import { ListView } from "../utils/ListView";
 import Slider from "../utils/Slider";
-import OPDSAuth from "./Auth";
 import EntryList from "./EntryList";
 import EntryPublicationList from "./EntryPublicationList";
 import MessageOpdBrowserResult from "./MessageOpdBrowserResult";
@@ -49,7 +48,7 @@ export class BrowserResult extends React.Component<IProps, undefined> {
                     message={__("opds.network.noInternetMessage")}
                 />
             );
-        } else if (browserData?.error) {
+        } else if (browserData?.error) { // reject in opds api // network don't reject now
             content = (
                 <MessageOpdBrowserResult
                     title={__("opds.network.reject")}
@@ -62,11 +61,7 @@ export class BrowserResult extends React.Component<IProps, undefined> {
             if (browserResult.isSuccess ||
                 (browserResult.isFailure && browserResult.statusCode === 401 && browserResult.data?.auth)) {
 
-                if (browserResult.data.auth) {
-                    content = (
-                        <OPDSAuth browserResult={browserResult} />
-                    );
-                } else if (browserResult.data.navigation &&
+                if (browserResult.data.navigation &&
                     !browserResult.data.publications &&
                     !browserResult.data.groups) {
 
@@ -164,7 +159,7 @@ export class BrowserResult extends React.Component<IProps, undefined> {
                 content = (
                     <MessageOpdBrowserResult
                         title={__("opds.network.error")}
-                        message={`${browserResult.statusCode || "unknow error code"} : ${browserResult.statusMessage || ""}`}
+                        message={`${browserResult.statusCode ? `${browserResult.statusCode} : ` : ""}${browserResult.statusMessage || ""}`}
                     />
                 );
             }

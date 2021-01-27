@@ -8,6 +8,7 @@
 import classnames from "classnames";
 import * as React from "react";
 import { connect } from "react-redux";
+import { IReaderRootState } from "readium-desktop/common/redux/states/renderer/readerRootState";
 import { LocatorView } from "readium-desktop/common/views/locator";
 import * as DeleteIcon from "readium-desktop/renderer/assets/icons/baseline-close-24px.svg";
 import * as EditIcon from "readium-desktop/renderer/assets/icons/baseline-edit-24px.svg";
@@ -24,8 +25,9 @@ import { Unsubscribe } from "redux";
 import { LocatorExtended } from "@r2-navigator-js/electron/renderer/index";
 import { Link } from "@r2-shared-js/models/publication-link";
 
-import { IReaderRootState } from "../redux/states";
+import { ILink, TToc } from "../pdf/common/pdfReader.type";
 import { IReaderMenuProps } from "./options-values";
+import ReaderMenuSearch from "./ReaderMenuSearch";
 import SideMenu from "./sideMenu/SideMenu";
 import { SectionData } from "./sideMenu/sideMenuData";
 import UpdateBookmarkForm from "./UpdateBookmarkForm";
@@ -34,6 +36,9 @@ import UpdateBookmarkForm from "./UpdateBookmarkForm";
 interface IBaseProps extends TranslatorProps, IReaderMenuProps {
     focusNaviguationMenu: () => void;
     currentLocation: LocatorExtended;
+    isDivina: boolean;
+    isPdf: boolean;
+    pdfNumberOfPages: number;
 }
 
 // IProps may typically extend:
@@ -45,7 +50,6 @@ interface IProps extends IBaseProps, ReturnType<typeof mapStateToProps> {
 }
 
 interface IState {
-    openedSection: number;
     bookmarkToUpdate: number;
     pageError: boolean;
     refreshError: boolean;
@@ -62,7 +66,6 @@ export class ReaderMenu extends React.Component<IProps, IState> {
         this.goToRef = React.createRef<HTMLInputElement>();
 
         this.state = {
-            openedSection: undefined,
             bookmarkToUpdate: undefined,
             pageError: false,
             refreshError: false,
@@ -74,6 +77,7 @@ export class ReaderMenu extends React.Component<IProps, IState> {
     }
 
     public componentDidMount() {
+
         this.unsubscribe = apiSubscribe([
             "reader/addBookmark",
             "reader/deleteBookmark",
@@ -105,17 +109,24 @@ export class ReaderMenu extends React.Component<IProps, IState> {
     }
 
     public render(): React.ReactElement<{}> {
-        const { __, r2Publication, toggleMenu } = this.props;
+        const { __, r2Publication, toggleMenu, pdfToc, isPdf } = this.props;
         const { bookmarks } = this.state;
         if (!r2Publication) {
             return <></>;
         }
+
+        // WARNING: do not modify zero-based index without adjusting Reader.tsx
+        // showSearchResults (4)
+        // showGotoPage (5)
         const sections: SectionData[] = [
             {
                 title: __("reader.marks.toc"),
                 content:
-                    (r2Publication.TOC && this.renderLinkTree(__("reader.marks.toc"), r2Publication.TOC, 1)) ||
-                    (r2Publication.Spine && this.renderLinkList(__("reader.marks.toc"), r2Publication.Spine)),
+                    (isPdf && pdfToc?.length && this.renderLinkTree(__("reader.marks.toc"), pdfToc, 1)) ||
+                    (isPdf && !pdfToc?.length && <p>{__("reader.toc.publicationNoToc")}</p>) ||
+                    // tslint:disable-next-line: max-line-length
+                    (!isPdf && r2Publication.TOC && this.renderLinkTree(__("reader.marks.toc"), r2Publication.TOC, 1)) ||
+                    (!isPdf && r2Publication.Spine && this.renderLinkList(__("reader.marks.toc"), r2Publication.Spine)),
                 disabled:
                     (!r2Publication.TOC || r2Publication.TOC.length === 0) &&
                     (!r2Publication.Spine || r2Publication.Spine.length === 0),
@@ -137,7 +148,20 @@ export class ReaderMenu extends React.Component<IProps, IState> {
                 disabled: true,
             },
             {
-                content: this.buildGoToPageSection(),
+                title: __("reader.marks.search"),
+                content: this.props.searchEnable
+                    ? <ReaderMenuSearch
+                        focusMainAreaLandmarkAndCloseMenu={this.props.focusMainAreaLandmarkAndCloseMenu}
+                    ></ReaderMenuSearch>
+                    : <></>,
+                disabled: !this.props.searchEnable || this.props.isPdf,
+                skipMaxHeight: true,
+            },
+            {
+                content: this.buildGoToPageSection(
+                    this.props.isPdf && this.props.pdfNumberOfPages
+                        ? this.props.pdfNumberOfPages.toString()
+                        : undefined),
                 disabled: false,
                 notExtendable: true,
             },
@@ -145,6 +169,7 @@ export class ReaderMenu extends React.Component<IProps, IState> {
 
         return (
             <SideMenu
+                openedSection={this.props.openedSection}
                 className={styles.chapters_settings}
                 listClassName={styles.chapter_settings_list}
                 open={this.props.open}
@@ -153,6 +178,35 @@ export class ReaderMenu extends React.Component<IProps, IState> {
                 focusMenuButton={this.props.focusNaviguationMenu}
             />
         );
+    }
+
+    // TODO: in EPUB3 the NavDoc is XHTML with its own "dir" and "lang" markup,
+    // but this information is lost when converting to ReadiumWebPubManifest
+    // (e.g. TOC is hierarchical list of "link" objects with "title" property for textual label,
+    // LANDMARKS is a list of the same link objects, etc.)
+    // For example, there is a test Arabic EPUB that has non-RTL French labels in the TOC,
+    // which are incorrectly displayed as RTL because of this isRTL() logic:
+    private isRTL(_link: ILink) {
+        // link.Dir??
+        // link.Lang??
+        // RWPM does not indicate this, so we fallback to publication-wide dir/lang metadata
+        let isRTL = false;
+        if (this.props.r2Publication?.Metadata?.Direction === "rtl") {
+            const lang = this.props.r2Publication?.Metadata?.Language ?
+                (Array.isArray(this.props.r2Publication.Metadata.Language) ?
+                    this.props.r2Publication.Metadata.Language :
+                    [this.props.r2Publication.Metadata.Language]) :
+                [] as string[];
+            isRTL = lang.reduce<boolean>((pv, cv) => {
+                const arOrHe = typeof cv === "string" ?
+                    // we test for Arabic and Hebrew,
+                    // in order to exclude Japanese Vertical Writing Mode which is also RTL!
+                    (cv.startsWith("ar") || cv.startsWith("he")) :
+                    false;
+                return pv || arOrHe;
+            }, false);
+        }
+        return isRTL;
     }
 
     private renderLinkList(label: string, links: Link[]): JSX.Element {
@@ -164,6 +218,9 @@ export class ReaderMenu extends React.Component<IProps, IState> {
             role={"list"}
         >
             { links.map((link, i: number) => {
+
+                const isRTL = this.isRTL(link);
+
                 return (
                     <li
                         key={i}
@@ -172,9 +229,10 @@ export class ReaderMenu extends React.Component<IProps, IState> {
                     >
                         <a
                             className={
-                                link.Href ?
-                                    classnames(styles.line, styles.active) :
-                                    classnames(styles.line, styles.active, styles.inert)
+                                classnames(styles.line,
+                                    styles.active,
+                                    link.Href ? " " : styles.inert,
+                                    isRTL ? styles.rtlDir : " ")
                             }
                             onClick=
                                 {link.Href ? (e) => this.props.handleLinkClick(e, link.Href) : undefined}
@@ -189,7 +247,7 @@ export class ReaderMenu extends React.Component<IProps, IState> {
                                 }
                             data-href={link.Href}
                         >
-                            <span>{link.Title ? link.Title : `#${i} ${link.Href}`}</span>
+                            <span dir={isRTL ? "rtl" : "ltr"}>{link.Title ? link.Title : `#${i} ${link.Href}`}</span>
                         </a>
                     </li>
                 );
@@ -197,7 +255,7 @@ export class ReaderMenu extends React.Component<IProps, IState> {
         </ul>;
     }
 
-    private renderLinkTree(label: string | undefined, links: Link[], level: number): JSX.Element {
+    private renderLinkTree(label: string | undefined, links: TToc, level: number): JSX.Element {
         // console.log(label, JSON.stringify(links, null, 4));
 
         // VoiceOver support breaks when using the propoer tree[item] ARIA role :(
@@ -209,6 +267,9 @@ export class ReaderMenu extends React.Component<IProps, IState> {
                     className={styles.chapters_content}
                 >
             { links.map((link, i: number) => {
+
+                const isRTL = this.isRTL(link);
+
                 return (
                     <li key={`${level}-${i}`}
                         role={useTree ? "treeitem" : undefined}
@@ -219,7 +280,9 @@ export class ReaderMenu extends React.Component<IProps, IState> {
                             <div role={"heading"} aria-level={level}>
                                 <a
                                     className={
-                                        link.Href ? styles.subheading : classnames(styles.subheading, styles.inert)
+                                        classnames(styles.subheading,
+                                            link.Href ? " " : styles.inert,
+                                            isRTL ? styles.rtlDir : " ")
                                     }
                                     onClick=
                                         {link.Href ? (e) => this.props.handleLinkClick(e, link.Href) : undefined}
@@ -234,7 +297,7 @@ export class ReaderMenu extends React.Component<IProps, IState> {
                                         }
                                     data-href={link.Href}
                                 >
-                                    <span>{link.Title ? link.Title : `#${level}-${i} ${link.Href}`}</span>
+                                    <span dir={isRTL ? "rtl" : "ltr"}>{link.Title ? link.Title : `#${level}-${i} ${link.Href}`}</span>
                                 </a>
                             </div>
 
@@ -244,9 +307,10 @@ export class ReaderMenu extends React.Component<IProps, IState> {
                             <div role={"heading"} aria-level={level}>
                                 <a
                                     className={
-                                        link.Href ?
-                                            classnames(styles.line, styles.active) :
-                                            classnames(styles.line, styles.active, styles.inert)
+                                        classnames(styles.line,
+                                            styles.active,
+                                            link.Href ? " " : styles.inert,
+                                            isRTL ? styles.rtlDir : " ")
                                     }
                                     onClick=
                                         {link.Href ? (e) => this.props.handleLinkClick(e, link.Href) : undefined}
@@ -261,7 +325,7 @@ export class ReaderMenu extends React.Component<IProps, IState> {
                                         }
                                     data-href={link.Href}
                                 >
-                                    <span>{link.Title ? link.Title : `#${level}-${i} ${link.Href}`}</span>
+                                    <span dir={isRTL ? "rtl" : "ltr"}>{link.Title ? link.Title : `#${level}-${i} ${link.Href}`}</span>
                                 </a>
                             </div>
                         )}
@@ -346,33 +410,136 @@ export class ReaderMenu extends React.Component<IProps, IState> {
             .catch((error) => console.error("Error to fetch api reader/deleteBookmark", error));
     }
 
-    private buildGoToPageSection() {
+    private buildGoToPageSection(totalPages?: string) {
         if (!this.props.r2Publication) {
             return <></>;
         }
+
+        // this.props.currentLocation.docInfo.isFixedLayout
+        const isFixedLayout = !this.props.r2Publication.PageList &&
+            this.props.r2Publication.Metadata?.Rendition?.Layout === "fixed";
+
+        let currentPage = (this.props.isDivina || this.props.isPdf) ?
+            this.props.currentLocation?.locator?.href :
+            this.props.currentLocation?.epubPage;
+        if (isFixedLayout &&
+            this.props.currentLocation?.locator?.href &&
+            this.props.r2Publication.Spine) {
+            const spineIndex = this.props.r2Publication.Spine.findIndex((l) => {
+                return l.Href === this.props.currentLocation.locator.href;
+            });
+            if (spineIndex >= 0) {
+                currentPage = (spineIndex + 1).toString();
+                totalPages = this.props.r2Publication.Spine.length.toString();
+            }
+        } else if (currentPage) {
+            if (this.props.isDivina) {
+                try {
+                    const p = parseInt(currentPage, 10) + 1;
+                    currentPage = p.toString();
+                } catch (e) {
+                    // ignore
+                }
+            } else if (this.props.isPdf) {
+                currentPage = currentPage;
+            }
+        }
+
         const { __ } = this.props;
-        const error = this.state.pageError;
+
         return <div className={styles.goToPage}>
             <p className={styles.title}>{__("reader.navigation.goToTitle")}</p>
 
+            <label className={styles.currentPage}
+                id="gotoPageLabel"
+                htmlFor="gotoPageInput">
+                {
+                currentPage ?
+                (totalPages
+                        // tslint:disable-next-line: max-line-length
+                        ? __("reader.navigation.currentPageTotal", { current: `${currentPage}`, total: `${totalPages}` })
+                        : __("reader.navigation.currentPage", { current: `${currentPage}`})) :
+                ""
+                }
+            </label>
+
             <form onSubmit={this.handleSubmitPage}>
+                {(isFixedLayout || this.props.r2Publication?.PageList) &&
+                <select
+                    onChange={(ev) => {
+                        const val = ev.target?.value?.toString();
+                        if (!val || !this.goToRef?.current) {
+                            return;
+                        }
+                        this.goToRef.current.value = val;
+                        this.setState({pageError: false});
+
+                        // Warning: Use the `defaultValue` or `value` props on <select>
+                        // instead of setting `selected` on <option>.
+                        // ... BUT: this does not result in the behaviour we want,
+                        // which is to display the current page, OR the user-selected page (not actually current yet)
+                        // value={
+                        //     this.props.r2Publication.PageList.find((pl) => {
+                        //         return pl.Title === currentPage;
+                        //     }) ?
+                        //     currentPage : undefined
+                        // }
+                    }}
+                >
+                    {
+                    isFixedLayout
+                    ?
+                    this.props.r2Publication.Spine.map((_spineLink, idx) => {
+                        const indexStr = (idx + 1).toString();
+                        return (
+                            <option
+                                key={`pageGoto_${idx}`}
+                                value={indexStr}
+                                selected={currentPage === indexStr}
+                            >
+                                {indexStr}
+                            </option>
+                        );
+                    })
+                    :
+                    this.props.r2Publication.PageList.map((pageLink, idx) => {
+                        return (
+                            pageLink.Title ?
+                            <option
+                                key={`pageGoto_${idx}`}
+                                value={pageLink.Title}
+                                selected={currentPage === pageLink.Title}
+                            >
+                                {pageLink.Title}
+                            </option> : <></>
+                        );
+                    })
+                    }
+                </select>
+                }
                 <input
+                    id="gotoPageInput"
+                    aria-labelledby="gotoPageLabel"
                     ref={this.goToRef}
                     type="text"
-                    aria-invalid={error}
+                    aria-invalid={this.state.pageError}
                     onChange={() => this.setState({pageError: false})}
-                    disabled={!this.props.r2Publication.PageList}
+                    disabled={
+                        !(isFixedLayout || this.props.r2Publication.PageList || this.props.isDivina || this.props.isPdf)
+                    }
                     placeholder={__("reader.navigation.goToPlaceHolder")}
                     alt={__("reader.navigation.goToPlaceHolder")}
                 />
                 <button
                     type="submit"
-                    disabled={!this.props.r2Publication.PageList}
+                    disabled={
+                        !(isFixedLayout || this.props.r2Publication.PageList || this.props.isDivina || this.props.isPdf)
+                    }
                 >
                     { __("reader.navigation.goTo") }
                 </button>
             </form>
-            {error &&
+            {this.state.pageError &&
                 <p
                     className={styles.goToErrorMessage}
                     aria-live="assertive"
@@ -382,8 +549,6 @@ export class ReaderMenu extends React.Component<IProps, IState> {
                     { __("reader.navigation.goToError") }
                 </p>
             }
-            {this.props.currentLocation?.epubPage &&
-            <p className={styles.currentPage}>({this.props.currentLocation.epubPage})</p>}
 
         </div>;
     }
@@ -397,12 +562,67 @@ export class ReaderMenu extends React.Component<IProps, IState> {
         if (!this.goToRef?.current?.value) {
             return;
         }
+
+        // this.props.currentLocation.docInfo.isFixedLayout
+        const isFixedLayout = !this.props.r2Publication.PageList &&
+            this.props.r2Publication.Metadata?.Rendition?.Layout === "fixed";
+
         const pageNbr = this.goToRef.current.value.trim().replace(/\s\s+/g, " ");
-        const foundPage = this.props.r2Publication.PageList.find((page) => page.Title === pageNbr);
-        if (foundPage) {
-            this.setState({pageError: false});
-            this.props.handleLinkClick(undefined, foundPage.Href);
+        if (isFixedLayout) {
+            try {
+                const spineIndex = parseInt(pageNbr, 10) - 1;
+                const spineLink = this.props.r2Publication.Spine[spineIndex];
+                if (spineLink) {
+                    this.setState({pageError: false});
+                    this.props.handleLinkClick(undefined, spineLink.Href);
+                    return;
+                }
+            } catch (e) {
+                // ignore error
+            }
+
+            this.setState({refreshError: true});
+        } else if (this.props.isDivina || this.props.isPdf) {
+            let page: number | undefined;
+
+            if (this.props.isDivina) {
+                try {
+                    page = parseInt(pageNbr, 10) - 1;
+                } catch (e) {
+                    // ignore error
+                }
+            } else if (this.props.isPdf) {
+                //
+            }
+            if (this.props.isPdf ||
+                (typeof page !== "undefined" && page >= 0 &&
+                    this.props.r2Publication.Spine && this.props.r2Publication.Spine[page])
+            ) {
+
+                this.setState({ pageError: false });
+
+                // this.props.handleLinkClick(undefined, pageNbr);
+                const loc = {
+                    href: (page || pageNbr).toString(),
+                    // progression generate in divina pagechange event
+                };
+                this.props.handleBookmarkClick(loc as any);
+
+                return;
+            }
+
+            this.setState({refreshError: true});
         } else {
+            const foundPage = this.props.r2Publication.PageList ?
+                this.props.r2Publication.PageList.find((page) => page.Title === pageNbr) :
+                undefined;
+            if (foundPage) {
+                this.setState({pageError: false});
+                this.props.handleLinkClick(undefined, foundPage.Href);
+
+                return;
+            }
+
             this.setState({refreshError: true});
         }
     }
@@ -414,8 +634,16 @@ export class ReaderMenu extends React.Component<IProps, IState> {
 }
 
 const mapStateToProps = (state: IReaderRootState, _props: IBaseProps) => {
+
+    // TODO: extension or @type ?
+    // const isDivina = this.props.r2Publication?.Metadata?.RDFType &&
+    //    (/http[s]?:\/\/schema\.org\/ComicStrip$/.test(this.props.r2Publication.Metadata.RDFType) ||
+    //    /http[s]?:\/\/schema\.org\/VisualNarrative$/.test(this.props.r2Publication.Metadata.RDFType));
+    // const isDivina = path.extname(state?.reader?.info?.filesystemPath) === acceptedExtensionObject.divina;
     return {
-        pubId: state.reader.reader.publicationIdentifier,
+        pubId: state.reader.info.publicationIdentifier,
+        searchEnable: state.search.enable,
+        // isDivina,
     };
 };
 

@@ -12,6 +12,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { syncIpc, winIpc } from "readium-desktop/common/ipc";
 import { ActionWithSender } from "readium-desktop/common/models/sync";
+import { ActionSerializer } from "readium-desktop/common/services/serializer";
 import { IS_DEV } from "readium-desktop/preprocessor-directives";
 import { winActions } from "readium-desktop/renderer/common/redux/actions";
 import { diLibraryGet } from "readium-desktop/renderer/library/di";
@@ -21,11 +22,6 @@ import {
     initGlobalConverters_GENERIC, initGlobalConverters_SHARED,
 } from "@r2-shared-js/init-globals";
 
-import { actionSerializer } from "../common/actionSerializer";
-
-// import { setLcpNativePluginPath } from "@r2-lcp-js/parser/epub/lcp";
-
-// import { consoleRedirect } from "@r2-navigator-js/electron/renderer/common/console-redirect";
 if (IS_DEV) {
     // tslint:disable-next-line:no-var-requires
     const cr = require("@r2-navigator-js/electron/renderer/common/console-redirect");
@@ -63,7 +59,7 @@ ipcRenderer.on(winIpc.CHANNEL, (_0: any, data: winIpc.EventPayload) => {
         case winIpc.EventType.IdResponse:
             // Initialize window
             const store = diLibraryGet("store");
-            store.dispatch(winActions.initRequest.build(data.payload.winId));
+            store.dispatch(winActions.initRequest.build(data.payload.identifier));
             break;
     }
 });
@@ -77,7 +73,7 @@ ipcRenderer.on(syncIpc.CHANNEL, (_0: any, data: syncIpc.EventPayload) => {
             const store = diLibraryGet("store");
             store.dispatch(Object.assign(
                 {},
-                actionSerializer.deserialize(data.payload.action),
+                ActionSerializer.deserialize(data.payload.action),
                 {
                     sender: data.sender,
                 },

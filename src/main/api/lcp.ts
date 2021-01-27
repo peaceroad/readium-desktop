@@ -38,14 +38,6 @@ export class LcpApi implements ILcpApi {
     @inject(diSymbolTable["publication-view-converter"])
     private readonly publicationViewConverter!: PublicationViewConverter;
 
-    // import { PublicationStorage } from "readium-desktop/main/storage/publication-storage";
-    // @inject(diSymbolTable["publication-storage"])
-    // private readonly publicationStorage!: PublicationStorage;
-
-    // import { Server } from "@r2-streamer-js/http/server";
-    // @inject(diSymbolTable.streamer)
-    // private readonly streamer!: Server;
-
     public async renewPublicationLicense(publicationIdentifier: string): Promise<void> {
         const publicationDocument = await this.publicationRepository.get(
             publicationIdentifier,
@@ -81,7 +73,7 @@ export class LcpApi implements ILcpApi {
                 // tslint:disable-next-line: max-line-length
                 // const r2PublicationStr = Buffer.from(publicationView.r2PublicationBase64, "base64").toString("utf-8");
                 // const r2PublicationJson = JSON.parse(r2PublicationStr);
-                // const r2Publication = TaJsonDeserialize<R2Publication>(r2PublicationJson, R2Publication);
+                // const r2Publication = TaJsonDeserialize(r2PublicationJson, R2Publication);
 
                 // const epubPath = this.publicationStorage.getPublicationEpubPath(publicationView.identifier);
                 // const r2Publication = await this.streamer.loadOrGetCachedPublication(epubPath);
@@ -103,6 +95,7 @@ export class LcpApi implements ILcpApi {
                     const action = lcpActions.userKeyCheckRequest.build(
                         publicationView,
                         publicationView.lcp.textHint, // r2Publication.LCP.Encryption.UserKey.TextHint,
+                        publicationView.lcp.urlHint,
                         message,
                     );
                     this.store.dispatch(action);

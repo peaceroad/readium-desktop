@@ -17,11 +17,11 @@ import LibraryLayout from "readium-desktop/renderer/library/components/layout/Li
 import { ILibraryRootState } from "readium-desktop/renderer/library/redux/states";
 import { DisplayType } from "readium-desktop/renderer/library/routing";
 import { Dispatch } from "redux";
-import { v4 as uuidv4 } from "uuid";
+import { CATALOG_GET_API_ID_CHANNEL, PUBLICATION_TAGS_API_ID_CHANNEL } from "../../redux/sagas/catalog";
 
-import { CatalogGridView } from "./GridView";
+import CatalogGridView from "./GridView";
 import Header from "./Header";
-import { CatalogListView } from "./ListView";
+import CatalogListView from "./ListView";
 
 // tslint:disable-next-line: no-empty-interface
 interface IBaseProps extends TranslatorProps {
@@ -36,32 +36,18 @@ interface IProps extends IBaseProps,
 }
 
 class Catalog extends React.Component<IProps, undefined> {
-    private catalogGetId = uuidv4();
-    private publicationGetAllTagId = uuidv4();
-
-    public componentDidMount() {
-        this.getFromApi();
-    }
-
-    public componentWillUnmount() {
-        this.props.apiClean(this.catalogGetId);
-        this.props.apiClean(this.publicationGetAllTagId);
-    }
 
     public render(): React.ReactElement<{}> {
-        const { __ } = this.props;
+        const { __, catalog, tags } = this.props;
 
         if (this.props.refresh) {
-            this.getFromApi();
+            this.props.api(CATALOG_GET_API_ID_CHANNEL)("catalog/get")();
+            this.props.api(PUBLICATION_TAGS_API_ID_CHANNEL)("publication/getAllTags")();
         }
 
         const displayType = this.props.location?.state?.displayType || DisplayType.Grid;
 
         const secondaryHeader = <Header/>;
-
-        const catalog = this.props.apiData(this.catalogGetId)("catalog/get");
-        const tags = this.props.apiData(this.publicationGetAllTagId)("publication/getAllTags");
-
         return (
             <LibraryLayout
                 title={__("header.books")}
@@ -84,22 +70,18 @@ class Catalog extends React.Component<IProps, undefined> {
             </LibraryLayout>
         );
     }
-
-    private getFromApi = () => {
-        this.props.api(this.catalogGetId)("catalog/get")();
-        this.props.api(this.publicationGetAllTagId)("publication/getAllTags")();
-    }
 }
 
 const mapStateToProps = (state: ILibraryRootState) => ({
-    apiData: apiState(state),
+    catalog: apiState(state)(CATALOG_GET_API_ID_CHANNEL)("catalog/get"),
+    tags: apiState(state)(PUBLICATION_TAGS_API_ID_CHANNEL)("publication/getAllTags"),
     refresh: apiRefreshToState(state)([
-        "publication/import",
-        "publication/importOpdsPublicationLink",
+        "publication/importFromFs",
+        "publication/importFromLink",
         "publication/delete",
-        "catalog/addEntry",
+        // "catalog/addEntry",
         "publication/updateTags",
-        "reader/setLastReadingLocation",
+        // "reader/setLastReadingLocation",
     ]),
     location: state.router.location,
 });

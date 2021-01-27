@@ -21,8 +21,23 @@
             "title": "Wijzig",
             "undo": "Ongedaan maken"
         },
-        "hide": "Verbergen",
-        "quit": "Verlaat Thorium"
+        "hide": "Verbergen {{- appName}}",
+        "quit": "Verlaat {{- appName}}",
+        "session": {
+            "exit": {
+                "askBox": {
+                    "button": {
+                        "no": "",
+                        "yes": ""
+                    },
+                    "message": "",
+                    "title": ""
+                }
+            }
+        },
+        "window": {
+            "showLibrary": ""
+        }
     },
     "catalog": {
         "about": {
@@ -42,8 +57,9 @@
         "entry": {
             "continueReading": "Ga door met lezen",
             "continueReadingAudioBooks": "Ga door met luisteren",
-            "lastAdditions": "Recent toegevoegd",
-            "lastAdditionsAudioBooks": "Recent toegevoegde luisterboeken"
+            "continueReadingDivina": "",
+            "continueReadingPdf": "",
+            "lastAdditions": "Recent toegevoegd"
         },
         "export": "Exporteer",
         "lang": "Taal",
@@ -55,6 +71,10 @@
         "noPublicationHelpL4": "Ondersteunde uitbreidingen:",
         "numberOfPages": "Aantal pagina's",
         "opds": {
+            "auth": {
+                "cancel": "",
+                "login": ""
+            },
             "info": {
                 "availableSince": "Sinds",
                 "availableState": {
@@ -92,6 +112,13 @@
         "return": "Wil je de licentie voor deze publicatie echt inleveren?",
         "yes": "Ja"
     },
+    "error": {
+        "errorBox": {
+            "error": "",
+            "message": "",
+            "title": ""
+        }
+    },
     "header": {
         "allBooks": "Alle boeken",
         "books": "Mijn boeken",
@@ -113,19 +140,21 @@
             "hint": "(Hint : {{hint}})",
             "password": "Wachtwoordzin",
             "sentence": "Deze publicatie vereist een LCP wachtwoordzin om te openen: ",
-            "submit": "Verzend"
+            "submit": "Verzend",
+            "urlHint": ""
         }
     },
     "message": {
         "download": {
-            "error": "Het downloaden van{{- title}} is mislukt: [{{- err}}]",
-            "start": "Het downloaden van {{- title}} is gestart.",
-            "success": "Het downloaden van {{- title}} is gereed."
+            "error": "Het downloaden van{{- title}} is mislukt: [{{- err}}]"
         },
         "import": {
             "alreadyImport": "{{- title}} is al toegevoegd",
             "fail": "Het toevoegen van {{- path}} is mislukt. Controleer de juistheid van het bestand",
             "success": "Het toevoegen van {{- title}} is gelukt."
+        },
+        "open": {
+            "error": ""
         }
     },
     "opds": {
@@ -182,6 +211,9 @@
         "licenseOutOfDate": "Licentie is verlopen",
         "licenseSignatureDateInvalid": "Datum in de Licentie handtekening is iongeldig",
         "licenseSignatureInvalid": "Licentie handtekening is ongeldig",
+        "progression": {
+            "title": ""
+        },
         "renewButton": "Vernieuw",
         "returnButton": "Lever in",
         "returnedLcp": "Dit boek kan niet gelezen worden omdat de LCP licentie is ingeleverd.",
@@ -201,11 +233,26 @@
             "delete": "Verwijder",
             "edit": "Wijzig",
             "landmarks": "structuur elementen",
+            "search": "",
             "toc": "Inhoudsopgave"
+        },
+        "media-overlays": {
+            "activate": "",
+            "captions": "",
+            "next": "",
+            "pause": "",
+            "play": "",
+            "previous": "",
+            "skip": "",
+            "speed": "",
+            "stop": "",
+            "title": ""
         },
         "navigation": {
             "backHomeTitle": "terug naar de boekenplank",
             "bookmarkTitle": "bladwijzer",
+            "currentPage": "",
+            "currentPageTotal": "",
             "detachWindowTitle": "maak het venster los",
             "fullscreenTitle": "gebruik volledig scherm",
             "goTo": "Ga naar",
@@ -213,10 +260,24 @@
             "goToPlaceHolder": "Voer een paginanummer in",
             "goToTitle": "Ga naar pagina",
             "infoTitle": "informatie",
+            "magnifyingGlassButton": "",
             "openTableOfContentsTitle": "navigatie",
+            "pdfscalemode": "",
             "quitFullscreenTitle": "verlaat volledig scherm modus",
             "readBookTitle": "begin met het lezen van het boek",
             "settingsTitle": "instellingen"
+        },
+        "picker": {
+            "annotationTitle": "",
+            "search": {
+                "founds": "",
+                "input": "",
+                "next": "",
+                "notFound": "",
+                "previous": "",
+                "submit": ""
+            },
+            "searchTitle": ""
         },
         "settings": {
             "column": {
@@ -238,7 +299,28 @@
             "letterSpacing": "Letter afstand",
             "lineSpacing": "Regelafstand",
             "margin": "Marge",
+            "noFootnotes": "",
             "paginated": "Als pagina's",
+            "paraSpacing": "",
+            "pdfZoom": {
+                "name": {
+                    "100pct": "",
+                    "150pct": "",
+                    "200pct": "",
+                    "300pct": "",
+                    "500pct": "",
+                    "50pct": "",
+                    "fit": "",
+                    "width": ""
+                },
+                "title": ""
+            },
+            "reduceMotion": "",
+            "save": {
+                "apply": "",
+                "reset": "",
+                "title": ""
+            },
             "scrolled": "Doorlopend",
             "spacing": "Afstand",
             "text": "Tekst",
@@ -255,9 +337,24 @@
         "svg": {
             "left": "Links",
             "right": "Rechts"
+        },
+        "toc": {
+            "publicationNoToc": ""
+        },
+        "tts": {
+            "activate": "",
+            "next": "",
+            "pause": "",
+            "play": "",
+            "previous": "",
+            "speed": "",
+            "stop": ""
         }
     },
     "settings": {
+        "auth": {
+            "wipeData": ""
+        },
         "keyboard": {
             "advancedMenu": "Menu",
             "cancel": "Annuleer",
@@ -272,6 +369,11 @@
         },
         "language": {
             "languageChoice": "Taal keuze"
+        },
+        "session": {
+            "no": "",
+            "title": "",
+            "yes": ""
         }
     }
 }
