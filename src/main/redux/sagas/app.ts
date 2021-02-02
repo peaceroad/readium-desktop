@@ -47,10 +47,6 @@ export function* init() {
     //     setTimeout(() => app.exit(0), 2000);
     // });
 
-    app.on("accessibility-support-changed", (_ev, accessibilitySupportEnabled) => {
-        debug(`accessibilitySupportEnabled: ${accessibilitySupportEnabled}`);
-    });
-
     yield call(() => app.whenReady());
 
     debug("Main app ready");
@@ -74,8 +70,6 @@ export function* init() {
         debug("#####");
     });
 
-    /// PDF
-
     // const sessionPDFWebview = session.fromPartition("persist:pdfjsreader");
     // const protocolFromPDFWebview = sessionPDFWebview.protocol;
     protocol.registerFileProtocol("pdfjs", async (request, callback) => {
@@ -91,10 +85,16 @@ export function* init() {
         const pathname = path.normalize(`${folderPath}/${url}`);
 
         callback(pathname);
-    }, (err) => {
-        if (err) {
-            debug("ERROR registerFileProtocol pdf webview", err);
-        }
+    });
+
+    protocol.registerFileProtocol("pdfjs-extract", async (request, callback) => {
+
+        debug("register file protocol pdfjs-extract");
+        debug("request", request);
+        const p = request.url.split("pdfjs-extract://")[1];
+        debug(p);
+
+        callback(p);
     });
 
 }
