@@ -39,6 +39,7 @@ export interface IOpdsPublicationView {
     subscribeLinks?: IOpdsLinkView[];
     sampleOrPreviewLinks?: IOpdsLinkView[];
     openAccessLinks?: IOpdsLinkView[];
+    revokeLoanLinks?: IOpdsLinkView[];
     cover?: IOpdsCoverView;
 }
 
@@ -67,9 +68,9 @@ export interface IOpdsResultView {
 }
 
 export interface IOpdsGroupView {
-    title: string;
     navigation?: IOpdsNavigationLinkView[];
     publications?: IOpdsPublicationView[];
+    selfLink: IOpdsNavigationLinkView;
 }
 
 export interface IOpdsFacetView {
@@ -120,6 +121,7 @@ export interface IOpdsLinkView {
     title?: string | undefined;
     type?: string | undefined;
     properties?: IOPDSPropertiesView;
+    rel?: string;
 }
 
 export interface IOpdsNavigationLink {
