@@ -7,75 +7,48 @@
 
 import { injectable } from "inversify";
 
-import * as deCatalog from "readium-desktop/resources/locales/de.json";
-import * as enCatalog from "readium-desktop/resources/locales/en.json";
-import * as esCatalog from "readium-desktop/resources/locales/es.json";
-import * as fiCatalog from "readium-desktop/resources/locales/fi.json";
-import * as frCatalog from "readium-desktop/resources/locales/fr.json";
-import * as itCatalog from "readium-desktop/resources/locales/it.json";
-import * as jaCatalog from "readium-desktop/resources/locales/ja.json";
-import * as ltCatalog from "readium-desktop/resources/locales/lt.json";
-import * as nlCatalog from "readium-desktop/resources/locales/nl.json";
-import * as ptBrCatalog from "readium-desktop/resources/locales/pt-br.json";
-import * as ptPtCatalog from "readium-desktop/resources/locales/pt-pt.json";
-import * as ruCatalog from "readium-desktop/resources/locales/ru.json";
-import * as zhCnCatalog from "readium-desktop/resources/locales/zh-cn.json";
+import deCatalog from "readium-desktop/resources/locales/de.json";
+import enCatalog from "readium-desktop/resources/locales/en.json";
+import esCatalog from "readium-desktop/resources/locales/es.json";
+import fiCatalog from "readium-desktop/resources/locales/fi.json";
+import frCatalog from "readium-desktop/resources/locales/fr.json";
+import itCatalog from "readium-desktop/resources/locales/it.json";
+import jaCatalog from "readium-desktop/resources/locales/ja.json";
+import kaCatalog from "readium-desktop/resources/locales/ka.json";
+import ltCatalog from "readium-desktop/resources/locales/lt.json";
+import nlCatalog from "readium-desktop/resources/locales/nl.json";
+import ptBrCatalog from "readium-desktop/resources/locales/pt-br.json";
+import ptPtCatalog from "readium-desktop/resources/locales/pt-pt.json";
+import ruCatalog from "readium-desktop/resources/locales/ru.json";
+import zhCnCatalog from "readium-desktop/resources/locales/zh-cn.json";
+import koCatalog from "readium-desktop/resources/locales/ko.json";
+import svCatalog from "readium-desktop/resources/locales/sv.json";
 
 import { TFunction } from "readium-desktop/typings/en.translation";
 
-// -----------------------------------------------------------
-// i18next Typescript definitions woes (esModuleInterop, WebPack bundler):
+import i18next from "i18next";
 
-// https://github.com/i18next/i18next/pull/1291
-// https://github.com/i18next/i18next/issues/1271
-// https://github.com/i18next/i18next/issues/1177
-
-// CHANGES:
-// https://github.com/i18next/i18next/blob/master/CHANGELOG.md#1900
-// https://github.com/i18next/i18next/pull/1352
-
-// import i18next from "i18next"; // the "default" export (unfortunately, WebPack generates i18next_1.default!)
-import { i18n } from "i18next"; // named export: just the TypeScript type
-
-// node_modules/i18next/package.json
-// =>
-// "main" CJS "./dist/cjs/i18next.js",
-// "module" ESM "./dist/esm/i18next.js",
-// ... depends on WebPack bundler strategy, matrix: DEV vs. PROD, and MAIN vs. RENDERER
-
-// ##### technique 1:
-// import * as i18next from "i18next";
-//
-// ##### technique 2:
-// import i18next = require("i18next");
-//
-// ##### technique 3:
-// tslint:disable-next-line: no-var-requires
-const i18next: i18n = require("i18next");
-
-// ##### technique 4 (force CJS):
-// tslint:disable-next-line: no-var-requires
-// const i18next: i18n = require("i18next/dist/cjs/i18next");
-
-// ##### technique 5 (force ESM):
-// tslint:disable-next-line: no-var-requires
-// const i18next: i18n = require("i18next/dist/esm/i18next");
-
-// const i18nextInstance = i18next.createInstance(); // it should be as simple as that :(
-let i18nextInstance: i18n | undefined;
-if (i18next.createInstance) {
-    i18nextInstance = i18next.createInstance();
-
-} else if (((i18next as any).default as i18n).createInstance) {
-    i18nextInstance = ((i18next as any).default as i18n).createInstance();
-
-} else { // Fallback for TS compiler only (not an actual runtime occurrence)
-    i18nextInstance = i18next;
-}
-// -----------------------------------------------------------
+const i18nextInstance = i18next.createInstance();
 
 // https://www.i18next.com/overview/configuration-options
 i18nextInstance.init({
+    // https://www.i18next.com/misc/migration-guide#v-20-x-x-to-v-21-0-0
+    compatibilityJSON: "v3",
+    interpolation: {
+        skipOnVariables: false,
+    },
+    nsSeparator: ":",
+    keySeparator: ".",
+    // supportedLngs: LANGUAGE_KEYS,
+    // nonExplicitSupportedLngs: true,
+    // --
+    // https://github.com/i18next/i18next/pull/1584
+    // https://github.com/i18next/i18next/blob/master/CHANGELOG.md#2000
+    // --
+    // https://github.com/i18next/i18next/issues/1589
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    ignoreJSONStructure: false,
     debug: false,
     resources: {
         "en": {
@@ -99,6 +72,9 @@ i18nextInstance.init({
         "ja": {
             translation: jaCatalog,
         },
+        "ka": {
+            translation: kaCatalog,
+        },
         "lt": {
             translation: ltCatalog,
         },
@@ -117,11 +93,15 @@ i18nextInstance.init({
         "ru" : {
             translation: ruCatalog,
         },
+        "ko": {
+            translation: koCatalog,
+        },
+        "sv": {
+            translation: svCatalog,
+        },
     },
     // lng: undefined,
     fallbackLng: "en",
-    // whitelist: LANGUAGE_KEYS,
-    // nonExplicitWhitelist: true,
     // load: "all",
     // preload: LANGUAGE_KEYS,
     // lowerCaseLng: false,
@@ -156,12 +136,15 @@ export const AvailableLanguages = {
     "es": "Español",
     "nl": "Dutch",
     "ja": "日本語",
+    "ka": "ქართული",
     "lt": "Lietuvių",
     "pt-BR": "Português Brasileiro",
     "pt-PT": "Português",
     "zh-CN": "中文",
     "it": "Italiano",
     "ru": "Русский",
+    "ko": "한국어",
+    "sv": "Svenska",
 };
 
 interface LocalizedContent {
@@ -173,7 +156,7 @@ export type I18nTyped = TFunction;
 @injectable()
 export class Translator {
     public translate: I18nTyped = this._translate;
-    private locale: string = "en";
+    private locale = "en";
 
     public getLocale(): string {
         return this.locale;

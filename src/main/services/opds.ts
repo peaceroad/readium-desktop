@@ -7,20 +7,15 @@
 
 import * as debug_ from "debug";
 import { inject, injectable } from "inversify";
-import {
-    IOpdsLinkView, IOpdsResultView, THttpGetOpdsResultView,
-} from "readium-desktop/common/views/opds";
+import { removeUTF8BOM } from "readium-desktop/common/utils/bom";
+import { IHttpGetResult } from "readium-desktop/common/utils/http";
+import { tryDecodeURIComponent } from "readium-desktop/common/utils/uri";
+import { IOpdsLinkView, IOpdsResultView } from "readium-desktop/common/views/opds";
 import { httpGet } from "readium-desktop/main/network/http";
 import {
-    ContentType,
-    contentTypeisApiProblem,
-    contentTypeisOpds,
-    contentTypeisOpdsAuth,
-    contentTypeisXml,
-    parseContentType,
+    ContentType, contentTypeisOpds, contentTypeisOpdsAuth, contentTypeisXml, parseContentType,
 } from "readium-desktop/utils/contentType";
 import * as URITemplate from "urijs/src/URITemplate";
-import * as xmldom from "xmldom";
 
 import { TaJsonDeserialize } from "@r2-lcp-js/serializable";
 import {
@@ -34,6 +29,7 @@ import { OPDSAuthenticationDoc } from "@r2-opds-js/opds/opds2/opds2-authenticati
 import { OPDSAuthenticationLabels } from "@r2-opds-js/opds/opds2/opds2-authentication-labels";
 import { OPDSPublication } from "@r2-opds-js/opds/opds2/opds2-publication";
 import { XML } from "@r2-utils-js/_utils/xml-js-mapper";
+import * as xmldom from "@xmldom/xmldom";
 
 import { OpdsFeedViewConverter } from "../converter/opds";
 import { diSymbolTable } from "../diSymbolTable";
@@ -70,65 +66,52 @@ export class OpdsService {
     @inject(diSymbolTable["opds-feed-view-converter"])
     private readonly opdsFeedViewConverter!: OpdsFeedViewConverter;
 
-    public async opdsRequest(url: string): Promise<THttpGetOpdsResultView> {
+    public async opdsRequestTransformer(httpGetData: IHttpGetResult<IOpdsResultView>): Promise<IOpdsResultView | undefined> {
 
-        const result = httpGet<IOpdsResultView>(
-            url,
-            undefined, // options
-            async (opdsFeedData) => {
+        const {
+            url: _baseUrl,
+            responseUrl,
+            contentType: _contentType,
+        } = httpGetData;
+        const baseUrl = `${_baseUrl}`;
+        const contentType = parseContentType(_contentType);
 
-                const { url: _baseUrl, responseUrl, contentType: _contentType } = opdsFeedData;
-                const baseUrl = `${_baseUrl}`;
-                const contentType = parseContentType(_contentType);
+        if (contentTypeisXml(contentType)) {
 
-                if (contentTypeisXml(contentType)) {
+            const buffer = await httpGetData.response.buffer();
+            const result = await this.opdsRequestXmlTransformer(buffer, baseUrl);
 
-                    const buffer = await opdsFeedData.response.buffer();
-                    opdsFeedData.data = await this.opdsRequestXmlTransformer(buffer, baseUrl);
+            if (result) {
+                return result;
+            }
+        }
+        if (contentTypeisOpds(contentType)) {
 
-                    if (opdsFeedData.data) {
-                        return opdsFeedData;
-                    }
+            const json = await httpGetData.response.json();
+            const result = await this.opdsRequestJsonTransformer(json, contentType, responseUrl, baseUrl);
+
+            if (result) {
+                return result;
+            }
+        }
+
+        {
+            const wwwAuthenticate = httpGetData.response.headers.get("WWW-Authenticate");
+            if (wwwAuthenticate) {
+                const realm = this.getRealmInWwwAuthenticateInHeader(wwwAuthenticate);
+                if (realm) {
+                    this.sendWwwAuthenticationToAuthenticationProcess(realm, responseUrl);
+
+                    const result: IOpdsResultView = {
+                        title: "Unauthorized",
+                        publications: [],
+                    }; // need to refresh the page
+                    return result;
                 }
-                if (contentTypeisOpds(contentType)) {
+            }
+        }
 
-                    const json = await opdsFeedData.response.json();
-                    opdsFeedData.data = await this.opdsRequestJsonTransformer(json, contentType, responseUrl, baseUrl);
-
-                    if (opdsFeedData.data) {
-                        return opdsFeedData;
-                    }
-                }
-                if (contentTypeisApiProblem(contentType)) {
-                    const json = await opdsFeedData.response.json();
-                    this.handleApiProblems(json, baseUrl);
-                    return opdsFeedData;
-                }
-
-                {
-                    const wwwAuthenticate = opdsFeedData.response.headers.get("WWW-Authenticate");
-                    if (wwwAuthenticate) {
-                        const realm = this.getRealmInWwwAuthenticateInHeader(wwwAuthenticate);
-                        if (realm) {
-                            this.sendWwwAuthenticationToAuthenticationProcess(realm, responseUrl);
-
-                            opdsFeedData.data = {
-                                title: "Unauthorized",
-                                publications: [],
-                            }; // need to refresh the page
-                            return opdsFeedData;
-                        }
-                    }
-                }
-
-                debug(`unknown url content-type : ${baseUrl} - ${contentType}`);
-                throw new Error(
-                    `Not a valid OPDS HTTP Content-Type for ${baseUrl}} (${contentType})`,
-                );
-            },
-        );
-
-        return result;
+        return undefined;
     }
 
     public async parseOpdsSearchUrl(link: IOpdsLinkView[]): Promise<string | undefined> {
@@ -143,13 +126,23 @@ export class OpdsService {
         try {
             // http://examples.net/opds/search.php?q={searchTerms}
             if (atomLink?.url) {
+
                 const url = new URL(atomLink.url);
-                if (url.search.includes(SEARCH_TERM) || url.pathname.includes(SEARCH_TERM)) {
-                    return (atomLink.url);
+                debug("parseOpdsSearchUrl", atomLink.url, url.search, url.pathname);
+
+                if (url.search.includes(SEARCH_TERM) ||
+                    tryDecodeURIComponent(url.pathname).includes(SEARCH_TERM)) {
+
+                    const urlDecoded = atomLink.url.replace(/%7B/g, "{").replace(/%7D/g, "}");
+
+                    debug("parseOpdsSearchUrl (atomLink): ", urlDecoded);
+                    return urlDecoded;
                 }
 
                 // http://static.wolnelektury.pl/opensearch.xml
             } else if (opensearchLink?.url) {
+
+                debug("parseOpdsSearchUrl (opensearchLink): ", opensearchLink);
                 return (await OpdsService.getOpenSearchUrl(opensearchLink));
 
                 // https://catalog.feedbooks.com/search.json{?query}
@@ -157,8 +150,9 @@ export class OpdsService {
 
                 const uriTemplate = new URITemplate(opdsLink.url);
                 const uriExpanded = uriTemplate.expand({ query: "\{searchTerms\}" });
-                const url = uriExpanded.toString().replace("%7B", "{").replace("%7D", "}");
+                const url = uriExpanded.toString().replace(/%7B/g, "{").replace(/%7D/g, "}");
 
+                debug("parseOpdsSearchUrl (opdsLink): ", url);
                 return url;
             }
         } catch {
@@ -168,14 +162,14 @@ export class OpdsService {
     }
 
     private sendWwwAuthenticationToAuthenticationProcess(
-        realm: string,
+        _realm: string,
         responseUrl: string,
     ) {
 
         const opdsAuthDoc = new OPDSAuthenticationDoc();
 
         opdsAuthDoc.Id = "";
-        opdsAuthDoc.Title = realm || "basic authenticate";
+        opdsAuthDoc.Title = ""; // realm || "basic authenticate"; NOT HUMAN-READABLE!
 
         const opdsAuth = new OPDSAuthentication();
 
@@ -344,7 +338,9 @@ export class OpdsService {
             debug("no data");
             return undefined;
         }
-        const xmlDom = new xmldom.DOMParser().parseFromString(buffer.toString());
+
+        const str = removeUTF8BOM(buffer.toString());
+        const xmlDom = new xmldom.DOMParser().parseFromString(str);
 
         if (!xmlDom || !xmlDom.documentElement) {
             debug(`Unable to parse ${baseUrl}`);
@@ -371,12 +367,5 @@ export class OpdsService {
         const opds1Feed = XML.deserialize<OPDS>(xmlDom, OPDS);
         const r2OpdsFeed = convertOpds1ToOpds2(opds1Feed);
         return this.opdsFeedViewConverter.convertOpdsFeedToView(r2OpdsFeed, baseUrl);
-    }
-
-    private handleApiProblems(jsonObj: any, baseUrl: string) {
-        const { type, details } = jsonObj;
-        debug(`api problem of type ${type}`);
-        debug(`when accessing ${baseUrl}`);
-        debug(`more ${details}`);
     }
 }

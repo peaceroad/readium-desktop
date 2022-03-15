@@ -7,7 +7,7 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import * as styles from "readium-desktop/renderer/assets/styles/reader-app.css";
+import * as stylesReader from "readium-desktop/renderer/assets/styles/reader-app.css";
 import {
     TranslatorProps, withTranslator,
 } from "readium-desktop/renderer/common/components/hoc/translator";
@@ -16,7 +16,7 @@ import AccessibleMenu from "readium-desktop/renderer/common/components/menu/Acce
 import { SectionData } from "./sideMenuData";
 import SideMenuSection, { SideMenuSection as SideMenuSectionClass } from "./SideMenuSection";
 
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IBaseProps extends TranslatorProps {
     open: boolean;
     sections: SectionData[];
@@ -32,7 +32,7 @@ interface IBaseProps extends TranslatorProps {
 // RouteComponentProps
 // ReturnType<typeof mapStateToProps>
 // ReturnType<typeof mapDispatchToProps>
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IProps extends IBaseProps {
 }
 
@@ -120,7 +120,7 @@ export class SideMenu extends React.Component<IProps, IState> {
                 </ul>
             </AccessibleMenu>
             { open &&
-                <div aria-hidden={true} className={styles.menu_background} onClick={() => toggleMenu()}/>
+                <div aria-hidden={true} className={stylesReader.menu_background} onClick={() => toggleMenu()}/>
             }
         </>);
     }

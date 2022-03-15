@@ -8,9 +8,10 @@
 import {
     takeSpawnEvery, takeSpawnEveryChannel,
 } from "readium-desktop/common/redux/sagas/takeSpawnEvery";
-import { selectTyped } from "readium-desktop/common/redux/sagas/typed-saga";
 import { IReaderRootState } from "readium-desktop/common/redux/states/renderer/readerRootState";
+// eslint-disable-next-line local-rules/typed-redux-saga-use-typed-effects
 import { all, call, put } from "redux-saga/effects";
+import { select as selectTyped } from "typed-redux-saga/macro";
 
 import { readerLocalActionHighlights, readerLocalActionLocatorHrefChanged } from "../../actions";
 import {
@@ -35,15 +36,21 @@ function* pop(action: readerLocalActionHighlights.handler.pop.TAction) {
 
 function* hrefChanged(action: readerLocalActionLocatorHrefChanged.TAction) {
 
-    const { payload: { href } } = action;
+    const { payload: { href, prevHref } } = action;
 
     const mounterState = yield* selectTyped((state: IReaderRootState) => state.reader.highlight.mounter);
     const mounterUuid = mounterState.map(([uuid]) => ({ uuid }));
     yield call(unmountHightlight, href, mounterUuid);
+    if (prevHref) {
+        yield call(unmountHightlight, prevHref, mounterUuid);
+    }
 
     const handlerState = yield* selectTyped((state: IReaderRootState) => state.reader.highlight.handler);
     const handler = handlerState.map(([, state]) => state);
     yield call(mountHighlight, href, handler);
+    if (prevHref) {
+        yield call(mountHighlight, prevHref, handler);
+    }
 }
 
 function* dispatchClick(data: THighlightClick) {

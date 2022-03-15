@@ -7,18 +7,18 @@
 
 import * as React from "react";
 import { acceptedExtensionArray } from "readium-desktop/common/extension";
-import * as styles from "readium-desktop/renderer/assets/styles/myBooks.css";
+import * as stylesBlocks from "readium-desktop/renderer/assets/styles/components/blocks.css";
 
 import { TranslatorProps, withTranslator } from "../../../common/components/hoc/translator";
 
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IBaseProps extends TranslatorProps {
 }
 // IProps may typically extend:
 // RouteComponentProps
 // ReturnType<typeof mapStateToProps>
 // ReturnType<typeof mapDispatchToProps>
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IProps extends IBaseProps {
 }
 
@@ -32,7 +32,7 @@ class NoPublicationInfo extends React.Component<IProps, undefined> {
         const { __ } = this.props;
         return (
             <>
-                <div className={styles.noPublicationHelp}>
+                <div className={stylesBlocks.block_dashed}>
                     <p>{__("catalog.noPublicationHelpL1")}</p>
                     <p>{__("catalog.noPublicationHelpL2")}</p>
                     <p>{__("catalog.noPublicationHelpL3")}</p>

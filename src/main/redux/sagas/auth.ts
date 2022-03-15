@@ -12,7 +12,6 @@ import { ToastType } from "readium-desktop/common/models/toast";
 import { authActions, historyActions, toastActions } from "readium-desktop/common/redux/actions";
 import { takeSpawnEvery } from "readium-desktop/common/redux/sagas/takeSpawnEvery";
 import { takeSpawnLeadingChannel } from "readium-desktop/common/redux/sagas/takeSpawnLeading";
-import { callTyped, forkTyped, takeTyped } from "readium-desktop/common/redux/sagas/typed-saga";
 import { IOpdsLinkView } from "readium-desktop/common/views/opds";
 import { diMainGet, getLibraryWindowFromDi } from "readium-desktop/main/di";
 import {
@@ -20,15 +19,19 @@ import {
 } from "readium-desktop/main/event";
 import { cleanCookieJar } from "readium-desktop/main/network/fetch";
 import {
-    CONFIGREPOSITORY_OPDS_AUTHENTICATION_TOKEN, httpPost,
-    httpSetToConfigRepoOpdsAuthenticationToken, IOpdsAuthenticationToken,
+    httpPost,
+    httpSetAuthenticationToken,
+    IOpdsAuthenticationToken, wipeAuthenticationTokenStorage,
 } from "readium-desktop/main/network/http";
 import { ContentType } from "readium-desktop/utils/contentType";
 import { tryCatchSync } from "readium-desktop/utils/tryCatch";
+// eslint-disable-next-line local-rules/typed-redux-saga-use-typed-effects
 import { all, call, cancel, delay, join, put, race } from "redux-saga/effects";
+import { call as callTyped, fork as forkTyped, take as takeTyped } from "typed-redux-saga/macro";
 import { URL } from "url";
 
 import { OPDSAuthenticationDoc } from "@r2-opds-js/opds/opds2/opds2-authentication-doc";
+import { encodeURIComponent_RFC3986 } from "@r2-utils-js/_utils/http/UrlUtils";
 
 import { getOpdsRequestCustomProtocolEventChannel, ODPS_AUTH_SCHEME } from "./getEventChannel";
 
@@ -39,6 +42,7 @@ debug("_");
 
 type TLinkType = "refresh" | "authenticate";
 type TLabelName = "login" | "password";
+type TAuthName = "id" | "access_token" | "refresh_token" | "token_type";
 type TAuthenticationType = "http://opds-spec.org/auth/oauth/password"
     | "http://opds-spec.org/auth/oauth/implicit"
     | "http://opds-spec.org/auth/basic"
@@ -96,7 +100,7 @@ const opdsAuthFlow =
                 authenticateUrl: authParsed?.links?.authenticate?.url || undefined,
             };
             debug("authentication credential config", authCredentials);
-            yield* callTyped(httpSetToConfigRepoOpdsAuthenticationToken, authCredentials);
+            yield* callTyped(httpSetAuthenticationToken, authCredentials);
 
             const task = yield* forkTyped(function*() {
 
@@ -140,6 +144,14 @@ const opdsAuthFlow =
                     const { request: opdsCustomProtocolRequestParsed, callback } = task.result();
                     if (opdsCustomProtocolRequestParsed) {
 
+                        if (!opdsCustomProtocolRequestParsed.data ||
+                            !Object.keys(opdsCustomProtocolRequestParsed.data).length) {
+
+                            debug("authentication window was cancelled");
+
+                            return;
+                        }
+
                         const [, err] = yield* callTyped(opdsSetAuthCredentials,
                             opdsCustomProtocolRequestParsed,
                             authCredentials,
@@ -179,20 +191,7 @@ function* opdsAuthWipeData() {
 
     yield* callTyped(cleanCookieJar);
 
-    const configDoc = yield* callTyped(() => diMainGet("config-repository"));
-
-    const docs = yield* callTyped(() => configDoc.findAll());
-
-    if (Array.isArray(docs)) {
-        for (const doc of docs) {
-
-            if (doc.identifier.startsWith(CONFIGREPOSITORY_OPDS_AUTHENTICATION_TOKEN)) {
-
-                debug("delete", doc.identifier);
-                yield call(() => configDoc.delete(doc.identifier));
-            }
-        }
-    }
+    yield* callTyped(wipeAuthenticationTokenStorage);
 
     yield put(toastActions.openRequest.build(ToastType.Success, "👍"));
     debug("End of wipping auth data");
@@ -220,7 +219,7 @@ export function saga() {
 // -----
 
 async function opdsSetAuthCredentials(
-    opdsCustomProtocolRequestParsed: IParseRequestFromCustomProtocol<TLabelName>,
+    opdsCustomProtocolRequestParsed: IParseRequestFromCustomProtocol<TLabelName | TAuthName>,
     authCredentials: IOpdsAuthenticationToken,
     authenticationType: TAuthenticationType,
 ): Promise<[undefined, Error]> {
@@ -240,7 +239,10 @@ async function opdsSetAuthCredentials(
             if (authenticationType === "http://opds-spec.org/auth/basic") {
 
                 postDataCredential = {
-                    accessToken: Buffer.from(`${data.login}:${data.password}`).toString("base64"),
+                    accessToken:
+                        Buffer.from(
+                            `${data.login}:${data.password}`,
+                            ).toString("base64"),
                     refreshToken: undefined,
                     tokenType: "basic",
                 };
@@ -266,18 +268,20 @@ async function opdsSetAuthCredentials(
                         }
 
                         const headers = new Headers();
-                        headers.set("Content-Type", ContentType.Json);
+                        headers.set("Content-Type", ContentType.FormUrlEncoded);
+
+                        const body = Object.entries(payload).reduce((pv, [k,v]) => `${pv}${pv ? "&" : pv}${k}=${v}`, "");
 
                         const { data: postData } = await httpPost<IOpdsAuthenticationToken>(
                             authenticateUrl,
                             {
-                                body: JSON.stringify(payload),
+                                body,
                                 headers,
                             },
                             async (res) => {
                                 if (res.isSuccess) {
 
-                                    const _data = await res.response.json();
+                                    const _data: any = await res.response.json();
                                     if (typeof _data === "object") {
 
                                         res.data = {
@@ -315,7 +319,7 @@ async function opdsSetAuthCredentials(
                 if (typeof newCredentials.accessToken === "string") {
 
                     debug("new opds authentication credentials");
-                    await httpSetToConfigRepoOpdsAuthenticationToken(newCredentials);
+                    await httpSetAuthenticationToken(newCredentials);
 
                     return [, undefined];
                 }
@@ -329,10 +333,10 @@ async function opdsSetAuthCredentials(
 
             const newCredentials = {
                 ...authCredentials,
-                id: searchParams?.get("id") || authCredentials.id || undefined,
-                tokenType: searchParams?.get("token_type") || authCredentials.tokenType || "Bearer",
-                refreshToken: searchParams?.get("refresh_token") || undefined,
-                accessToken: searchParams?.get("access_token") || undefined,
+                id: data.id || searchParams?.get("id") || authCredentials.id || undefined,
+                tokenType: data.token_type || searchParams?.get("token_type") || authCredentials.tokenType || "Bearer",
+                refreshToken: data.refresh_token || searchParams?.get("refresh_token") || undefined,
+                accessToken: data.access_token || searchParams?.get("access_token") || undefined,
             };
 
             newCredentials.tokenType =
@@ -341,7 +345,7 @@ async function opdsSetAuthCredentials(
             if (typeof newCredentials.accessToken === "string") {
 
                 debug("new opds authentication credentials");
-                await httpSetToConfigRepoOpdsAuthenticationToken(newCredentials);
+                await httpSetAuthenticationToken(newCredentials);
 
                 return [, undefined];
             }
@@ -370,7 +374,7 @@ function getHtmlAuthenticationUrl(auth: IOPDSAuthDocParsed) {
         case "http://librarysimplified.org/authtype/SAML-2.0": {
             browserUrl = `${
                 auth.links?.authenticate?.url
-            }&redirect_uri=${encodeURI("opds://authorize")}`;
+            }&redirect_uri=${encodeURIComponent_RFC3986("opds://authorize")}`;
             break;
         }
 
@@ -378,13 +382,13 @@ function getHtmlAuthenticationUrl(auth: IOPDSAuthDocParsed) {
         case "http://opds-spec.org/auth/basic":
         case "http://opds-spec.org/auth/oauth/password": {
 
-            const html = encodeURIComponent(
+            const html = encodeURIComponent_RFC3986(
                 htmlLoginTemplate(
                     "opds://authorize",
                     auth.labels?.login,
                     auth.labels?.password,
-                    auth.logo?.url,
                     auth.title,
+                    auth.logo?.url,
                 ),
             );
             browserUrl = `data:text/html;charset=utf-8,${html}`;
@@ -503,10 +507,11 @@ function createOpdsAuthenticationModalWin(url: string): BrowserWindow | undefine
         return undefined;
     }
 
+    const libWinBound = libWin.getBounds();
     const win = new BrowserWindow(
         {
-            width: 800,
-            height: 600,
+            width: libWinBound?.width || 800,
+            height: libWinBound?.height || 600,
             parent: libWin,
             modal: true,
             show: false,
@@ -580,11 +585,15 @@ function parseRequestFromCustomProtocol(req: Electron.ProtocolRequest)
                     const keyValue = data.split("&");
                     const values = tryCatchSync(
                         () => keyValue.reduce(
-                            (pv, cv) =>
-                                ({
+                            (pv, cv) => {
+                                const splt = cv.split("=");
+                                const key = decodeURIComponent(splt[0]);
+                                const val = decodeURIComponent(splt[1]);
+                                return {
                                     ...pv,
-                                    [cv.split("=")[0]]: cv.split("=")[1],
-                                }),
+                                    [key]: val,
+                                };
+                            },
                             {},
                         ),
                         filename_,
@@ -603,11 +612,13 @@ function parseRequestFromCustomProtocol(req: Electron.ProtocolRequest)
 
         if (method === "GET") {
             if (host === "authorize") {
-                const urlObject = new URL(url);
+                const urlSearchParam = url.replace("#", "?");
+                const urlObject = new URL(urlSearchParam);
                 const data: Record<string, string> = {};
                 for (const [key, value] of urlObject.searchParams) {
                     data[key] = value;
                 }
+
                 return {
                     url: urlParsed,
                     method: "GET",
@@ -622,12 +633,17 @@ function parseRequestFromCustomProtocol(req: Electron.ProtocolRequest)
 
 // tslint:disable-next-line: max-line-length
 const htmlLoginTemplate = (
-    urlToSubmit: string = "",
+    urlToSubmit = "",
     loginLabel = "login",
     passLabel = "password",
+    title: string | undefined,
     logoUrl?: string,
-    title: string = diMainGet("translator").translate("catalog.opds.auth.login"),
-) => `
+) => {
+    if (!title) { // includes empty string
+        title = diMainGet("translator").translate("catalog.opds.auth.login");
+    }
+
+    return `
 <html lang="en">
 
 <head>
@@ -636,7 +652,7 @@ const htmlLoginTemplate = (
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Sign in</title>
+    <title>${title}</title>
 
     <!-- Custom styles for this template -->
     <style>
@@ -783,7 +799,7 @@ const htmlLoginTemplate = (
             outline-offset: 0;
         }
 
-        input[type=submit] {
+        input[type=submit], input[type=button] {
             padding: 0 18px;
             height: 29px;
             font-size: 12px;
@@ -807,7 +823,7 @@ const htmlLoginTemplate = (
             padding-left: 1em;
         }
 
-        input[type=submit]:active {
+        input[type=submit]:active, input[type=button]:active {
             background: #cde5ef;
             border-color: #9eb9c2 #b3c0c8 #b4ccce;
             -webkit-box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.2);
@@ -824,11 +840,11 @@ const htmlLoginTemplate = (
         <div class="login">
         <h1>${title}</h1>
         <form method="post" action="${urlToSubmit}">
-        ${logoUrl ? `<img src="${logoUrl}" alt="login logo">` : ``}
+        ${logoUrl ? `<img src="${logoUrl}" alt="login logo">` : ""}
         <p><input type="text" name="login" value="" placeholder="${loginLabel}"></p>
         <p><input type="password" name="password" value="" placeholder="${passLabel}"></p>
         <p class="submit">
-        <input type="submit" name="cancel" value="${diMainGet("translator").translate("catalog.opds.auth.cancel")}">
+        <input type="button" name="cancel" value="${diMainGet("translator").translate("catalog.opds.auth.cancel")}" onClick="window.location.href='${urlToSubmit}';">
         <input type="submit" name="commit" value="${diMainGet("translator").translate("catalog.opds.auth.login")}">
         </p>
         </form>
@@ -836,3 +852,4 @@ const htmlLoginTemplate = (
     </body>
 
 </html>`;
+};

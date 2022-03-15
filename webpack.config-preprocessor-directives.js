@@ -16,16 +16,6 @@ const isVisualStudioCodeLaunch = process.env.VSCODE_LAUNCH || "false";
 
 const isContinuousIntegrationDeploy = process.env.TRAVIS_OS_NAME_ ? true : false;
 
-const skipLevelDown = isDev || isContinuousIntegrationDeploy;
-
-const pouchDbAdapterName = skipLevelDown ?
-    "websql" : // "jsondown"
-    "leveldb";
-
-const pouchDbAdapterPackage = skipLevelDown ?
-    "pouchdb-adapter-node-websql" : ///"readium-desktop/pouchdb/jsondown-adapter" :
-    "pouchdb-adapter-leveldb";
-
 const rendererLibraryBaseUrl = isDev ?
     ("http://localhost:"+portApp+"/") : "file://";
 
@@ -43,7 +33,7 @@ const nodeModuleRelativeUrl = (isPackaging === "1") ?
 const distRelativeUrl = (isPackaging === "1") ?
     "dist" : "../dist";
 
-const USE_HTTP_STREAMER = true;
+// const USE_HTTP_STREAMER = false;
 
 const data = {
     __APP_VERSION__: JSON.stringify(version),
@@ -56,13 +46,11 @@ const data = {
     __NODE_MODULE_RELATIVE_URL__: JSON.stringify(nodeModuleRelativeUrl),
     __DIST_RELATIVE_URL__: JSON.stringify(distRelativeUrl),
     __PACKAGING__: JSON.stringify(isPackaging),
-    __POUCHDB_ADAPTER_NAME__: JSON.stringify(pouchDbAdapterName),
-    __POUCHDB_ADAPTER_PACKAGE__: JSON.stringify(pouchDbAdapterPackage),
     __RENDERER_LIBRARY_BASE_URL__: JSON.stringify(rendererLibraryBaseUrl),
     __RENDERER_READER_BASE_URL__: JSON.stringify(rendererReaderBaseUrl),
     __RENDERER_PDF_WEBVIEW_BASE_URL__: JSON.stringify(rendererPdfWebviewBaseUrl),
     __CONTINUOUS_INTEGRATION_DEPLOY__: JSON.stringify(isContinuousIntegrationDeploy),
-    __USE_HTTP_STREAMER__: JSON.stringify(USE_HTTP_STREAMER),
+    // __USE_HTTP_STREAMER__: JSON.stringify(USE_HTTP_STREAMER),
 };
 
 // we do not replace "process.env.NODE_ENV" at build-time,

@@ -5,8 +5,6 @@
 // that can be found in the LICENSE file exposed on Github (readium) in the project repository.
 // ==LICENSE-END==
 
-import "font-awesome/css/font-awesome.css";
-
 import { ipcRenderer } from "electron";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -23,19 +21,30 @@ import {
 } from "@r2-shared-js/init-globals";
 
 if (IS_DEV) {
-    // tslint:disable-next-line:no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const cr = require("@r2-navigator-js/electron/renderer/common/console-redirect");
     // const releaseConsoleRedirect =
     cr.consoleRedirect("readium-desktop:renderer:bookshelf", process.stdout, process.stderr, true);
 }
 
-let devTron: any;
+// TO TEST ESM (not COMMONJS):
+// // import * as normalizeUrl from "normalize-url";
+// import normalizeUrl from "normalize-url";
+// console.log(normalizeUrl("//www.sindresorhus.com:80/../baz?b=bar&a=foo"), "#".repeat(200));
+// // import("normalize-url").then(({default: normalizeUrl}) => {
+// //     //=> 'http://sindresorhus.com/baz?a=foo&b=bar'
+// //     console.log("#".repeat(2000), normalizeUrl("//www.sindresorhus.com:80/../baz?b=bar&a=foo"));
+// // });
+
+// let devTron: any;
 let axe: any;
 if (IS_DEV) {
-    // tslint:disable-next-line: no-var-requires
-    devTron = require("devtron");
+    // requires electron.remote!
+    // enableRemoteModule: false
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // devTron = require("devtron");
 
-    // tslint:disable-next-line: no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     axe = require("react-axe");
 }
 
@@ -48,11 +57,11 @@ initGlobalConverters_GENERIC();
 // const lcpNativePluginPath = path.normalize(path.join((global as any).__dirname, "external-assets", "lcp.node"));
 // setLcpNativePluginPath(lcpNativePluginPath);
 
-if (IS_DEV) {
-    setTimeout(() => {
-        devTron.install();
-    }, 5000);
-}
+// if (IS_DEV) {
+//     setTimeout(() => {
+//         devTron.install();
+//     }, 5000);
+// }
 
 ipcRenderer.on(winIpc.CHANNEL, (_0: any, data: winIpc.EventPayload) => {
     switch (data.type) {

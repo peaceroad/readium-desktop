@@ -2,7 +2,6 @@
     "accessibility": {
         "bookMenu": "Meniu",
         "closeDialog": "Užverti",
-        "homeMenu": "Skaitymo meniu",
         "importFile": "Importuoti leidinį",
         "leftSlideButton": "Paslinkti sąrašą į kairę",
         "mainContent": "pagrindinis turinys",
@@ -49,6 +48,11 @@
         "addTagsButton": "Pridėti",
         "allBooks": "Visos knygos",
         "bookInfo": "Apie knygą",
+        "column": {
+            "ascending": "",
+            "descending": "",
+            "unsorted": ""
+        },
         "delete": "Šalinti",
         "deleteBook": "Šalinti",
         "deleteTag": "Šalinti žymę",
@@ -137,7 +141,7 @@
     "library": {
         "lcp": {
             "cancel": "Nutraukti",
-            "hint": "(Užuomina : {{hint}})",
+            "hint": "(Užuomina : {{- hint}})",
             "password": "Slaptažodis",
             "sentence": "Šiam leidiniui atverti reikalingas LCP slaptažodis: ",
             "submit": "Pateikti",
@@ -195,6 +199,7 @@
         "audio": {
             "tracks": "Takeliai"
         },
+        "author": "",
         "cancelledLcp": "Šios knygos negalima skaityti, nes LCP licencija buvo nutraukta.",
         "certificateRevoked": "Sertifikato galiojimas sustabdytas",
         "certificateSignatureInvalid": "Negaliojantis sertifikato parašas",
@@ -221,9 +226,14 @@
         "revokedLcp": "Šios knygos negalima skaityti, nes LCP licencijos galiojimas buvo sustabdytas.",
         "seeLess": "Rodyti mažiau",
         "seeMore": "Rodyti daugiau",
+        "title": "",
         "userKeyCheckInvalid": "Neteisingas slaptažodis"
     },
     "reader": {
+        "divina": {
+            "mute": "",
+            "unmute": ""
+        },
         "footerInfo": {
             "lessInfo": "mažiau informacijos",
             "moreInfo": "daugiau informacijos"
@@ -344,12 +354,15 @@
         },
         "tts": {
             "activate": "Aktyvuoti teksto įgarsinimą",
+            "default": "",
             "next": "Tolesnis teksto įgarsinimas",
             "pause": "Pristabdyti teksto įgarsinimą",
             "play": "Atkurti teksto įgarsinimą",
             "previous": "Ankstesnis teksto įgarsinimas",
+            "sentenceDetect": "",
             "speed": "Teksto įgarsinimo atkūrimo sparta",
-            "stop": "Sustabdyti teksto įgarsinimą"
+            "stop": "Sustabdyti teksto įgarsinimą",
+            "voice": ""
         }
     },
     "settings": {

@@ -15,7 +15,7 @@ import {
 } from "readium-desktop/renderer/common/redux/api/api";
 import LibraryLayout from "readium-desktop/renderer/library/components/layout/LibraryLayout";
 import { ILibraryRootState } from "readium-desktop/renderer/library/redux/states";
-import { DisplayType } from "readium-desktop/renderer/library/routing";
+import { DisplayType, IRouterLocationState } from "readium-desktop/renderer/library/routing";
 import { Dispatch } from "redux";
 import { CATALOG_GET_API_ID_CHANNEL, PUBLICATION_TAGS_API_ID_CHANNEL } from "../../redux/sagas/catalog";
 
@@ -23,14 +23,14 @@ import CatalogGridView from "./GridView";
 import Header from "./Header";
 import CatalogListView from "./ListView";
 
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IBaseProps extends TranslatorProps {
 }
 // IProps may typically extend:
 // RouteComponentProps
 // ReturnType<typeof mapStateToProps>
 // ReturnType<typeof mapDispatchToProps>
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IProps extends IBaseProps,
     ReturnType<typeof mapStateToProps>, ReturnType<typeof mapDispatchToProps> {
 }
@@ -45,7 +45,7 @@ class Catalog extends React.Component<IProps, undefined> {
             this.props.api(PUBLICATION_TAGS_API_ID_CHANNEL)("publication/getAllTags")();
         }
 
-        const displayType = this.props.location?.state?.displayType || DisplayType.Grid;
+        const displayType = (this.props.location?.state && (this.props.location.state as IRouterLocationState).displayType) || DisplayType.Grid;
 
         const secondaryHeader = <Header/>;
         return (
@@ -79,6 +79,7 @@ const mapStateToProps = (state: ILibraryRootState) => ({
         "publication/importFromFs",
         "publication/importFromLink",
         "publication/delete",
+        "publication/findAll",
         // "catalog/addEntry",
         "publication/updateTags",
         // "reader/setLastReadingLocation",

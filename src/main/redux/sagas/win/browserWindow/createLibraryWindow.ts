@@ -6,19 +6,20 @@
 // ==LICENSE-END=
 
 import * as debug_ from "debug";
-import { BrowserWindow, Event, shell } from "electron";
+import { BrowserWindow, Event, HandlerDetails, shell } from "electron";
 import * as path from "path";
 import { defaultRectangle, normalizeRectangle } from "readium-desktop/common/rectangle/window";
-import { callTyped, selectTyped } from "readium-desktop/common/redux/sagas/typed-saga";
-import { diMainGet, saveLibraryWindowInDi } from "readium-desktop/main/di";
+import { diMainGet } from "readium-desktop/main/di";
 import { setMenu } from "readium-desktop/main/menu";
 import { winActions } from "readium-desktop/main/redux/actions";
 import { RootState } from "readium-desktop/main/redux/states";
 import {
-    _PACKAGING, _RENDERER_LIBRARY_BASE_URL, _VSCODE_LAUNCH, IS_DEV,
+    _RENDERER_LIBRARY_BASE_URL, _VSCODE_LAUNCH, IS_DEV,
 } from "readium-desktop/preprocessor-directives";
 import { ObjectValues } from "readium-desktop/utils/object-keys-values";
+// eslint-disable-next-line local-rules/typed-redux-saga-use-typed-effects
 import { put } from "redux-saga/effects";
+import { call as callTyped, select as selectTyped } from "typed-redux-saga/macro";
 
 import { contextMenuSetup } from "@r2-navigator-js/electron/main/browser-window-tracker";
 
@@ -45,9 +46,11 @@ export function* createLibraryWindow(_action: winActions.library.openRequest.TAc
         minWidth: 800,
         minHeight: 600,
         webPreferences: {
+            // enableRemoteModule: false,
             backgroundThrottling: true,
             devTools: IS_DEV,
             nodeIntegration: true, // Required to use IPC
+            contextIsolation: false,
             webSecurity: true,
             allowRunningInsecureContent: false,
         },
@@ -59,10 +62,12 @@ export function* createLibraryWindow(_action: winActions.library.openRequest.TAc
         contextMenuSetup(wc, wc.id);
 
         libWindow.webContents.on("did-finish-load", () => {
+
             const {
                 default: installExtension,
                 REACT_DEVELOPER_TOOLS,
                 REDUX_DEVTOOLS,
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
             } = require("electron-devtools-installer");
 
             [REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS].forEach((extension) => {
@@ -89,8 +94,6 @@ export function* createLibraryWindow(_action: winActions.library.openRequest.TAc
     }
 
     yield put(winActions.session.registerLibrary.build(libWindow, windowBound));
-
-    yield* callTyped(() => saveLibraryWindowInDi(libWindow));
 
     const readers = yield* selectTyped(
         (state: RootState) => state.win.session.reader,
@@ -131,9 +134,22 @@ export function* createLibraryWindow(_action: winActions.library.openRequest.TAc
         event.preventDefault();
         await shell.openExternal(url);
     };
-
     libWindow.webContents.on("will-navigate", handleRedirect);
-    libWindow.webContents.on("new-window", handleRedirect);
+
+    // https://www.electronjs.org/releases/stable?version=12&page=4#breaking-changes-1200
+    // https://github.com/electron/electron/blob/main/docs/breaking-changes.md#deprecated-webcontents-new-window-event
+    // libWindow.webContents.on("new-window", handleRedirect);
+    libWindow.webContents.setWindowOpenHandler((details: HandlerDetails) => {
+        if (details.url === libWindow.webContents.getURL()) {
+            return { action: "allow" };
+        }
+
+        setTimeout(async () => {
+            await shell.openExternal(details.url);
+        }, 0);
+
+        return { action: "deny" };
+    });
 
     // Clear all cache to prevent weird behaviours
     // Fully handled in r2-navigator-js initSessions();

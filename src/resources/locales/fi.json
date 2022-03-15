@@ -2,7 +2,6 @@
     "accessibility": {
         "bookMenu": "Valikko",
         "closeDialog": "Sulje",
-        "homeMenu": "Lukutilan valikko",
         "importFile": "Tuo julkaisu",
         "leftSlideButton": "Siirry listalla vasemmalle",
         "mainContent": "Pääsisältö",
@@ -49,6 +48,11 @@
         "addTagsButton": "Lisää",
         "allBooks": "Kaikki kirjat",
         "bookInfo": "Tietoja tästä kirjasta",
+        "column": {
+            "ascending": "",
+            "descending": "",
+            "unsorted": ""
+        },
         "delete": "Poista",
         "deleteBook": "Poista",
         "deleteTag": "Poista tunniste",
@@ -137,7 +141,7 @@
     "library": {
         "lcp": {
             "cancel": "Peru",
-            "hint": "(Vihje : {{hint}})",
+            "hint": "(Vihje : {{- hint}})",
             "password": "Salasana",
             "sentence": "Julkaisun avaamiseen tarvitaan LCP-salasana: ",
             "submit": "Lähetä",
@@ -195,6 +199,7 @@
         "audio": {
             "tracks": "Osat"
         },
+        "author": "",
         "cancelledLcp": "Kirjaa ei voi lukea: LCP-käyttöoikeus on peruttu.",
         "certificateRevoked": "Varmenne on kumottu",
         "certificateSignatureInvalid": "Varmenteen allekirjoitus ei kelpaa",
@@ -221,9 +226,14 @@
         "revokedLcp": "Kirjaa ei voi lukea: LCP-käyttöoikeus on kumottu",
         "seeLess": "Näytä vähemmän",
         "seeMore": "Näytä enemmän",
+        "title": "",
         "userKeyCheckInvalid": "Salasana on väärin"
     },
     "reader": {
+        "divina": {
+            "mute": "",
+            "unmute": ""
+        },
         "footerInfo": {
             "lessInfo": "vähemmän tietoja",
             "moreInfo": "enemmän tietoja"
@@ -253,7 +263,7 @@
             "backHomeTitle": "Takaisin kirjahyllyyn",
             "bookmarkTitle": "Kirjanmerkki",
             "currentPage": "Nykyinen sivu : {{- current}}",
-            "currentPageTotal": "Nykyinen sivu : ({{- current}}/{{- total}})",
+            "currentPageTotal": "Nykyinen sivu : {{- current}}/{{- total}}",
             "detachWindowTitle": "Näytä kirjaston / kirjahyllyn ikkuna",
             "fullscreenTitle": "Avaa kokoruudun tilassa",
             "goTo": "Siirry",
@@ -344,12 +354,15 @@
         },
         "tts": {
             "activate": "Käynnistä tekstistä puheeksi",
+            "default": "",
             "next": "Seuraava",
             "pause": "Pysäytä",
             "play": "Jatka",
             "previous": "Edellinen",
+            "sentenceDetect": "",
             "speed": "Tekstistä puheeksi nopeuden säätö",
-            "stop": "Lopeta tekstistä puheeksi"
+            "stop": "Lopeta tekstistä puheeksi",
+            "voice": ""
         }
     },
     "settings": {

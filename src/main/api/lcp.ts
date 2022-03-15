@@ -13,7 +13,7 @@ import { readerActions } from "readium-desktop/common/redux/actions/";
 import { PublicationRepository } from "readium-desktop/main/db/repository/publication";
 import { diSymbolTable } from "readium-desktop/main/diSymbolTable";
 import { LcpManager } from "readium-desktop/main/services/lcp";
-import { Store } from "redux";
+import { type Store } from "redux";
 
 import { PublicationViewConverter } from "../converter/publication";
 import { RootState } from "../redux/states";
@@ -75,7 +75,7 @@ export class LcpApi implements ILcpApi {
                 // const epubPath = this.publicationStorage.getPublicationEpubPath(publicationView.identifier);
                 // const r2Publication = await this.streamer.loadOrGetCachedPublication(epubPath);
 
-                const publicationView = this.publicationViewConverter.convertDocumentToView(publicationDocument);
+                const publicationView = await this.publicationViewConverter.convertDocumentToView(publicationDocument);
                 if (!publicationView.lcp) {
                     debug("LCP !!?");
                     return;

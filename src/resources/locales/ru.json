@@ -2,7 +2,6 @@
     "accessibility": {
         "bookMenu": "Меню",
         "closeDialog": "Закрыть",
-        "homeMenu": "Главное меню",
         "importFile": "Импортировать книгу",
         "leftSlideButton": "Сдвиньте список влево",
         "mainContent": "Основное содержание",
@@ -49,6 +48,11 @@
         "addTagsButton": "Добавить",
         "allBooks": "Все книги",
         "bookInfo": "Об этой книге",
+        "column": {
+            "ascending": "",
+            "descending": "",
+            "unsorted": ""
+        },
         "delete": "Удалить",
         "deleteBook": "Удалить",
         "deleteTag": "Удалить тег",
@@ -137,7 +141,7 @@
     "library": {
         "lcp": {
             "cancel": "Отменить",
-            "hint": "(Подсказка : {{hint}})",
+            "hint": "(Подсказка : {{- hint}})",
             "password": "Пароль",
             "sentence": "Для открытия этой книги требуется пароль LCP: ",
             "submit": "Отправить",
@@ -195,6 +199,7 @@
         "audio": {
             "tracks": "Треки"
         },
+        "author": "",
         "cancelledLcp": "Эту книгу нельзя прочитать, потому что лицензия LCP аннулирована.",
         "certificateRevoked": "Сертификат отозван",
         "certificateSignatureInvalid": "Подпись сертификата недействительна",
@@ -221,9 +226,14 @@
         "revokedLcp": "Эту книгу нельзя прочитать, потому что лицензия LCP была отозвана.",
         "seeLess": "Скрыть",
         "seeMore": "Подробнее",
+        "title": "",
         "userKeyCheckInvalid": "Пароль неверен"
     },
     "reader": {
+        "divina": {
+            "mute": "",
+            "unmute": ""
+        },
         "footerInfo": {
             "lessInfo": "подробнее",
             "moreInfo": "скрыть"
@@ -344,12 +354,15 @@
         },
         "tts": {
             "activate": "Активировать преобразование текста в речь",
+            "default": "",
             "next": "Следующий текст в речь",
             "pause": "Приостановить преобразование текста в речь",
             "play": "Воспроизвести текст в речь",
             "previous": "Предыдущий текст в речь",
+            "sentenceDetect": "",
             "speed": "Скорость воспроизведения текста в речь",
-            "stop": "Прекратить преобразование текста в речь"
+            "stop": "Прекратить преобразование текста в речь",
+            "voice": ""
         }
     },
     "settings": {

@@ -2,7 +2,6 @@
     "accessibility": {
         "bookMenu": "Menü",
         "closeDialog": "Schließen",
-        "homeMenu": "Startmenü",
         "importFile": "Importieren einer EPUB-Datei",
         "leftSlideButton": "Scrolle nach links unten",
         "mainContent": "hauptinhalt",
@@ -49,6 +48,11 @@
         "addTagsButton": "Hinzufügen",
         "allBooks": "Alle Bücher",
         "bookInfo": "Über dieses Buch",
+        "column": {
+            "ascending": "",
+            "descending": "",
+            "unsorted": ""
+        },
         "delete": "Löschen",
         "deleteBook": "Löschen",
         "deleteTag": "Löschen des Tags",
@@ -195,6 +199,7 @@
         "audio": {
             "tracks": "Spuren"
         },
+        "author": "",
         "cancelledLcp": "",
         "certificateRevoked": "",
         "certificateSignatureInvalid": "",
@@ -206,8 +211,8 @@
         },
         "expiredLcp": "",
         "lcpEnd": "",
-        "lcpRightsCopy": "",
-        "lcpRightsPrint": "",
+        "lcpRightsCopy": "Kopierte Zeichen",
+        "lcpRightsPrint": "Gedruckte Seiten",
         "lcpStart": "",
         "licenseOutOfDate": "",
         "licenseSignatureDateInvalid": "",
@@ -221,9 +226,14 @@
         "revokedLcp": "",
         "seeLess": "Weniger Infos",
         "seeMore": "Mehr Infos",
+        "title": "",
         "userKeyCheckInvalid": ""
     },
     "reader": {
+        "divina": {
+            "mute": "",
+            "unmute": ""
+        },
         "footerInfo": {
             "lessInfo": "Weniger Informationen",
             "moreInfo": "Mehr Informationen"
@@ -344,12 +354,15 @@
         },
         "tts": {
             "activate": "",
+            "default": "",
             "next": "",
             "pause": "",
             "play": "",
             "previous": "",
+            "sentenceDetect": "",
             "speed": "",
-            "stop": ""
+            "stop": "",
+            "voice": ""
         }
     },
     "settings": {

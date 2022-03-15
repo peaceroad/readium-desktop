@@ -2,7 +2,6 @@
     "accessibility": {
         "bookMenu": "Menu",
         "closeDialog": "Close",
-        "homeMenu": "Reading view menu",
         "importFile": "Import a publication",
         "leftSlideButton": "Slide the list to the left",
         "mainContent": "main content",
@@ -49,6 +48,11 @@
         "addTagsButton": "Add",
         "allBooks": "All books",
         "bookInfo": "About this book",
+        "column": {
+            "ascending": "ascending",
+            "descending": "descending",
+            "unsorted": "unsorted"
+        },
         "delete": "Delete",
         "deleteBook": "Delete",
         "deleteTag": "Delete the tag",
@@ -85,10 +89,10 @@
                     "unknown": "Unknown"
                 },
                 "availableUntil": "Until",
-                "copyAvalaible": "Number of availables",
-                "copyTotal": "Number of copies",
+                "copyAvalaible": "Available",
+                "copyTotal": "Copies",
                 "holdPosition": "Your hold position",
-                "holdTotal": "Holded",
+                "holdTotal": "Held",
                 "numberOfItems": "Number of items",
                 "priveValue": "Price",
                 "state": "State"
@@ -105,7 +109,7 @@
         "closeModalWindow": "Close this modal window",
         "deleteFeed": "Do you really want to delete this catalog ?",
         "deletePublication": "Do you really want to delete this publication ?",
-        "import": "Do you really want to import these files :",
+        "import": "Do you really want to import these files:",
         "importError": "an error occured, verify your file extension ({{acceptedExtension}})",
         "no": "No",
         "renew": "Do you really want to renew the licence for this publication?",
@@ -137,11 +141,11 @@
     "library": {
         "lcp": {
             "cancel": "Cancel",
-            "hint": "(Hint : {{hint}})",
+            "hint": "(Hint: {{- hint}})",
             "password": "Passphrase",
             "sentence": "This publication needs an LCP passphrase to be opened: ",
             "submit": "Submit",
-            "urlHint": "Forgot you're passphrase? find some help here"
+            "urlHint": "Forgot your passphrase? Find some help here"
         }
     },
     "message": {
@@ -154,16 +158,16 @@
             "success": "The import of {{- title}} is finished."
         },
         "open": {
-            "error": "The publication can't be opened : {{- err}}"
+            "error": "The publication can't be opened: {{- err}}"
         }
     },
     "opds": {
         "addForm": {
             "addButton": "Add",
-            "name": "Name :",
+            "name": "Name:",
             "namePlaceholder": "Name",
             "title": "Add an OPDS feed",
-            "url": "Link :",
+            "url": "Link:",
             "urlPlaceholder": "Link"
         },
         "addMenu": "Add OPDS feed",
@@ -183,7 +187,7 @@
         "network": {
             "error": "Unable to access to opds feed",
             "noInternet": "No internet",
-            "noInternetMessage": "Try : checking the network cable, modem, router or wifi",
+            "noInternetMessage": "Try: checking the network cable, modem, router or wifi",
             "reject": "Sorry, there was an unexpected error when trying to process the OPDS feed",
             "timeout": "There was a network timeout, please try again later"
         },
@@ -195,6 +199,7 @@
         "audio": {
             "tracks": "Tracks"
         },
+        "author": "Author",
         "cancelledLcp": "This book can't be read because the LCP license has been cancelled.",
         "certificateRevoked": "Certificate is revoked",
         "certificateSignatureInvalid": "Certificate signature is invalid",
@@ -206,8 +211,8 @@
         },
         "expiredLcp": "This book can't be read because the LCP license has expired.",
         "lcpEnd": "End",
-        "lcpRightsCopy": "Character copy",
-        "lcpRightsPrint": "Printer copy",
+        "lcpRightsCopy": "Copied characters",
+        "lcpRightsPrint": "Printed pages",
         "lcpStart": "Start",
         "licenseOutOfDate": "License is out of date",
         "licenseSignatureDateInvalid": "License signature date is invalid",
@@ -221,9 +226,14 @@
         "revokedLcp": "This book can't be read because the LCP license has been revoked.",
         "seeLess": "See less",
         "seeMore": "See more",
+        "title": "Title",
         "userKeyCheckInvalid": "Passphrase is incorrect"
     },
     "reader": {
+        "divina": {
+            "mute": "mute audio",
+            "unmute": "unmute audio"
+        },
         "footerInfo": {
             "lessInfo": "less information",
             "moreInfo": "more information"
@@ -253,7 +263,7 @@
             "backHomeTitle": "back to the bookshelf",
             "bookmarkTitle": "bookmark",
             "currentPage": "Current page: {{- current}}",
-            "currentPageTotal": "Current page: ({{- current}}/{{- total}})",
+            "currentPageTotal": "Current page: {{- current}}/{{- total}}",
             "detachWindowTitle": "show library / bookshelf window",
             "fullscreenTitle": "open fullscreen mode",
             "goTo": "Go to",
@@ -344,12 +354,15 @@
         },
         "tts": {
             "activate": "Activate Text To Speech",
+            "default": "Voice: system default",
             "next": "Next Text To Speech",
             "pause": "Pause Text To Speech",
             "play": "Play Text To Speech",
             "previous": "Previous Text To Speech",
+            "sentenceDetect": "Split TTS text",
             "speed": "Text To Speech playback rate",
-            "stop": "Stop Text To Speech"
+            "stop": "Stop Text To Speech",
+            "voice": "Text To Speech voice"
         }
     },
     "settings": {

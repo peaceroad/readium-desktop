@@ -23,7 +23,7 @@ import { IEventBusPdfPlayer } from "../../pdf/common/pdfReader.type";
 
 import { readerLocalActionSearch } from "../../redux/actions";
 
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IBaseProps extends TranslatorProps {
     pdfEventBus: IEventBusPdfPlayer;
     isPdf: boolean;
@@ -33,7 +33,7 @@ interface IBaseProps extends TranslatorProps {
 // RouteComponentProps
 // ReturnType<typeof mapStateToProps>
 // ReturnType<typeof mapDispatchToProps>
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IProps extends IBaseProps,
     ReturnType<typeof mapStateToProps>,
     ReturnType<typeof mapDispatchToProps> {
@@ -129,7 +129,7 @@ class SearchFormPicker extends React.Component<IProps, IState> {
         this.inputRef.current.focus();
         // this.inputRef.current.select();
         this.inputRef.current.setSelectionRange(0, this.inputRef.current.value.length);
-    }
+    };
 
     private search(e: TFormEvent) {
         e.preventDefault();

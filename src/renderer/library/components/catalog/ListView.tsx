@@ -9,7 +9,9 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { CatalogEntryView } from "readium-desktop/common/views/catalog";
-import * as styles from "readium-desktop/renderer/assets/styles/myBooks.css";
+import * as stylesButtons from "readium-desktop/renderer/assets/styles/components/buttons.css";
+import * as stylesGlobal from "readium-desktop/renderer/assets/styles/global.css";
+import * as stylesPublications from "readium-desktop/renderer/assets/styles/components/publications.css";
 import {
     TranslatorProps, withTranslator,
 } from "readium-desktop/renderer/common/components/hoc/translator";
@@ -18,8 +20,9 @@ import PublicationListElement from "readium-desktop/renderer/library/components/
 import { ILibraryRootState } from "readium-desktop/renderer/library/redux/states";
 
 import NoPublicationInfo from "./NoPublicationInfo";
+import { DisplayType, IRouterLocationState } from "../../routing";
 
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IBaseProps extends TranslatorProps {
     catalogEntries: CatalogEntryView[];
     tags?: string[];
@@ -29,7 +32,7 @@ interface IBaseProps extends TranslatorProps {
 // RouteComponentProps
 // ReturnType<typeof mapStateToProps>
 // ReturnType<typeof mapDispatchToProps>
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IProps extends IBaseProps, ReturnType<typeof mapStateToProps> {
 }
 
@@ -50,25 +53,26 @@ class CatalogListView extends React.Component<IProps, undefined> {
                     return entry.totalCount > 0 ? (
                         <section key={ entryIndex }>
                         {
-                            <div className={styles.title}>
+                            <div className={stylesGlobal.heading}>
                                 <h2>{ entry.title }</h2>
 
                                 <Link
-                                    className={styles.titlelink}
+                                    className={stylesButtons.button_primary_small}
                                     to={{
                                         ...this.props.location,
                                         pathname: "/library/search/all",
                                     }}
+                                    state = {{displayType: (this.props.location.state && (this.props.location.state as IRouterLocationState).displayType) ? (this.props.location.state as IRouterLocationState).displayType : DisplayType.Grid}}
                                 >
                                     {this.props.__("header.allBooks")}
                                 </Link>
                             </div>
                         }
                         {
-                            <ul>
+                            <ul className={stylesGlobal.p_0}>
                                 { entry.publicationViews.map((pub, i: number) => {
                                     return (
-                                        <li className={styles.block_book_list} key={ i }>
+                                        <li className={stylesPublications.publication_list_wrapper} key={ i }>
                                             <PublicationListElement
                                                 publicationViewMaybeOpds={pub}
                                                 menuContent={<CatalogMenu publicationView={pub}/>}
@@ -80,7 +84,7 @@ class CatalogListView extends React.Component<IProps, undefined> {
                             </ul>
                         }
                         </section>
-                    ) : <div key={ entryIndex } aria-hidden="true" style={{display: "none"}}></div>;
+                    ) : <div key={ entryIndex } aria-hidden="true" className={stylesGlobal.d_none}></div>;
             })
             }
             { catalogEntriesIsEmpty &&

@@ -1,38 +1,21 @@
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const TerserPlugin = require("terser-webpack-plugin");
 
-var fs = require("fs");
 const path = require("path");
 const webpack = require("webpack");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 const preprocessorDirectives = require("./webpack.config-preprocessor-directives");
 
 const aliases = {
     "readium-desktop": path.resolve(__dirname, "src"),
 
-    "@r2-utils-js": "r2-utils-js/dist/es6-es2015/src",
-    "@r2-lcp-js": "r2-lcp-js/dist/es6-es2015/src",
-    "@r2-opds-js": "r2-opds-js/dist/es6-es2015/src",
-    "@r2-shared-js": "r2-shared-js/dist/es6-es2015/src",
-    "@r2-streamer-js": "r2-streamer-js/dist/es6-es2015/src",
-    "@r2-navigator-js": "r2-navigator-js/dist/es6-es2015/src",
+    "@r2-utils-js": "r2-utils-js/dist/es8-es2017/src",
+    "@r2-lcp-js": "r2-lcp-js/dist/es8-es2017/src",
+    "@r2-opds-js": "r2-opds-js/dist/es8-es2017/src",
+    "@r2-shared-js": "r2-shared-js/dist/es8-es2017/src",
+    "@r2-streamer-js": "r2-streamer-js/dist/es8-es2017/src",
+    "@r2-navigator-js": "r2-navigator-js/dist/es8-es2017/src",
 };
-
-////// ================================
-////// EXTERNALS
-// Some modules cannot be bundled by Webpack
-// for example those that make internal use of NodeJS require() in special ways
-// in order to resolve asset paths, etc.
-// In DEBUG / DEV mode, we just external-ize as much as possible (any non-TypeScript / non-local code),
-// to minimize bundle size / bundler computations / compile times.
-
-// const nodeExternals = require("webpack-node-externals");
-const nodeExternals = require("./nodeExternals");
-
-const _enableHot = false;
 
 // Get node environment
 const nodeEnv = process.env.NODE_ENV || "development";
@@ -52,61 +35,69 @@ const checkTypeScriptSkip =
 
 let externals = {
     bindings: "bindings",
-    leveldown: "leveldown",
     fsevents: "fsevents",
-    conf: "conf",
-    sqlite3: "sqlite3",
+    "electron-devtools-installer": "electron-devtools-installer",
+    "remote-redux-devtools": "remote-redux-devtools",
+    "electron": "electron",
+    yargs: "yargs",
 };
+const _externalsCache = new Set();
 if (nodeEnv !== "production") {
-    // // externals = Object.assign(externals, {
-    // //         "electron-config": "electron-config",
-    // //     }
-    // // );
-    // const { dependencies } = require("./package.json");
-    // const depsKeysArray = Object.keys(dependencies || {});
-    // const depsKeysObj = {};
-    // depsKeysArray.forEach((depsKey) => { depsKeysObj[depsKey] = depsKey });
-    // externals = Object.assign(externals, depsKeysObj);
-    // delete externals["pouchdb-core"];
+    const nodeExternals = require("webpack-node-externals");
+    const neFunc = nodeExternals({
+        allowlist: ["normalize-url", "node-fetch", "data-uri-to-buffer", /^fetch-blob/, /^formdata-polyfill/],
+        importType: function (moduleName) {
+            if (!_externalsCache.has(moduleName)) {
+                console.log(`WEBPACK EXTERNAL (PDF): [${moduleName}]`);
+            }
+            _externalsCache.add(moduleName);
+            // if (moduleName === "normalize-url") {
+            //     return "module normalize-url";
+            // }
+            return "commonjs " + moduleName;
+        },
+    });
+    externals = [externals,
+        function({ context, request, contextInfo, getResolve }, callback) {
+            const isRDesk = request.indexOf("readium-desktop/") === 0;
+            if (isRDesk) {
 
-    if (process.env.WEBPACK === "bundle-external") {
-        externals = [
-            nodeExternals({
-                processName: "PDF",
-                alias: aliases,
-                // whitelist: ["pouchdb-core"],
-            }),
-        ];
-    } else {
-        externals.devtron = "devtron";
-    }
+                if (!_externalsCache.has(request)) {
+                    console.log(`WEBPACK EXTERNAL (PDF): READIUM-DESKTOP [${request}]`);
+                }
+                _externalsCache.add(request);
+
+                return callback();
+            }
+
+            let request_ = request;
+            if (aliases) {
+                // const isR2 = /^r2-.+-js/.test(request);
+                // const isR2Alias = /^@r2-.+-js/.test(request);
+
+                const iSlash = request.indexOf("/");
+                const key = request.substr(0, (iSlash >= 0) ? iSlash : request.length);
+                if (aliases[key]) {
+                    request_ = request.replace(key, aliases[key]);
+
+                    if (!_externalsCache.has(request)) {
+                        console.log(`WEBPACK EXTERNAL (PDF): ALIAS [${request}] => [${request_}]`);
+                    }
+                    _externalsCache.add(request);
+
+                    return callback(null, "commonjs " + request_);
+                }
+            }
+
+            neFunc(context, request, callback);
+        },
+    ];
 }
 
-console.log("WEBPACK externals (PDF):");
+console.log("WEBPACK externals (PDF):", "-".repeat(200));
 console.log(JSON.stringify(externals, null, "  "));
 ////// EXTERNALS
 ////// ================================
-
-const cssLoaderConfig = [
-    {
-        loader: MiniCssExtractPlugin.loader,
-        options: {
-            // publicPath: "./styling", // preprocessorDirectives.rendererReaderBaseUrl,
-            // hmr: _enableHot,
-            // reloadAll: true,
-            esModule: false,
-        },
-    },
-    {
-        loader: "css-loader",
-        options: {
-            importLoaders: 1,
-            modules: true,
-            esModule: false,
-        },
-    },
-    "postcss-loader",
-];
 
 let config = Object.assign(
     {},
@@ -117,13 +108,18 @@ let config = Object.assign(
             filename: "index_pdf.js",
             path: path.join(__dirname, "dist"),
             // https://github.com/webpack/webpack/issues/1114
-            libraryTarget: "commonjs2",
+            libraryTarget: "commonjs2", // commonjs-module
         },
         target: "electron-renderer",
 
         mode: "production", // nodeEnv,
 
+        externalsPresets: { node: true },
         externals: externals,
+        externalsType: "commonjs", // module, node-commonjs
+        experiments: {
+            outputModule: false, // module, node-commonjs
+        },
 
         resolve: {
             extensions: [".ts", ".tsx", ".js", ".jsx"],
@@ -148,8 +144,7 @@ let config = Object.assign(
                     ],
                 },
                 {
-                    exclude: /node_modules/,
-                    test: /\.tsx?$/,
+                    test: /\.tsx$/,
                     loader: useLegacyTypeScriptLoader
                         ? "awesome-typescript-loader"
                         : "ts-loader",
@@ -157,24 +152,29 @@ let config = Object.assign(
                         transpileOnly: true, // checkTypeScriptSkip
                     },
                 },
+                {
+                    test: /\.ts$/,
+                    use: [
+                        {
+                            loader: "babel-loader",
+                            options: {
+                                presets: [],
+                                plugins: ["macros"],
+                            },
+                        },
+                        {
+                            loader: useLegacyTypeScriptLoader
+                                ? "awesome-typescript-loader"
+                                : "ts-loader",
+                            options: {
+                                transpileOnly: true, // checkTypeScriptSkip
+                            },
+                        },
+                    ],
+                },
             ],
         },
 
-        // devServer: {
-        //     contentBase: __dirname,
-        //     hot: _enableHot,
-        //     watchContentBase: true,
-        //     watchOptions: {
-        //         ignored: [
-        //             /dist/,
-        //             /docs/,
-        //             /scripts/,
-        //             /test/,
-        //             /node_modules/,
-        //             /external-assets/,
-        //         ],
-        //     },
-        // },
         plugins: [
             new BundleAnalyzerPlugin({
                 analyzerMode: "disabled",
@@ -198,49 +198,6 @@ if (!checkTypeScriptSkip) {
 }
 
 if (nodeEnv !== "production") {
-
-    // const port = parseInt(preprocessorDirectives.portPdfWebview, 10);
-    // console.log("PDF PORT: " + port);
-
-    // // Renderer config for DEV environment
-    // config = Object.assign({}, config, {
-    //     // Enable sourcemaps for debugging webpack's output.
-    //     devtool: "inline-source-map",
-
-    //     devServer: {
-    //         contentBase: __dirname,
-    //         headers: {
-    //             "Access-Control-Allow-Origin": "*",
-    //         },
-    //         hot: _enableHot,
-    //         watchContentBase: true,
-    //         watchOptions: {
-    //             ignored: [
-    //                 /dist/,
-    //                 /docs/,
-    //                 /scripts/,
-    //                 /test/,
-    //                 /node_modules/,
-    //                 /external-assets/,
-    //             ],
-    //         },
-    //         port,
-    //     },
-    // });
-
-    // config.output.pathinfo = true;
-
-    // config.output.publicPath = preprocessorDirectives.rendererPdfWebviewBaseUrl;
-    // if (_enableHot) {
-    //     config.plugins.push(new webpack.HotModuleReplacementPlugin());
-    // }
-    // if (_enableHot) {
-    //     cssLoaderConfig.unshift("css-hot-loader");
-    // }
-    config.module.rules.push({
-        test: /\.css$/,
-        use: cssLoaderConfig,
-    });
 } else {
 
     config.optimization =
@@ -271,13 +228,6 @@ if (nodeEnv !== "production") {
     config.plugins.push(
         new webpack.IgnorePlugin({ resourceRegExp: /^react-axe$/ })
     );
-
-    // Minify and uglify in production environment
-    //config.plugins.push(new UglifyJsPlugin());
-    config.module.rules.push({
-        test: /\.css$/,
-        use: cssLoaderConfig,
-    });
 }
 
 module.exports = config;

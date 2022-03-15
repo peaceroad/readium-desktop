@@ -9,16 +9,19 @@ import * as debug_ from "debug";
 import { app, protocol } from "electron";
 import * as path from "path";
 import { takeSpawnEveryChannel } from "readium-desktop/common/redux/sagas/takeSpawnEvery";
-import { raceTyped } from "readium-desktop/common/redux/sagas/typed-saga";
+import { tryDecodeURIComponent } from "readium-desktop/common/utils/uri";
+import { closeProcessLock, diMainGet, getLibraryWindowFromDi } from "readium-desktop/main/di";
+import { getOpdsNewCatalogsStringUrlChannel } from "readium-desktop/main/event";
 import {
-    closeProcessLock, compactDb, diMainGet, getLibraryWindowFromDi,
-} from "readium-desktop/main/di";
-import { error } from "readium-desktop/main/error";
-import { fetchCookieJarPersistence } from "readium-desktop/main/network/fetch";
-import { needToPersistState } from "readium-desktop/main/redux/sagas/persist.ts";
+    absorbDBToJson as absorbDBToJsonCookieJar, fetchCookieJarPersistence,
+} from "readium-desktop/main/network/fetch";
+import { absorbDBToJson as absorbDBToJsonOpdsAuth } from "readium-desktop/main/network/http";
+import { needToPersistFinalState } from "readium-desktop/main/redux/sagas/persist";
+import { error } from "readium-desktop/main/tools/error";
 import { _APP_NAME, _PACKAGING, IS_DEV } from "readium-desktop/preprocessor-directives";
+// eslint-disable-next-line local-rules/typed-redux-saga-use-typed-effects
 import { all, call, race, spawn, take } from "redux-saga/effects";
-import { delay, put } from "typed-redux-saga";
+import { delay as delayTyped, put as putTyped, race as raceTyped } from "typed-redux-saga/macro";
 
 import { clearSessions } from "@r2-navigator-js/electron/main/sessions";
 
@@ -35,6 +38,12 @@ const debug = debug_(filename_);
 export function* init() {
 
     app.setAppUserModelId("io.github.edrlab.thorium");
+
+    // 'thorium' is registered for MacOS too
+    if (!app.isDefaultProtocolClient("opds")) {
+        // Define custom protocol handler. Deep linking works on packaged versions of the application!
+        app.setAsDefaultProtocolClient("opds");
+    }
 
     // moved to saga/persist.ts
     // app.on("window-all-closed", async () => {
@@ -91,11 +100,50 @@ export function* init() {
 
         debug("register file protocol pdfjs-extract");
         debug("request", request);
-        const p = request.url.split("pdfjs-extract://")[1];
+        const arg = request.url.split("pdfjs-extract://host/")[1];
+        debug(arg);
+        const p = tryDecodeURIComponent(arg);
         debug(p);
 
         callback(p);
     });
+
+    yield call(() => {
+        const deviceIdManager = diMainGet("device-id-manager");
+        return deviceIdManager.absorbDBToJson();
+    });
+
+    yield call(() => {
+        const lcpManager = diMainGet("lcp-manager");
+        return lcpManager.absorbDBToJson();
+    });
+
+    yield call(() => {
+        return absorbDBToJsonCookieJar();
+    });
+
+    yield call(() => {
+        return absorbDBToJsonOpdsAuth();
+    });
+
+    const envName = "THORIUM_OPDS_CATALOGS_URL";
+    debug("SEARCH FROM ENV=", envName);
+    try {
+
+        const opdsCatalogsChan = getOpdsNewCatalogsStringUrlChannel();
+        const catalogsUrl = process.env[envName];
+
+        debug("CATALOGS URL FROM ENV FOUND =>", catalogsUrl);
+        if (catalogsUrl) {
+            const u = new URL(catalogsUrl);
+            if (u)
+                opdsCatalogsChan.put(catalogsUrl);
+        }
+    } catch (e) {
+
+        //
+        debug("CATALOGS URL FROM ENV NOT FOUND", e);
+    }
 
 }
 
@@ -121,27 +169,19 @@ function* closeProcess() {
                         yield call(fetchCookieJarPersistence);
                         debug("Success to persist fetch cookieJar");
                     } catch (e) {
-                        debug("ERROR to persist fetch cookieJar");
+                        debug("ERROR to persist fetch cookieJar", e);
                     }
 
                     try {
-                        yield call(needToPersistState);
+                        yield call(needToPersistFinalState);
                         debug("Success to persistState");
                     } catch (e) {
                         debug("ERROR to persistState", e);
                     }
-
-                    try {
-                        // clean the db just before to quit
-                        yield call(compactDb);
-                        debug("Success to compactDb");
-                    } catch (e) {
-                        debug("ERROR to compactDb", e);
-                    }
                 }),
                 call(function*() {
 
-                    yield put(streamerActions.stopRequest.build());
+                    yield* putTyped(streamerActions.stopRequest.build());
 
                     const [success, failed] = yield race([
                         take(streamerActions.stopSuccess.ID),
@@ -154,7 +194,7 @@ function* closeProcess() {
                     }
                 }),
             ]),
-            delay(30000), // 30 seconds timeout to force quit
+            delayTyped(30000), // 30 seconds timeout to force quit
         ]);
 
         if (!done) {
@@ -180,7 +220,7 @@ export function exit() {
         - before-quit
         - window-all-closed
         - quit
-        */
+         */
 
         const exitNow = () => {
 

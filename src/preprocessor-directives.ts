@@ -29,9 +29,6 @@ export const _PACKAGING = __PACKAGING__;
 declare const __VSCODE_LAUNCH__: string;
 export const _VSCODE_LAUNCH = __VSCODE_LAUNCH__;
 
-declare const __POUCHDB_ADAPTER_NAME__: string;
-export const _POUCHDB_ADAPTER_NAME = __POUCHDB_ADAPTER_NAME__;
-
 declare const __GIT_BRANCH__: string;
 export const _GIT_BRANCH = __GIT_BRANCH__;
 
@@ -47,15 +44,15 @@ export const _APP_VERSION = __APP_VERSION__;
 declare const __APP_NAME__: string;
 export const _APP_NAME = __APP_NAME__;
 
-// This ones needs to be inlined, no var allowed (because otherwise: dynamic require() import!)
-// declare const __POUCHDB_ADAPTER_PACKAGE__: string;
-// export const _POUCHDB_ADAPTER_PACKAGE = __POUCHDB_ADAPTER_PACKAGE__;
-
-declare const __USE_HTTP_STREAMER__: boolean;
-export const _USE_HTTP_STREAMER = __USE_HTTP_STREAMER__;
+// declare const __USE_HTTP_STREAMER__: boolean;
+// export const _USE_HTTP_STREAMER = __USE_HTTP_STREAMER__;
 
 declare const __NODE_ENV__: string;
 export const _NODE_ENV = __NODE_ENV__;
+
+// when not in packaged mode (i.e. prod or dev, but no app bundle),
+// then check runtime process.env:
+export const LCP_SKIP_LSD = __PACKAGING__ === "0" && process.env.LCP_SKIP_LSD === "1";
 
 export const IS_DEV =
 

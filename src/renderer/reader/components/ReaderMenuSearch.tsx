@@ -5,7 +5,7 @@
 // that can be found in the LICENSE file exposed on Github (readium) in the project repository.
 // ==LICENSE-END==
 
-import classnames from "classnames";
+import classNames from "classnames";
 import { debounce } from "debounce";
 import * as React from "react";
 import { connect } from "react-redux";
@@ -14,7 +14,7 @@ import * as ArrowRightIcon from "readium-desktop/renderer/assets/icons/baseline-
 import * as ArrowLeftIcon from "readium-desktop/renderer/assets/icons/baseline-arrow_left_ios-24px.svg";
 import * as ArrowLastIcon from "readium-desktop/renderer/assets/icons/baseline-skip_next-24px.svg";
 import * as ArrowFirstIcon from "readium-desktop/renderer/assets/icons/baseline-skip_previous-24px.svg";
-import * as styles from "readium-desktop/renderer/assets/styles/reader-app.css";
+import * as stylesReader from "readium-desktop/renderer/assets/styles/reader-app.css";
 import {
     TranslatorProps, withTranslator,
 } from "readium-desktop/renderer/common/components/hoc/translator";
@@ -26,7 +26,7 @@ import { Link } from "@r2-shared-js/models/publication-link";
 
 import { readerLocalActionSearch } from "../redux/actions";
 
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IBaseProps {
     focusMainAreaLandmarkAndCloseMenu: () => void;
 }
@@ -34,12 +34,12 @@ interface IBaseProps {
 // RouteComponentProps
 // ReturnType<typeof mapStateToProps>
 // ReturnType<typeof mapDispatchToProps>
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 // tslint:disable-next-line: max-line-length
 interface IProps extends IBaseProps, ReturnType<typeof mapStateToProps>, ReturnType<typeof mapDispatchToProps>, TranslatorProps {
 }
 
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IState {
     nMatchPage: number;
 }
@@ -213,7 +213,7 @@ class ReaderMenuSearch extends React.Component<IProps, IState> {
         let iMatch = -1;
         return <ul
             aria-label={label}
-            className={styles.chapters_content}
+            className={stylesReader.chapters_content}
             role={"list"}
         >{
             (this.props.readingOrder || []).reduce((pv, spineLink, j) => {
@@ -235,23 +235,27 @@ class ReaderMenuSearch extends React.Component<IProps, IState> {
                                 >
                                     <a
                                         className={
-                                            classnames(styles.line,
-                                                styles.active,
-                                                isRTL ? styles.rtlDir : " ")
+                                            classNames(stylesReader.line,
+                                                stylesReader.active,
+                                                isRTL ? stylesReader.rtlDir : " ")
                                         }
                                         style={{
                                             fontWeight: "normal",
                                         }}
                                         onClick=
-                                            {(e) => this.handleSearchClickDebounced(e, v.uuid, false)}
+                                            {(e) => {
+                                                const closeNavPanel = e.shiftKey && e.altKey ? false : true;
+                                                this.handleSearchClickDebounced(e, v.uuid, closeNavPanel);
+                                            }}
                                         onDoubleClick=
-                                            {(e) => this.handleSearchClickDebounced(e, v.uuid, true)}
+                                            {(e) => this.handleSearchClickDebounced(e, v.uuid, false)}
                                         tabIndex={0}
                                         onKeyPress=
                                             {
                                                 (e) => {
                                                     if (e.key === "Enter") {
-                                                        this.handleSearchClick(e, v.uuid, true);
+                                                        const closeNavPanel = e.shiftKey && e.altKey ? false : true;
+                                                        this.handleSearchClick(e, v.uuid, closeNavPanel);
                                                     }
                                                 }
                                             }
@@ -310,7 +314,7 @@ class ReaderMenuSearch extends React.Component<IProps, IState> {
     //     return <ul
     //         role={useTree ? (level <= 1 ? "tree" : "group") : undefined}
     //         aria-label={label}
-    //         className={styles.chapters_content}
+    //         className={stylesReader.chapters_content}
     //         style={{marginTop: "15px"}}
     //     >
     //         {
@@ -326,8 +330,8 @@ class ReaderMenuSearch extends React.Component<IProps, IState> {
     //                                     <span
     //                                         className={
     //                                             link.Href
-    //                                                 ? styles.subheading
-    //                                             : classnames(styles.subheading, styles.inert)
+    //                                                 ? stylesReader.subheading
+    //                                             : classNames(stylesReader.subheading, stylesReader.inert)
     //                                         }
     //                                         tabIndex={0}
     //                                     >
@@ -342,8 +346,8 @@ class ReaderMenuSearch extends React.Component<IProps, IState> {
     //                                     <a
     //                                         className={
     //                                             link.Href ?
-    //                                                 classnames(styles.line, styles.active) :
-    //                                                 classnames(styles.line, styles.active, styles.inert)
+    //                                                 classNames(stylesReader.line, stylesReader.active) :
+    //                                                 classNames(stylesReader.line, stylesReader.active, stylesReader.inert)
     //                                         }
     //                                         onClick=
     //                                         {(e) => this.handleSearchClick(e, link.Href, false)}
@@ -352,7 +356,8 @@ class ReaderMenuSearch extends React.Component<IProps, IState> {
     //                                         {
     //                                             (e) => {
     //                                                 if (link.Href && e.key === "Enter") {
-    //                                                     this.handleSearchClick(e, link.Href, true);
+    //                                                     const closeNavPanel = e.shiftKey && e.altKey ? false : true;
+    //                                                     this.handleSearchClick(e, link.Href, closeNavPanel);
     //                                                 }
     //                                             }
     //                                         }
@@ -373,17 +378,17 @@ class ReaderMenuSearch extends React.Component<IProps, IState> {
     private handleSearchClick(
         e: React.MouseEvent<any> | React.KeyboardEvent<HTMLAnchorElement>,
         href: string,
-        escape: boolean) {
+        closeNavPanel: boolean) {
 
-        handleSearchClickFunc(this, e, href, escape);
+        handleSearchClickFunc(this, e, href, closeNavPanel);
     }
 
     private handleSearchClickDebounced(
         e: React.MouseEvent<any> | React.KeyboardEvent<HTMLAnchorElement>,
         href: string,
-        escape: boolean) {
+        closeNavPanel: boolean) {
 
-        handleSearchClickFuncDebounced(this, e, href, escape);
+        handleSearchClickFuncDebounced(this, e, href, closeNavPanel);
     }
 }
 
@@ -391,14 +396,16 @@ const handleSearchClickFunc = (
     thiz: ReaderMenuSearch,
     e: React.MouseEvent<any> | React.KeyboardEvent<HTMLAnchorElement>,
     href: string,
-    escape: boolean) => {
+    closeNavPanel: boolean) => {
 
     e.preventDefault();
-    console.log(href);
-    thiz.props.focus(href); // search uuid
-    if (escape) {
+
+    if (closeNavPanel) {
         thiz.props.focusMainAreaLandmarkAndCloseMenu();
     }
+
+    console.log(href);
+    thiz.props.focus(href); // search uuid
 };
 
 const handleSearchClickFuncDebounced = debounce(handleSearchClickFunc, 300);

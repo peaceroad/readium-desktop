@@ -2,7 +2,6 @@
     "accessibility": {
         "bookMenu": "Menu",
         "closeDialog": "Fermer",
-        "homeMenu": "Menu principal",
         "importFile": "Importer un fichier epub",
         "leftSlideButton": "Faire défiler la liste vers la gauche",
         "mainContent": "contenu principal",
@@ -49,6 +48,11 @@
         "addTagsButton": "Ajouter",
         "allBooks": "Tous les livres",
         "bookInfo": "Fiche livre",
+        "column": {
+            "ascending": "",
+            "descending": "",
+            "unsorted": ""
+        },
         "delete": "Supprimer",
         "deleteBook": "Supprimer",
         "deleteTag": "Supprimer le tag",
@@ -137,7 +141,7 @@
     "library": {
         "lcp": {
             "cancel": "Annuler",
-            "hint": "(Indice : {{hint}})",
+            "hint": "(Indice : {{- hint}})",
             "password": "Mot de passe",
             "sentence": "Cette publication a besoin d'un mot de passe : ",
             "submit": "Valider",
@@ -195,6 +199,7 @@
         "audio": {
             "tracks": "Pistes"
         },
+        "author": "",
         "cancelledLcp": "Ce livre ne peut être lu car la licence lcp a été annulée.",
         "certificateRevoked": "Certificat révoqué",
         "certificateSignatureInvalid": "Signature de certificat invalide",
@@ -206,8 +211,8 @@
         },
         "expiredLcp": "Ce livre ne peut être lu car la licence lcp a expiré.",
         "lcpEnd": "Fin",
-        "lcpRightsCopy": "Copie de caractères",
-        "lcpRightsPrint": "Copies d'imprimante",
+        "lcpRightsCopy": "Caractères copiés",
+        "lcpRightsPrint": "Pages imprimées",
         "lcpStart": "Début",
         "licenseOutOfDate": "License inutilisable à cette date",
         "licenseSignatureDateInvalid": "Date de signature de license invalide",
@@ -221,9 +226,14 @@
         "revokedLcp": "Ce livre ne peut être lu car la licence lcp a été révoquée.",
         "seeLess": "Voir moins",
         "seeMore": "Voir plus",
+        "title": "",
         "userKeyCheckInvalid": "Mot de passe incorrect"
     },
     "reader": {
+        "divina": {
+            "mute": "desactiver le son",
+            "unmute": "activer le son"
+        },
         "footerInfo": {
             "lessInfo": "Moins d'informations",
             "moreInfo": "Plus d'informations"
@@ -253,7 +263,7 @@
             "backHomeTitle": "retour à la bibliothèque",
             "bookmarkTitle": "marque-page",
             "currentPage": "Page courante: {{- current}}",
-            "currentPageTotal": "Page courante: ({{- current}}/{{- total}})",
+            "currentPageTotal": "Page courante: {{- current}}/{{- total}}",
             "detachWindowTitle": "afficher la bibliothèque",
             "fullscreenTitle": "mode plein écran",
             "goTo": "Aller à",
@@ -344,12 +354,15 @@
         },
         "tts": {
             "activate": "",
+            "default": "",
             "next": "",
             "pause": "",
             "play": "",
             "previous": "",
+            "sentenceDetect": "",
             "speed": "",
-            "stop": ""
+            "stop": "",
+            "voice": ""
         }
     },
     "settings": {

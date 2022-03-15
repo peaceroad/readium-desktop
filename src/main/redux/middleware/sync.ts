@@ -25,6 +25,8 @@ const SYNCHRONIZABLE_ACTIONS: string[] = [
     apiActions.result.ID,
 
     historyActions.refresh.ID,
+    historyActions.pushFeed.ID,
+
     dialogActions.openRequest.ID,
 
     readerActions.detachModeSuccess.ID,
@@ -88,7 +90,7 @@ export const reduxSyncMiddleware: Middleware
                         try {
                             const readerWin = getReaderWindowFromDi(readers[key].identifier);
                             browserWin.set(readers[key].identifier, readerWin);
-                        } catch (err) {
+                        } catch (_err) {
                             // ignore
                             debug("ERROR: Can't found ther reader win from di: ", readers[key].identifier);
                         }

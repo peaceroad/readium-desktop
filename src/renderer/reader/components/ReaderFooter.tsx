@@ -11,7 +11,7 @@ import { isAudiobookFn } from "readium-desktop/common/isManifestType";
 import { formatTime } from "readium-desktop/common/utils/time";
 import * as ArrowRightIcon from "readium-desktop/renderer/assets/icons/baseline-arrow_forward_ios-24px.svg";
 import * as ArrowLeftIcon from "readium-desktop/renderer/assets/icons/baseline-arrow_left_ios-24px.svg";
-import * as styles from "readium-desktop/renderer/assets/styles/reader-app.css";
+import * as stylesReader from "readium-desktop/renderer/assets/styles/reader-app.css";
 import {
     TranslatorProps, withTranslator,
 } from "readium-desktop/renderer/common/components/hoc/translator";
@@ -29,6 +29,7 @@ function throttle(callback: (...args: any) => void, limit: number) {
     let waiting = false;
     return function(this: any) {
         if (!waiting) {
+            // eslint-disable-next-line prefer-rest-params
             callback.apply(this, arguments);
             waiting = true;
             setTimeout(() => {
@@ -38,7 +39,7 @@ function throttle(callback: (...args: any) => void, limit: number) {
     };
 }
 
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IBaseProps extends TranslatorProps {
     navLeftOrRight: (left: boolean) => void;
     gotoBegin: () => void;
@@ -51,6 +52,7 @@ interface IBaseProps extends TranslatorProps {
     handleLinkClick: (event: TMouseEventOnSpan | TMouseEventOnAnchor | TKeyboardEventOnAnchor | undefined, url: string) => void;
     isDivina: boolean;
     divinaNumberOfPages: number;
+    divinaContinousEqualTrue: boolean;
 
     isPdf: boolean;
 }
@@ -59,7 +61,7 @@ interface IBaseProps extends TranslatorProps {
 // RouteComponentProps
 // ReturnType<typeof mapStateToProps>
 // ReturnType<typeof mapDispatchToProps>
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IProps extends IBaseProps {
 }
 
@@ -96,10 +98,13 @@ export class ReaderFooter extends React.Component<IProps, IState> {
         const { moreInfo } = this.state;
 
         let spineTitle = currentLocation.locator?.title || currentLocation.locator.href;
+
         if (isDivina) {
             try {
-                spineTitle = (parseInt(spineTitle, 10) + 1).toString();
-            } catch (e) {
+                spineTitle = this.props.divinaContinousEqualTrue
+                    ? `${Math.floor((currentLocation.locator.locations as any).totalProgression * r2Publication.Spine.length)}`
+                    : `${(currentLocation.locator?.locations.position || 0) + 1}`;
+            } catch (_e) {
                 // ignore
             }
         }
@@ -107,17 +112,17 @@ export class ReaderFooter extends React.Component<IProps, IState> {
         let afterCurrentLocation = false;
 
         return (
-            <div className={classNames(styles.reader_footer,
-                this.props.fullscreen ? styles.reader_footer_fullscreen : undefined)}
+            <div className={classNames(stylesReader.reader_footer,
+                this.props.fullscreen ? stylesReader.reader_footer_fullscreen : undefined)}
                 onWheel={(ev) => {
-                    if (ev.deltaY > 0 || ev.deltaX < 0) {
+                    if (ev.deltaY < 0 || ev.deltaX < 0) {
                         this.navLeftOrRightThrottled(true);
-                    } else if (ev.deltaY < 0 || ev.deltaX > 0) {
+                    } else if (ev.deltaY > 0 || ev.deltaX > 0) {
                         this.navLeftOrRightThrottled(false);
                     }
                 }}>
                 {!isAudioBook &&
-                    <div className={styles.arrows}>
+                    <div className={stylesReader.arrows}>
                         <button onClick={(ev) => {
                             if (ev.shiftKey) {
                                 const isRTL = false; // TODO RTL (see ReaderMenu.tsx)
@@ -149,13 +154,13 @@ export class ReaderFooter extends React.Component<IProps, IState> {
                     </div>
                 }
                 {!this.props.fullscreen &&
-                    <div className={classNames(styles.track_reading_wrapper,
-                        isAudioBook ? styles.track_reading_wrapper_noArrows : undefined)}>
+                    <div className={classNames(stylesReader.track_reading_wrapper,
+                        isAudioBook ? stylesReader.track_reading_wrapper_noArrows : undefined)}>
 
-                        { // <div id={styles.current}></div>
-                            <div id={styles.track_reading}>
-                                <div id={styles.chapters_markers}
-                                    className={moreInfo ? styles.more_information : undefined}>
+                        { // <div id={stylesReader.current}></div>
+                            <div id={stylesReader.track_reading}>
+                                <div id={stylesReader.chapters_markers}
+                                    className={moreInfo ? stylesReader.more_information : undefined}>
                                     {
                                         (isPdf
                                             // tslint:disable-next-line: max-line-length
@@ -169,7 +174,9 @@ export class ReaderFooter extends React.Component<IProps, IState> {
 
                                             let atCurrentLocation = false;
                                             if (isDivina) {
-                                                atCurrentLocation = currentLocation.locator?.href === index.toString();
+                                                atCurrentLocation = this.props.divinaContinousEqualTrue
+                                                    ? Math.floor((currentLocation.locator.locations as any).totalProgression * r2Publication.Spine.length) === index
+                                                    : (currentLocation.locator?.locations.position || 0) === index; // see divinaNumberOfPages
                                             } else {
                                                 atCurrentLocation = currentLocation.locator?.href === link.Href;
                                             }
@@ -235,7 +242,7 @@ export class ReaderFooter extends React.Component<IProps, IState> {
                                                     className={
                                                         classNames(
                                                             "progressChunkSpineItem",
-                                                            atCurrentLocation ? styles.currentSpineItem : undefined)
+                                                            atCurrentLocation ? stylesReader.currentSpineItem : undefined)
                                                     }
                                                 >
                                                     {
@@ -249,18 +256,18 @@ export class ReaderFooter extends React.Component<IProps, IState> {
                                 </div>
                                 {moreInfo &&
                                     <div
-                                        id={styles.arrow_box}
+                                        id={stylesReader.arrow_box}
                                         style={this.getStyle(this.getArrowBoxStyle)}
                                     >
                                         <span title={spineTitle}><em>{`(${(isDivina)
-                                            ? (parseInt(currentLocation.locator?.href, 10) + 1).toString()
+                                            ? spineTitle
                                             : isPdf ?
                                                 parseInt(currentLocation.locator?.href, 10).toString()
                                                 :
                                                 ((r2Publication.Spine.findIndex((spineLink) => spineLink.Href === currentLocation.locator?.href)) + 1).toString()
                                             }/${isPdf ? (r2Publication.Metadata?.NumberOfPages ? r2Publication.Metadata.NumberOfPages : 0) :
                                             (isDivina
-                                            ? this.props.divinaNumberOfPages
+                                            ? (this.props.divinaContinousEqualTrue ? r2Publication.Spine.length : this.props.divinaNumberOfPages)
                                             : r2Publication.Spine.length)
                                             }) `}</em> {` ${spineTitle}`}</span>
                                         <p>
@@ -268,7 +275,7 @@ export class ReaderFooter extends React.Component<IProps, IState> {
                                         </p>
                                         <span
                                             style={this.getStyle(this.getArrowStyle)}
-                                            className={styles.after}
+                                            className={stylesReader.after}
                                         />
                                     </div>
                                 }
@@ -277,7 +284,6 @@ export class ReaderFooter extends React.Component<IProps, IState> {
 
                         <span
                             onClick={this.handleMoreInfoClick}
-                            id={styles.more_info_chapters}
                         >
                             {moreInfo ? __("reader.footerInfo.lessInfo") : __("reader.footerInfo.moreInfo")}
                         </span>
@@ -338,9 +344,9 @@ export class ReaderFooter extends React.Component<IProps, IState> {
         const percent = Math.round((currentLocation.locator.locations?.progression || 0) * 100);
 
         if (currentLocation.paginationInfo) {
-            return `${percent}% (${currentLocation.paginationInfo.currentColumn + 1} / ${currentLocation.paginationInfo.totalColumns})`;
+            return `${percent}% (${(currentLocation.paginationInfo.currentColumn || 0) + 1} / ${currentLocation.paginationInfo.totalColumns || 0})`;
         } else if (currentLocation.audioPlaybackInfo) {
-            return `${percent}% (${formatTime(currentLocation.audioPlaybackInfo.localTime)} / ${formatTime(currentLocation.audioPlaybackInfo.localDuration)})`;
+            return `${percent}% (${formatTime(currentLocation.audioPlaybackInfo.localTime || 0)} / ${formatTime(currentLocation.audioPlaybackInfo.localDuration || 0)})`;
         } else {
             return `${percent}%`;
         }

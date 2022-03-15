@@ -23,68 +23,82 @@ const checkTypeScriptSkip =
     : false
     ;
 
-// let ignorePlugin = new webpack.IgnorePlugin(new RegExp("/(bindings)/"))
+// let ignorePlugin = new webpack.IgnorePlugin({ resourceRegExp: new RegExp("/(bindings)/") })
 
 const aliases = {
     "readium-desktop": path.resolve(__dirname, "src"),
 
-    "@r2-utils-js": "r2-utils-js/dist/es6-es2015/src",
-    "@r2-lcp-js": "r2-lcp-js/dist/es6-es2015/src",
-    "@r2-opds-js": "r2-opds-js/dist/es6-es2015/src",
-    "@r2-shared-js": "r2-shared-js/dist/es6-es2015/src",
-    "@r2-streamer-js": "r2-streamer-js/dist/es6-es2015/src",
-    "@r2-navigator-js": "r2-navigator-js/dist/es6-es2015/src",
+    "@r2-utils-js": "r2-utils-js/dist/es8-es2017/src",
+    "@r2-lcp-js": "r2-lcp-js/dist/es8-es2017/src",
+    "@r2-opds-js": "r2-opds-js/dist/es8-es2017/src",
+    "@r2-shared-js": "r2-shared-js/dist/es8-es2017/src",
+    "@r2-streamer-js": "r2-streamer-js/dist/es8-es2017/src",
+    "@r2-navigator-js": "r2-navigator-js/dist/es8-es2017/src",
+    "@lunr-languages": "lunr-languages",
 };
-
-////// ================================
-////// EXTERNALS
-// Some modules cannot be bundled by Webpack
-// for example those that make internal use of NodeJS require() in special ways
-// in order to resolve asset paths, etc.
-// In DEBUG / DEV mode, we just external-ize as much as possible (any non-TypeScript / non-local code),
-// to minimize bundle size / bundler computations / compile times.
 
 let externals = {
     bindings: "bindings",
-    leveldown: "leveldown",
-    yargs: "yargs",
     fsevents: "fsevents",
-    conf: "conf",
-    "pouchdb-adapter-leveldb": "pouchdb-adapter-leveldb",
     "electron-devtools-installer": "electron-devtools-installer",
     "remote-redux-devtools": "remote-redux-devtools",
-    "pouchdb-adapter-node-websql": "pouchdb-adapter-node-websql",
-    sqlite3: "sqlite3",
+    "electron": "electron",
+    yargs: "yargs",
 };
+const _externalsCache = new Set();
 if (nodeEnv !== "production") {
-    // // externals = Object.assign(externals, {
-    // //         "electron-config": "electron-config",
-    // //     }
-    // // );
-    // const { dependencies } = require("./package.json");
-    // const depsKeysArray = Object.keys(dependencies || {});
-    // const depsKeysObj = {};
-    // depsKeysArray.forEach((depsKey) => { depsKeysObj[depsKey] = depsKey });
-    // externals = Object.assign(externals, depsKeysObj);
-    // delete externals["pouchdb-core"];
+    const nodeExternals = require("webpack-node-externals");
+    const neFunc = nodeExternals({
+        allowlist: ["normalize-url", "node-fetch", "data-uri-to-buffer", /^fetch-blob/, /^formdata-polyfill/],
+        importType: function (moduleName) {
+            if (!_externalsCache.has(moduleName)) {
+                console.log(`WEBPACK EXTERNAL (MAIN): [${moduleName}]`);
+            }
+            _externalsCache.add(moduleName);
+            // if (moduleName === "normalize-url") {
+            //     return "module normalize-url";
+            // }
+            return "commonjs " + moduleName;
+        },
+    });
+    externals = [externals,
+        function({ context, request, contextInfo, getResolve }, callback) {
+            const isRDesk = request.indexOf("readium-desktop/") === 0;
+            if (isRDesk) {
 
-    // if (process.env.WEBPACK === "bundle-external") {
-    const nodeExternals = require("./nodeExternals");
-    externals = [
-        nodeExternals({
-            processName: "MAIN",
-            alias: aliases,
-            // whitelist: ["pouchdb-core"],
-        }),
+                if (!_externalsCache.has(request)) {
+                    console.log(`WEBPACK EXTERNAL (MAIN): READIUM-DESKTOP [${request}]`);
+                }
+                _externalsCache.add(request);
+
+                return callback();
+            }
+
+            let request_ = request;
+            if (aliases) {
+                // const isR2 = /^r2-.+-js/.test(request);
+                // const isR2Alias = /^@r2-.+-js/.test(request);
+
+                const iSlash = request.indexOf("/");
+                const key = request.substr(0, (iSlash >= 0) ? iSlash : request.length);
+                if (aliases[key]) {
+                    request_ = request.replace(key, aliases[key]);
+
+                    if (!_externalsCache.has(request)) {
+                        console.log(`WEBPACK EXTERNAL (MAIN): ALIAS [${request}] => [${request_}]`);
+                    }
+                    _externalsCache.add(request);
+
+                    return callback(null, "commonjs " + request_);
+                }
+            }
+
+            neFunc(context, request, callback);
+        },
     ];
-    // } else {
-    //     const nodeExternals = require("webpack-node-externals");
-    //     // electron-devtools-installer
-    //     externals = [nodeExternals()];
-    // }
 }
 
-console.log("WEBPACK externals (MAIN):");
+console.log("WEBPACK externals (MAIN):", "-".repeat(200));
 console.log(JSON.stringify(externals, null, "  "));
 ////// EXTERNALS
 ////// ================================
@@ -92,6 +106,8 @@ console.log(JSON.stringify(externals, null, "  "));
 let config = Object.assign(
     {},
     {
+        bail: true,
+
         entry: "./src/main.ts",
         name: "main",
         mode: nodeEnv,
@@ -100,7 +116,7 @@ let config = Object.assign(
             path: path.join(__dirname, "dist"),
 
             // https://github.com/webpack/webpack/issues/1114
-            libraryTarget: "commonjs2",
+            libraryTarget: "commonjs2", // commonjs-module
         },
         target: "electron-main",
 
@@ -109,7 +125,12 @@ let config = Object.assign(
             __filename: false,
         },
 
+        externalsPresets: { node: true },
         externals: externals,
+        externalsType: "commonjs", // module, node-commonjs
+        experiments: {
+            outputModule: false, // module, node-commonjs
+        },
 
         resolve: {
             // Add '.ts' as resolvable extensions.
@@ -117,12 +138,14 @@ let config = Object.assign(
             alias: aliases,
         },
         stats: {
+            // all: true,
             // warningsFilter: /export .* was not found in/,
+            // warningsFilter: /was not found in 'typed-redux-saga\/macro'/,
         },
         module: {
             rules: [
                 {
-                    test: /\.tsx?$/,
+                    test: /\.tsx$/,
                     loader: useLegacyTypeScriptLoader
                         ? "awesome-typescript-loader"
                         : "ts-loader",
@@ -130,7 +153,27 @@ let config = Object.assign(
                         transpileOnly: true, // checkTypeScriptSkip
                     },
                 },
-                { test: /\.node$/, loaders: ["node-loader"] },
+                {
+                    test: /\.ts$/,
+                    use: [
+                        {
+                            loader: "babel-loader",
+                            options: {
+                                presets: [],
+                                plugins: ["macros"],
+                            },
+                        },
+                        {
+                            loader: useLegacyTypeScriptLoader
+                                ? "awesome-typescript-loader"
+                                : "ts-loader",
+                            options: {
+                                transpileOnly: true, // checkTypeScriptSkip
+                            },
+                        },
+                    ],
+                },
+                // { test: /\.node$/, loader: "node-loader" },
             ],
         },
         plugins: [

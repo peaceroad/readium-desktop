@@ -2,7 +2,6 @@
     "accessibility": {
         "bookMenu": "Menu",
         "closeDialog": "Chiudi",
-        "homeMenu": "Menu principale",
         "importFile": "Importa una pubblicazione",
         "leftSlideButton": "Scorri la lista a sinistra",
         "mainContent": "contenuto principale",
@@ -49,6 +48,11 @@
         "addTagsButton": "Aggiungi",
         "allBooks": "Tutti i libri",
         "bookInfo": "Informazioni su questo libro",
+        "column": {
+            "ascending": "",
+            "descending": "",
+            "unsorted": ""
+        },
         "delete": "Elimina",
         "deleteBook": "Elimina",
         "deleteTag": "Elimina la tag",
@@ -137,7 +141,7 @@
     "library": {
         "lcp": {
             "cancel": "Annulla",
-            "hint": "(Suggerimento : {{hint}})",
+            "hint": "(Suggerimento : {{- hint}})",
             "password": "Passphrase",
             "sentence": "Questa pubblicazione ha bisogno di una passphrase LCP per essere aperta: ",
             "submit": "Invia",
@@ -195,6 +199,7 @@
         "audio": {
             "tracks": "Tracce"
         },
+        "author": "",
         "cancelledLcp": "Questo libro non può essere letto perchè la licenza LCP è stata annullata.",
         "certificateRevoked": "Il certificato è revocato.",
         "certificateSignatureInvalid": "La firma del certificato è invalida.",
@@ -221,9 +226,14 @@
         "revokedLcp": "Questo libro non può essere letto perchè la licenza LCP è stata revocata",
         "seeLess": "Vedi di più",
         "seeMore": "Vedi di meno",
+        "title": "",
         "userKeyCheckInvalid": "La passphrase non è corretta"
     },
     "reader": {
+        "divina": {
+            "mute": "",
+            "unmute": ""
+        },
         "footerInfo": {
             "lessInfo": "meno informazioni",
             "moreInfo": "più informazioni"
@@ -344,12 +354,15 @@
         },
         "tts": {
             "activate": "Attiva Testo a Voce",
+            "default": "",
             "next": "Prossimo Testo a Voce",
             "pause": "Metti in pausa Testo a Voce",
             "play": "Riproduci Testo a Voce",
             "previous": "Precedente Testo a Voce",
+            "sentenceDetect": "",
             "speed": "Velocità di riproduzione Testo a Voce",
-            "stop": "Interrompi Testo a Voce"
+            "stop": "Interrompi Testo a Voce",
+            "voice": ""
         }
     },
     "settings": {

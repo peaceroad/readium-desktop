@@ -17,7 +17,7 @@ import { convertMultiLangStringToString } from "readium-desktop/main/converter/t
 import { OpdsFeedDocument } from "readium-desktop/main/db/document/opds";
 import { ContentType } from "readium-desktop/utils/contentType";
 
-import { IWithAdditionalJSON, TaJsonSerialize } from "@r2-lcp-js/serializable";
+import { IWithAdditionalJSON } from "@r2-lcp-js/serializable";
 import { OPDSFeed } from "@r2-opds-js/opds/opds2/opds2";
 import { OPDSAuthenticationDoc } from "@r2-opds-js/opds/opds2/opds2-authentication-doc";
 import { OPDSAvailabilityEnum } from "@r2-opds-js/opds/opds2/opds2-availability";
@@ -53,6 +53,7 @@ const supportedFileTypeLinkArray = [
     ContentType.JsonLd,
     ContentType.pdf,
     ContentType.lcppdf,
+    ContentType.Lpf,
 ];
 
 @injectable()
@@ -67,11 +68,9 @@ export class OpdsFeedViewConverter {
     }
 
     public convertOpdsNavigationLinkToView(link: OPDSLink, baseUrl: string): IOpdsNavigationLinkView {
-        // Title could be defined on multiple lines
-        // Only keep the first one
-        const titleParts = link.Title?.split("\n").filter((text) => text);
-        const title = titleParts[0]?.trim() || "";
-        const subtitle = titleParts[1]?.trim();
+        const title = link.Title || "";
+        const summary = link.Properties?.AdditionalJSON ? link.Properties.AdditionalJSON["title_summary"] : undefined;
+        const subtitle = summary as string || "";
 
         return {
             title,
@@ -81,7 +80,7 @@ export class OpdsFeedViewConverter {
         };
     }
 
-    public convertOpdsPropertiesToView(properties: TProperties | undefined): IOPDSPropertiesView {
+    public convertOpdsPropertiesToView(properties: TProperties | undefined): IOPDSPropertiesView | undefined {
 
         if (properties) {
 
@@ -342,18 +341,34 @@ export class OpdsFeedViewConverter {
                 ],
             }),
         );
+        const catalogLinkView = fallback(
+            this.convertFilterLinksToView(baseUrl, r2OpdsPublication.Links, {
+                type: ["application/atom+xml;profile=opds-catalog;kind=acquisition", ContentType.Opds2],
+                rel: "http://opds-spec.org/catalog",
+            }),
+            this.convertFilterLinksToView(baseUrl, r2OpdsPublication.Links, {
+                type: [
+                    ContentType.AtomXml,
+                    ContentType.Opds2,
+                ],
+            }),
+        );
 
         const revokeLoanLinkView = this.convertFilterLinksToView(baseUrl, r2OpdsPublication.Links, {
             rel: ["http://librarysimplified.org/terms/rel/revoke"],
         });
 
-        const r2OpdsPublicationJson = TaJsonSerialize(r2OpdsPublication);
-        const r2OpdsPublicationStr = JSON.stringify(r2OpdsPublicationJson);
-        const r2OpdsPublicationBase64 = Buffer.from(r2OpdsPublicationStr).toString("base64");
+        // const r2OpdsPublicationJson = TaJsonSerialize(r2OpdsPublication);
+        // Legacy Base64 data blobs
+        // const r2OpdsPublicationStr = JSON.stringify(r2OpdsPublicationJson);
+        // const r2OpdsPublicationBase64 = Buffer.from(r2OpdsPublicationStr).toString("base64");
+
+        const duration = typeof r2OpdsPublication.Metadata.Duration === "number" ? r2OpdsPublication.Metadata.Duration : undefined;
+        const nbOfTracks = typeof r2OpdsPublication.Metadata.AdditionalJSON?.tracks === "number" ? r2OpdsPublication.Metadata.AdditionalJSON?.tracks : undefined;
 
         return {
             baseUrl,
-            r2OpdsPublicationBase64,
+            // r2OpdsPublicationJson,
             title,
             authors,
             publishers,
@@ -371,6 +386,9 @@ export class OpdsFeedViewConverter {
             sampleOrPreviewLinks: sampleLinkView,
             openAccessLinks: acquisitionLinkView,
             revokeLoanLinks: revokeLoanLinkView,
+            duration,
+            nbOfTracks,
+            catalogLinkView,
         };
     }
     public convertOpdsAuthToView(r2OpdsAuth: OPDSAuthenticationDoc, baseUrl: string): IOpdsResultView {
@@ -505,28 +523,33 @@ export class OpdsFeedViewConverter {
             (item) =>
                 this.convertOpdsFacetsToView(item, baseUrl));
 
-        const links: IOpdsNavigationLink | undefined = r2OpdsFeed.Links &&
-        {
-            next: this.convertFilterLinksToView(baseUrl, r2OpdsFeed.Links, { rel: "next" }),
-            previous: this.convertFilterLinksToView(baseUrl, r2OpdsFeed.Links, { rel: "previous" }),
-            first: this.convertFilterLinksToView(baseUrl, r2OpdsFeed.Links, { rel: "first" }),
-            last: this.convertFilterLinksToView(baseUrl, r2OpdsFeed.Links, { rel: "last" }),
-            start: this.convertFilterLinksToView(baseUrl, r2OpdsFeed.Links, { rel: "start" }),
-            up: this.convertFilterLinksToView(baseUrl, r2OpdsFeed.Links, { rel: "up" }),
-            search: this.convertFilterLinksToView(baseUrl, r2OpdsFeed.Links, { rel: "search" }),
-            bookshelf: this.convertFilterLinksToView(baseUrl, r2OpdsFeed.Links, { rel: "http://opds-spec.org/shelf" }),
-            text: this.convertFilterLinksToView(baseUrl, r2OpdsFeed.Links, { type: [ContentType.Html] }),
-            self: this.convertFilterLinksToView(baseUrl, r2OpdsFeed.Links, { rel: "self" }),
-        };
-        const metadata: IOpdsFeedMetadataView | undefined = r2OpdsFeed.Metadata &&
-        {
-            numberOfItems: typeof r2OpdsFeed.Metadata.NumberOfItems === "number" &&
-                r2OpdsFeed.Metadata.NumberOfItems,
-            itemsPerPage: typeof r2OpdsFeed.Metadata.ItemsPerPage === "number" &&
-                r2OpdsFeed.Metadata.ItemsPerPage,
-            currentPage: typeof r2OpdsFeed.Metadata.CurrentPage === "number" &&
-                r2OpdsFeed.Metadata.CurrentPage,
-        };
+        const links: IOpdsNavigationLink | undefined = r2OpdsFeed.Links
+            ? {
+                next: this.convertFilterLinksToView(baseUrl, r2OpdsFeed.Links, { rel: "next" }),
+                previous: this.convertFilterLinksToView(baseUrl, r2OpdsFeed.Links, { rel: "previous" }),
+                first: this.convertFilterLinksToView(baseUrl, r2OpdsFeed.Links, { rel: "first" }),
+                last: this.convertFilterLinksToView(baseUrl, r2OpdsFeed.Links, { rel: "last" }),
+                start: this.convertFilterLinksToView(baseUrl, r2OpdsFeed.Links, { rel: "start" }),
+                up: this.convertFilterLinksToView(baseUrl, r2OpdsFeed.Links, { rel: "up" }),
+                search: this.convertFilterLinksToView(baseUrl, r2OpdsFeed.Links, { rel: "search" }),
+                bookshelf: this.convertFilterLinksToView(baseUrl, r2OpdsFeed.Links, { rel: "http://opds-spec.org/shelf" }),
+                text: this.convertFilterLinksToView(baseUrl, r2OpdsFeed.Links, { type: [ContentType.Html] }),
+                self: this.convertFilterLinksToView(baseUrl, r2OpdsFeed.Links, { rel: "self" }),
+            }
+            : undefined;
+        const metadata: IOpdsFeedMetadataView | undefined = r2OpdsFeed.Metadata
+            ? {
+                numberOfItems: typeof r2OpdsFeed.Metadata.NumberOfItems === "number" &&
+                    r2OpdsFeed.Metadata.NumberOfItems,
+                itemsPerPage: typeof r2OpdsFeed.Metadata.ItemsPerPage === "number" &&
+                    r2OpdsFeed.Metadata.ItemsPerPage,
+                currentPage: typeof r2OpdsFeed.Metadata.CurrentPage === "number" &&
+                    r2OpdsFeed.Metadata.CurrentPage,
+            }
+            : undefined;
+        const catalogs = r2OpdsFeed.Catalogs?.map(
+            (item) =>
+                this.convertOpdsPublicationToView(item, baseUrl));
 
         return {
             title,
@@ -537,6 +560,7 @@ export class OpdsFeedViewConverter {
             groups,
             facets,
             auth: undefined,
+            catalogs,
         };
     }
 }

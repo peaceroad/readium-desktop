@@ -10,7 +10,7 @@ import { connect } from "react-redux";
 import { DEBUG_KEYBOARD, keyboardShortcutsMatch } from "readium-desktop/common/keyboard";
 import { IReaderRootState } from "readium-desktop/common/redux/states/renderer/readerRootState";
 import * as magnifyingGlass from "readium-desktop/renderer/assets/icons/magnifying_glass.svg";
-import * as styles from "readium-desktop/renderer/assets/styles/reader-app.css";
+import * as stylesReader from "readium-desktop/renderer/assets/styles/reader-app.css";
 import {
     TranslatorProps, withTranslator,
 } from "readium-desktop/renderer/common/components/hoc/translator";
@@ -22,7 +22,7 @@ import { TDispatch } from "readium-desktop/typings/redux";
 
 import { readerLocalActionPicker, readerLocalActionSearch } from "../../redux/actions";
 
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IBaseProps extends TranslatorProps {
     shortcutEnable: boolean;
 }
@@ -30,7 +30,7 @@ interface IBaseProps extends TranslatorProps {
 // RouteComponentProps
 // ReturnType<typeof mapStateToProps>
 // ReturnType<typeof mapDispatchToProps>
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IProps extends IBaseProps,
     ReturnType<typeof mapStateToProps>,
     ReturnType<typeof mapDispatchToProps> {
@@ -98,7 +98,8 @@ class HeaderSearch extends React.Component<IProps, undefined> {
         return (
             <button
                 aria-pressed={this.props.isOnSearch}
-                className={styles.menu_button}
+                aria-label={__("reader.navigation.magnifyingGlassButton")}
+                className={stylesReader.menu_button}
                 onClick={this.enableSearch}
             // ref={this.settingsMenuButtonRef}
             >
@@ -113,11 +114,11 @@ class HeaderSearch extends React.Component<IProps, undefined> {
             this.props.keyboardShortcuts.FocusSearch,
             this.enableSearch,
         );
-    }
+    };
 
     private unregisterAllKeyboardListeners = () => {
         unregisterKeyboardListener(this.enableSearch);
-    }
+    };
 
     private enableSearch = () => {
 
@@ -128,7 +129,7 @@ class HeaderSearch extends React.Component<IProps, undefined> {
             return;
         }
         this.props.enableSearch(!this.props.isOnSearch);
-    }
+    };
 
 }
 

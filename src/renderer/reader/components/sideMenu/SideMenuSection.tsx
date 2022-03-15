@@ -7,13 +7,13 @@
 
 import * as React from "react";
 import * as ArrowIcon from "readium-desktop/renderer/assets/icons/baseline-arrow_forward_ios-24px.svg";
-import * as styles from "readium-desktop/renderer/assets/styles/reader-app.css";
+import * as stylesReader from "readium-desktop/renderer/assets/styles/reader-app.css";
 import {
     TranslatorProps, withTranslator,
 } from "readium-desktop/renderer/common/components/hoc/translator";
 import SVG from "readium-desktop/renderer/common/components/SVG";
 
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IBaseProps extends TranslatorProps {
     open?: boolean;
     disabled?: boolean;
@@ -28,7 +28,7 @@ interface IBaseProps extends TranslatorProps {
 // RouteComponentProps
 // ReturnType<typeof mapStateToProps>
 // ReturnType<typeof mapDispatchToProps>
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IProps extends IBaseProps {
 }
 
@@ -61,19 +61,19 @@ export class SideMenuSection extends React.Component<IProps, IState> {
         return (
             <>
                 <li
-                    className={open && !disabled ? styles.active : undefined}
+                    className={open && !disabled ? stylesReader.active : undefined}
                     key={id}
                 >
                     <button onClick={() => onClick(id)} disabled={disabled}
                         aria-pressed={open}>
                         <span>{title}</span>
-                        <SVG className={styles.menu_section_svg} svg={ArrowIcon} />
+                        <SVG className={stylesReader.menu_section_svg} svg={ArrowIcon} />
                     </button>
 
                     <div aria-hidden={open ? undefined : true}
                         style={this.state.style}
-                        className={open && !disabled ? styles.tab_content : undefined}>
-                        <div ref={this.sectionRef} className={open ? styles.line_tab_content : undefined}>
+                        className={open && !disabled ? stylesReader.tab_content : undefined}>
+                        <div ref={this.sectionRef} className={open ? stylesReader.line_tab_content : undefined}>
                             {open && content }
                         </div>
                     </div>

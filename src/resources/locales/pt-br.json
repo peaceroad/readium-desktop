@@ -2,7 +2,6 @@
     "accessibility": {
         "bookMenu": "Menu",
         "closeDialog": "Fechar",
-        "homeMenu": "Menu de visualização de leitura",
         "importFile": "Importar publicação",
         "leftSlideButton": "Deslizar a lista para a esquerda",
         "mainContent": "conteúdo principal",
@@ -49,6 +48,11 @@
         "addTagsButton": "Adicionar",
         "allBooks": "Todos os livros",
         "bookInfo": "Sobre este livro",
+        "column": {
+            "ascending": "",
+            "descending": "",
+            "unsorted": ""
+        },
         "delete": "Apagar",
         "deleteBook": "Remover",
         "deleteTag": "Apagar a tag",
@@ -137,7 +141,7 @@
     "library": {
         "lcp": {
             "cancel": "Cancelar",
-            "hint": "(Dica : {{hint}})",
+            "hint": "(Dica : {{- hint}})",
             "password": "Senha",
             "sentence": "Esta publicação precisa de uma senha LCP para ser aberta: ",
             "submit": "Enviar",
@@ -195,6 +199,7 @@
         "audio": {
             "tracks": "Faixas"
         },
+        "author": "",
         "cancelledLcp": "Este livro não pode ser lido porque a licença LCP foi cancelada.",
         "certificateRevoked": "O certificado foi revogado",
         "certificateSignatureInvalid": "A assinatura do certificado é inválida",
@@ -221,9 +226,14 @@
         "revokedLcp": "Este livro não pode ser lido porque a licença LCP foi revogada.",
         "seeLess": "Veja menos",
         "seeMore": "Veja mais",
+        "title": "",
         "userKeyCheckInvalid": "A senha está incorreta"
     },
     "reader": {
+        "divina": {
+            "mute": "",
+            "unmute": ""
+        },
         "footerInfo": {
             "lessInfo": "menos informação",
             "moreInfo": "mais informação"
@@ -344,12 +354,15 @@
         },
         "tts": {
             "activate": "Ativar Texto para fala",
+            "default": "",
             "next": "Próximo Texto para fala",
             "pause": "Pausar Texto para fala",
             "play": "Tocar Texto para fala",
             "previous": "Texto para fala anterior",
+            "sentenceDetect": "",
             "speed": "Velocidade de Texto para fala",
-            "stop": "Parar Texto para fala"
+            "stop": "Parar Texto para fala",
+            "voice": ""
         }
     },
     "settings": {

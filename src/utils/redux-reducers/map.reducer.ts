@@ -7,6 +7,7 @@
 
 import { Action } from "redux";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface ActionWithPayload<Type = string>
     extends Action<Type> {
 }
@@ -75,6 +76,8 @@ export function mapReducer
                     }
                 });
 
+                // WARNING: .sort() is in-place same-array mutation! (not a new array)
+                // ... which is fine here because .slice() to create a shallow copy
                 newQueue.sort(data.sortFct);
                 return newQueue;
 

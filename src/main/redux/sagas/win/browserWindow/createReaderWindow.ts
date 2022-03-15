@@ -8,7 +8,7 @@
 import * as debug_ from "debug";
 import { BrowserWindow } from "electron";
 import * as path from "path";
-import { callTyped, putTyped } from "readium-desktop/common/redux/sagas/typed-saga";
+import { call as callTyped, put as putTyped } from "typed-redux-saga/macro";
 import { diMainGet, saveReaderWindowInDi } from "readium-desktop/main/di";
 import { setMenu } from "readium-desktop/main/menu";
 import { winActions } from "readium-desktop/main/redux/actions";
@@ -35,11 +35,12 @@ export function* createReaderWindow(action: winActions.reader.openRequest.TActio
         minWidth: 800,
         minHeight: 600,
         webPreferences: {
+            // enableRemoteModule: false,
             allowRunningInsecureContent: false,
             backgroundThrottling: false,
-            contextIsolation: false,
             devTools: IS_DEV,
             nodeIntegration: true,
+            contextIsolation: false,
             nodeIntegrationInWorker: false,
             sandbox: false,
             webSecurity: true,

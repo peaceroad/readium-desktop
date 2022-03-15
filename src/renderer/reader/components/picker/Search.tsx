@@ -25,7 +25,7 @@ import { readerLocalActionSearch } from "../../redux/actions";
 import LoaderSearch from "./LoaderSearch";
 import SearchFormPicker from "./SearchFormPicker";
 
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IBaseProps {
     showSearchResults: () => void;
     pdfEventBus: IEventBusPdfPlayer;
@@ -43,7 +43,7 @@ interface IProps extends IBaseProps,
     TranslatorProps {
 }
 
-// tslint:disable-next-line: no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IState {
     foundNumber: number;
     notFound: boolean;
@@ -191,7 +191,7 @@ class SearchPicker extends React.Component<IProps, IState> {
     private setFoundNumber = (foundNumber: number) => {
 
         this.setState({foundNumber, notFound: !foundNumber});
-    }
+    };
 
     private registerAllKeyboardListeners() {
         registerKeyboardListener(
@@ -223,10 +223,10 @@ class SearchPicker extends React.Component<IProps, IState> {
 
     private onKeyboardSearchPrevious = () => {
         this.props.previous();
-    }
+    };
     private onKeyboardSearchNext = () => {
         this.props.next();
-    }
+    };
 }
 
 const mapStateToProps = (state: IReaderRootState, _props: IBaseProps) => {
