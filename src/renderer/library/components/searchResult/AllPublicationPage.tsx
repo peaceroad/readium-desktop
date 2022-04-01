@@ -72,6 +72,22 @@ import {
     ensureKeyboardListenerIsInstalled, registerKeyboardListener, unregisterKeyboardListener,
 } from "readium-desktop/renderer/common/keyboard";
 
+import { IStringMap } from "@r2-shared-js/models/metadata-multilang";
+import { ipcRenderer } from "electron";
+
+// MAIN process only, not RENDERER, because of diMainGet("translator")
+// import { convertMultiLangStringToString } from "readium-desktop/main/converter/tools/localisation";
+function convertMultiLangStringToString(translator: Translator, items: string | IStringMap | undefined): string {
+    if (typeof items === "object") {
+        const langs = Object.keys(items);
+        const lang = langs.filter((l) =>
+            l.toLowerCase().includes(translator.getLocale().toLowerCase()));
+        const localeLang = lang[0];
+        return items[localeLang] || items._ || items[langs[0]];
+    }
+    return items;
+}
+
 // import {
 //     formatContributorToString,
 // } from "readium-desktop/renderer/common/logics/formatContributor";
@@ -94,6 +110,7 @@ interface IProps extends IBaseProps, ReturnType<typeof mapStateToProps>, ReturnT
 
 interface IState {
     publicationViews: PublicationView[] | undefined;
+    accessibilitySupportEnabled: boolean;
 }
 
 export class AllPublicationPage extends React.Component<IProps, IState> {
@@ -108,10 +125,20 @@ export class AllPublicationPage extends React.Component<IProps, IState> {
 
         this.state = {
             publicationViews: undefined,
+            accessibilitySupportEnabled: false,
         };
     }
 
     public componentDidMount() {
+
+        ipcRenderer.on("accessibility-support-changed", this.accessibilitySupportChanged);
+
+        // note that "@r2-navigator-js/electron/main/browser-window-tracker"
+        // uses "accessibility-support-changed" instead of "accessibility-support-query",
+        // so there is no duplicate event handler.
+        console.log("componentDidMount() ipcRenderer.send - accessibility-support-query");
+        ipcRenderer.send("accessibility-support-query");
+
         ensureKeyboardListenerIsInstalled();
         this.registerAllKeyboardListeners();
 
@@ -134,6 +161,8 @@ export class AllPublicationPage extends React.Component<IProps, IState> {
     }
 
     public componentWillUnmount() {
+        ipcRenderer.off("accessibility-support-changed", this.accessibilitySupportChanged);
+
         this.unregisterAllKeyboardListeners();
 
         if (this.unsubscribe) {
@@ -142,6 +171,13 @@ export class AllPublicationPage extends React.Component<IProps, IState> {
     }
 
     public async componentDidUpdate(oldProps: IProps) {
+
+        // note that "@r2-navigator-js/electron/main/browser-window-tracker"
+        // uses "accessibility-support-changed" instead of "accessibility-support-query",
+        // so there is no duplicate event handler.
+        console.log("componentDidUpdate() ipcRenderer.send - accessibility-support-query");
+        ipcRenderer.send("accessibility-support-query");
+
         if (!keyboardShortcutsMatch(oldProps.keyboardShortcuts, this.props.keyboardShortcuts)) {
             this.unregisterAllKeyboardListeners();
             this.registerAllKeyboardListeners();
@@ -166,6 +202,7 @@ export class AllPublicationPage extends React.Component<IProps, IState> {
                 {
                     this.state.publicationViews ?
                         <TableView
+                            accessibilitySupportEnabled={this.state.accessibilitySupportEnabled}
                             location={this.props.location}
                             displayType={displayType}
                             __={__}
@@ -183,6 +220,15 @@ export class AllPublicationPage extends React.Component<IProps, IState> {
             </LibraryLayout>
         );
     }
+
+    private accessibilitySupportChanged = (_e: Electron.IpcRendererEvent, accessibilitySupportEnabled: boolean) => {
+        console.log("ipcRenderer.on - accessibility-support-changed: ", accessibilitySupportEnabled);
+
+        // prevents infinite loop via componentDidUpdate()
+        if (accessibilitySupportEnabled !== this.state.accessibilitySupportEnabled) {
+            this.setState({ accessibilitySupportEnabled });
+        }
+    };
 
     private registerAllKeyboardListeners() {
         registerKeyboardListener(
@@ -250,13 +296,26 @@ interface ITableCellProps_GlobalFilter {
     globalFilter: string;
     setGlobalFilter: (filterValue: string) => void;
     focusInputRef: React.RefObject<HTMLInputElement>;
+    accessibilitySupportEnabled: boolean;
+    setShowColumnFilters: (show: boolean) => void;
 }
 const CellGlobalFilter: React.FC<ITableCellProps_GlobalFilter> = (props) => {
 
-    const [value, setValue] = React.useState(props.globalFilter);
+    React.useEffect(() => {
+        if (props.focusInputRef?.current &&
+            props.focusInputRef.current.value !== props.globalFilter) {
+            props.focusInputRef.current.value = props.globalFilter || "";
+        }
+    }, [props.focusInputRef, props.globalFilter]);
+    // const [value, setValue] = React.useState(props.globalFilter);
+    // const [, forceReRender] = React.useState(NaN);
 
-    const onChange = useAsyncDebounce((value) => {
-        props.setGlobalFilter(value || undefined);
+    const onInputChange = useAsyncDebounce((v) => {
+
+        // if (v) {}
+        props.setShowColumnFilters(false);
+
+        props.setGlobalFilter(v);
     }, 500);
 
     return (
@@ -276,7 +335,7 @@ const CellGlobalFilter: React.FC<ITableCellProps_GlobalFilter> = (props) => {
                 {`${props.__("header.searchPlaceholder")}`}
             </label>
             <div
-                    aria-live="polite"
+                    aria-live="assertive"
                     style={{
                         // border: "1px solid red",
                         marginLeft: "0.4em",
@@ -288,15 +347,27 @@ const CellGlobalFilter: React.FC<ITableCellProps_GlobalFilter> = (props) => {
                     }}>
                 {props.globalFilteredRows.length !== props.preGlobalFilteredRows.length ? ` (${props.globalFilteredRows.length} / ${props.preGlobalFilteredRows.length})` : ` (${props.preGlobalFilteredRows.length})`}
             </div>
+            {/*
+            value={value || ""}
+            */}
             <input
                 id="globalSearchInput"
                 aria-labelledby="globalSearchLabel"
                 ref={props.focusInputRef}
                 type="search"
-                value={value || ""}
+
                 onChange={(e) => {
-                    setValue(e.target.value);
-                    onChange(e.target.value);
+                    // setValue(e.target.value);
+                    if (!props.accessibilitySupportEnabled) {
+                        onInputChange((e.target.value || "").trim() || undefined);
+                    }
+                }}
+                onKeyUp={(e) => {
+                    if (props.accessibilitySupportEnabled && e.key === "Enter") {
+                        props.setShowColumnFilters(false);
+                        props.setGlobalFilter( // value
+                            (props.focusInputRef?.current?.value || "").trim() || undefined);
+                    }
                 }}
                 placeholder={`${props.__("header.searchTitle")}`}
                 style={{
@@ -308,6 +379,20 @@ const CellGlobalFilter: React.FC<ITableCellProps_GlobalFilter> = (props) => {
                     padding: "0.2em",
                 }}
                 />
+            {props.accessibilitySupportEnabled ? <button
+                style={{
+                    border: "1px solid gray",
+                    borderRadius: "4px",
+                    margin: "0",
+                    marginLeft: "0.4em",
+                    padding: "0.6em",
+                }}
+                onClick={() => {
+                    props.setShowColumnFilters(false);
+                    props.setGlobalFilter( // value
+                        (props.focusInputRef?.current?.value || "").trim() || undefined);
+                }}
+            >{`${props.__("header.searchPlaceholder")}`}</button> : <></>}
         </div>
     );
 };
@@ -318,9 +403,11 @@ interface ITableCellProps_Filter {
     displayType: DisplayType;
 
     showColumnFilters: boolean,
+    accessibilitySupportEnabled: boolean,
 }
 interface ITableCellProps_Column {
     column: ColumnWithLooseAccessor<IColumns> & UseFiltersColumnProps<IColumns>,
+    // columnFilter: string,
     // {
     //     filterValue: string | undefined;
     //     preFilteredRows: string[];
@@ -351,13 +438,54 @@ const CellColumnFilter: React.FC<ITableCellProps_Filter & ITableCellProps_Column
 // }}>
 // {props.column.filteredRows.length !== props.column.preFilteredRows.length ? ` (${props.column.filteredRows.length} / ${props.column.preFilteredRows.length})` : ` (${props.column.preFilteredRows.length})`}
 // </div>
+
+    const inputRef = React.useRef<HTMLInputElement>(null);
+    React.useEffect(() => {
+        if (inputRef?.current &&
+            inputRef.current.value !== props.column.filterValue) {
+                inputRef.current.value = props.column.filterValue || "";
+        }
+    }, [props.column.filterValue]);
+    // const [value, setValue] = React.useState(props.column.filterValue); // props.columnFilter
+    // console.log(props.column.id, props.column.filterValue, props.columnFilter, value);
+    // const [, forceReRender] = React.useState(NaN);
+    // if (props.column.filterValue !== value) {
+    //     setValue(props.column.filterValue);
+    //     return <></>;
+    // }
+
+    const onInputChange = useAsyncDebounce((v) => {
+        props.column.setFilter(v);
+    }, 500);
+
     return props.showColumnFilters ?
-    <>
+    <div style={{
+        display: "flex",
+        alignItems: "center",
+    }}>
+        {
+            /*
+        value={ // props.column.filterValue
+            value || ""}
+            */
+        }
     <input
+        ref={inputRef}
         type="search"
-        value={props.column.filterValue || ""}
         onChange={(e) => {
-            props.column.setFilter(e.target.value || undefined);
+            // setValue(e.target.value);
+            // forceReRender(NaN);
+            if (!props.accessibilitySupportEnabled) {
+                onInputChange((e.target.value || "").trim() || undefined);
+            }
+        }}
+        onKeyUp={(e) => {
+            if (props.accessibilitySupportEnabled && e.key === "Enter") {
+                // (e.target as EventTarget & HTMLInputElement).value
+                // value
+                props.column.setFilter( // props.column.filterValue
+                    (inputRef?.current?.value || "").trim() || undefined);
+            }
         }}
         aria-label={`${props.__("header.searchPlaceholder")} (${props.column.Header})`}
         placeholder={`${props.__("header.searchPlaceholder")} (${props.column.Header})`}
@@ -365,17 +493,36 @@ const CellColumnFilter: React.FC<ITableCellProps_Filter & ITableCellProps_Column
             border: "1px solid gray",
             borderRadius: "4px",
             margin: "0",
-            width: "100%",
+            width: props.accessibilitySupportEnabled ? "calc(100% - 30px)" : "100%",
             padding: "0.2em",
             backgroundColor: "white",
         }}
     />
-    </>
+    {
+    props.accessibilitySupportEnabled ? <button
+        aria-label={`${props.__("header.searchPlaceholder")}`}
+        style={{
+            border: "1px solid gray",
+            borderRadius: "4px",
+            margin: "0",
+            marginLeft: "0.4em",
+            width: "24px",
+            height: "24px",
+            padding: "0.2em",
+        }}
+        onClick={() => {
+            // value
+            props.column.setFilter( // props.column.filterValue
+                (inputRef?.current?.value || "").trim() || undefined);
+        }}
+    ><SVG ariaHidden svg={magnifyingGlass} /></button> : <></>
+    }
+    </div>
     : <></>;
 };
 
 interface ITableCellProps_GenericCell extends ITableCellProps_Common {
-    setShowColumnFilters: (show: boolean) => void;
+    setShowColumnFilters: (show: boolean, columnId: string, filterValue: string) => void;
 }
 
 interface IColumnValue_Cover extends IColumnValue_BaseString {
@@ -456,14 +603,14 @@ const CellLangs: React.FC<ITableCellProps_Column & ITableCellProps_GenericCell &
             tabIndex={0}
             onKeyPress={(e) => { if (e.key === "Enter") {
                 e.preventDefault();
-                props.column.setFilter(t);
-                props.setShowColumnFilters(true);
+                // props.column.setFilter(t);
+                props.setShowColumnFilters(true, props.column.id, t);
             }}}
 
             onClick={(e) => {
                 e.preventDefault();
-                props.column.setFilter(t);
-                props.setShowColumnFilters(true);
+                // props.column.setFilter(t);
+                props.setShowColumnFilters(true, props.column.id, t);
             }}
             style={{
                 display: "flex",
@@ -543,14 +690,14 @@ const CellPublishers: React.FC<ITableCellProps_Column & ITableCellProps_GenericC
             tabIndex={0}
             onKeyPress={(e) => { if (e.key === "Enter") {
                 e.preventDefault();
-                props.column.setFilter(t);
-                props.setShowColumnFilters(true);
+                // props.column.setFilter(t);
+                props.setShowColumnFilters(true, props.column.id, t);
             }}}
 
             onClick={(e) => {
                 e.preventDefault();
-                props.column.setFilter(t);
-                props.setShowColumnFilters(true);
+                // props.column.setFilter(t);
+                props.setShowColumnFilters(true, props.column.id, t);
             }}
             style={{
                 display: "flex",
@@ -630,14 +777,14 @@ const CellAuthors: React.FC<ITableCellProps_Column & ITableCellProps_GenericCell
             tabIndex={0}
             onKeyPress={(e) => { if (e.key === "Enter") {
                 e.preventDefault();
-                props.column.setFilter(t);
-                props.setShowColumnFilters(true);
+                // props.column.setFilter(t);
+                props.setShowColumnFilters(true, props.column.id, t);
             }}}
 
             onClick={(e) => {
                 e.preventDefault();
-                props.column.setFilter(t);
-                props.setShowColumnFilters(true);
+                // props.column.setFilter(t);
+                props.setShowColumnFilters(true, props.column.id, t);
             }}
             style={{
                 display: "flex",
@@ -720,14 +867,14 @@ const CellTags: React.FC<ITableCellProps_Column & ITableCellProps_GenericCell & 
             tabIndex={0}
             onKeyPress={(e) => { if (e.key === "Enter") {
                 e.preventDefault();
-                props.column.setFilter(t);
-                props.setShowColumnFilters(true);
+                // props.column.setFilter(t);
+                props.setShowColumnFilters(true, props.column.id, t);
             }}}
 
             onClick={(e) => {
                 e.preventDefault();
-                props.column.setFilter(t);
-                props.setShowColumnFilters(true);
+                // props.column.setFilter(t);
+                props.setShowColumnFilters(true, props.column.id, t);
             }}
             style={{
             display: "flex",
@@ -807,6 +954,236 @@ const CellDescription: React.FC<ITableCellProps_Column & ITableCellProps_Generic
     }} dangerouslySetInnerHTML={{__html: props.value}} />);
 };
 
+// interface IColumnValue_A11y_StringArrayArray extends IColumnValue_BaseString {
+
+//     strings: (string[])[],
+// };
+// interface ITableCellProps_Value_StringArrayArray {
+//     value: IColumnValue_A11y_StringArrayArray;
+// }
+// const CellStringArrayArray: React.FC<ITableCellProps_Column & ITableCellProps_GenericCell & ITableCellProps_Value_StringArrayArray> = (props) => {
+
+//     const link = (tt: string[]) => {
+//         const t = tt.join(",");
+//         return <a
+//             title={`${t} (${props.__("header.searchPlaceholder")})`}
+//             tabIndex={0}
+//             onKeyPress={(e) => { if (e.key === "Enter") {
+//                 e.preventDefault();
+//                 props.column.setFilter(t);
+//                 props.setShowColumnFilters(true);
+//             }}}
+
+//             onClick={(e) => {
+//                 e.preventDefault();
+//                 props.column.setFilter(t);
+//                 props.setShowColumnFilters(true);
+//             }}
+//             style={{
+//                 display: "flex",
+//                 alignItems: "center",
+//                 textAlign: "center",
+//                 padding: "2px 6px",
+//                 fontSize: "1rem",
+//                 // backgroundColor: "#e7f1fb",
+//                 // borderRadius: "5px",
+//                 // border: "1px solid var(--color-tertiary)",
+//                 // color: "var(--color-tertiary)",
+//                 cursor: "pointer",
+//                 // textDecoration: "none",
+//                 textDecoration: "underline",
+//                 textDecorationColor: "var(--color-tertiary)",
+//                 textDecorationSkip: "ink",
+//                 marginRight: "6px",
+//                 marginBottom: "6px",
+//         }}>{t}</a>;
+//     };
+
+//     // props.value.label === props.value.tags.join(", ")
+
+//     const flexStyle: React.CSSProperties = {
+//         display: "flex",
+//         flexDirection: "row",
+//         alignItems: "flex-start",
+//         justifyContent: "center",
+//         flexWrap: "wrap",
+//         paddingTop: "0.2em",
+//     };
+
+//     return props.value.strings?.length ?
+//     (
+//     props.value.strings.length === 1 ? (
+//         <div style={{...flexStyle}}>
+//         {
+//         link(props.value.strings[0])
+//         }
+//         </div>
+//     ) : (
+//         <ul style={{
+//             listStyleType: "none",
+//             margin: "0",
+//             padding: "0",
+//             ...flexStyle,
+//         }}>
+//         {
+//         props.value.strings.map((t, i) => {
+//             return <li
+//                 key={`k${i}`}
+//                 style={{
+//                     display: "flex",
+//                     alignItems: "center",
+//                     margin: "0",
+//                     padding: "0",
+//                 }}
+//             >{link(t)}</li>;
+//         })
+//         }
+//         </ul>
+//     ))
+//     : <></>;
+// };
+
+// interface IColumnValue_A11y_StringArray extends IColumnValue_BaseString {
+
+//     strings: string[],
+// };
+// interface ITableCellProps_Value_StringArray {
+//     value: IColumnValue_A11y_StringArray;
+// }
+// const CellStringArray: React.FC<ITableCellProps_Column & ITableCellProps_GenericCell & ITableCellProps_Value_StringArray> = (props) => {
+
+//     const link = (t: string) => {
+//         return <a
+//             title={`${t} (${props.__("header.searchPlaceholder")})`}
+//             tabIndex={0}
+//             onKeyPress={(e) => { if (e.key === "Enter") {
+//                 e.preventDefault();
+//                 props.column.setFilter(t);
+//                 props.setShowColumnFilters(true);
+//             }}}
+
+//             onClick={(e) => {
+//                 e.preventDefault();
+//                 props.column.setFilter(t);
+//                 props.setShowColumnFilters(true);
+//             }}
+//             style={{
+//                 display: "flex",
+//                 alignItems: "center",
+//                 textAlign: "center",
+//                 padding: "2px 6px",
+//                 fontSize: "1rem",
+//                 // backgroundColor: "#e7f1fb",
+//                 // borderRadius: "5px",
+//                 // border: "1px solid var(--color-tertiary)",
+//                 // color: "var(--color-tertiary)",
+//                 cursor: "pointer",
+//                 // textDecoration: "none",
+//                 textDecoration: "underline",
+//                 textDecorationColor: "var(--color-tertiary)",
+//                 textDecorationSkip: "ink",
+//                 marginRight: "6px",
+//                 marginBottom: "6px",
+//         }}>{t}</a>;
+//     };
+
+//     // props.value.label === props.value.tags.join(", ")
+
+//     const flexStyle: React.CSSProperties = {
+//         display: "flex",
+//         flexDirection: "row",
+//         alignItems: "flex-start",
+//         justifyContent: "center",
+//         flexWrap: "wrap",
+//         paddingTop: "0.2em",
+//     };
+
+//     return props.value.strings?.length ?
+//     (
+//     props.value.strings.length === 1 ? (
+//         <div style={{...flexStyle}}>
+//         {
+//         link(props.value.strings[0])
+//         }
+//         </div>
+//     ) : (
+//         <ul style={{
+//             listStyleType: "none",
+//             margin: "0",
+//             padding: "0",
+//             ...flexStyle,
+//         }}>
+//         {
+//         props.value.strings.map((t, i) => {
+//             return <li
+//                 key={`k${i}`}
+//                 style={{
+//                     display: "flex",
+//                     alignItems: "center",
+//                     margin: "0",
+//                     padding: "0",
+//                 }}
+//             >{link(t)}</li>;
+//         })
+//         }
+//         </ul>
+//     ))
+//     : <></>;
+// };
+
+interface IColumnValue_Date extends IColumnValue_BaseString {
+
+    date: string,
+};
+interface ITableCellProps_Value_Date {
+    value: IColumnValue_Date;
+}
+const CellDate: React.FC<ITableCellProps_Column & ITableCellProps_GenericCell & ITableCellProps_Value_Date> = (props) => {
+    return (
+    props.value.label ?
+    <div style={{
+        ...commonCellStyles(props),
+    }}
+    >
+        <a
+            title={`${props.value.label} (${props.__("header.searchPlaceholder")})`}
+            tabIndex={0}
+            onKeyPress={(e) => { if (e.key === "Enter") {
+                e.preventDefault();
+                const t = props.value.label.substring(0, 4); // YYYY
+                // props.column.setFilter(t);
+                props.setShowColumnFilters(true, props.column.id, t);
+            }}}
+
+            onClick={(e) => {
+                e.preventDefault();
+                const t = props.value.label.substring(0, 4); // YYYY
+                // props.column.setFilter(t);
+                props.setShowColumnFilters(true, props.column.id, t);
+            }}
+            style={{
+                display: "flex",
+                alignItems: "center",
+                textAlign: "center",
+                padding: "2px 6px",
+                fontSize: "1rem",
+                // backgroundColor: "#e7f1fb",
+                // borderRadius: "5px",
+                // border: "1px solid var(--color-tertiary)",
+                // color: "var(--color-tertiary)",
+                cursor: "pointer",
+                // textDecoration: "none",
+                textDecoration: "underline",
+                textDecorationColor: "var(--color-tertiary)",
+                textDecorationSkip: "ink",
+                marginRight: "6px",
+                marginBottom: "6px",
+        }}>{props.value.date}</a>
+    </div>
+    : <></>
+    );
+};
+
 interface IColumnValue_Title extends IColumnValue_BaseString {
 
     title: string,
@@ -867,11 +1244,22 @@ interface IColumns {
     colAuthors: IColumnValue_Authors;
     colPublishers: IColumnValue_Publishers;
     colLanguages: IColumnValue_Langs;
-    colPublishedDate: string;
+    colPublishedDate: IColumnValue_Date;
     colDescription: string;
     colLCP: string;
     colTags: IColumnValue_Tags;
     colDuration: string;
+
+    col_a11y_accessibilitySummary: string; // string | IStringMap => convertMultiLangStringToString()
+    // col_a11y_accessMode: IColumnValue_A11y_StringArray; // string[]
+    // col_a11y_accessModeSufficient: IColumnValue_A11y_StringArrayArray; // (string[])[]
+    // col_a11y_accessibilityFeature: IColumnValue_A11y_StringArray; // string[]
+    // col_a11y_accessibilityHazard: IColumnValue_A11y_StringArray; // string[]
+    // col_a11y_certifiedBy: IColumnValue_A11y_StringArray; // string[]
+    // col_a11y_certifierCredential: IColumnValue_A11y_StringArray; // string[]
+    // col_a11y_certifierReport: IColumnValue_A11y_StringArray; // string[]
+    // col_a11y_conformsTo: IColumnValue_A11y_StringArray; // string[]
+
     // colIdentifier: string;
     // colPublicationType: string;
     // colProgression: string;
@@ -902,6 +1290,7 @@ interface ITableCellProps_TableView {
     publicationViews: PublicationView[];
     focusInputRef: React.RefObject<HTMLInputElement>;
     location: Location;
+    accessibilitySupportEnabled: boolean;
 }
 export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Common> = (props) => {
 
@@ -916,6 +1305,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
         displayType: props.displayType,
 
         showColumnFilters,
+        accessibilitySupportEnabled: props.accessibilitySupportEnabled,
     };
 
     const renderProps_Cell: ITableCellProps_GenericCell =
@@ -927,10 +1317,14 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
         displayPublicationInfo: props.displayPublicationInfo,
         openReader: props.openReader,
 
-        setShowColumnFilters: (show: boolean) => {
+        setShowColumnFilters: (show: boolean, columnId: string, filterValue: string) => {
             setShowColumnFilters(show);
 
-            if (scrollToViewRef.current) {
+            setTimeout(() => {
+                tableInstance.setFilter(columnId, filterValue);
+            }, 200);
+
+            if (scrollToViewRef?.current) {
                 scrollToViewRef.current.scrollIntoView();
             }
         },
@@ -943,8 +1337,17 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
             // const authors = publicationView.authors ? formatContributorToString(publicationView.authors, props.translator) : "";
             // const publishers = publicationView.publishers ? formatContributorToString(publicationView.publishers, props.translator) : "";
 
+            // publicationView.publishedAt = r2Publication.metadata.PublicationDate && moment(metadata.PublicationDate).toISOString();
             const mom = publicationView.publishedAt ? moment(publicationView.publishedAt) : undefined;
-            const publishedDate = mom ? `${mom.year()}-${mom.month().toString().padStart(2, "0")}-${mom.day().toString().padStart(2, "0")}` : ""; // .toISOString()
+            const publishedDateCanonical = mom && mom.isValid() ? `${mom.year().toString().padStart(4, "0")}-${(mom.month() || 1).toString().padStart(2, "0")}-${(mom.day() || 1).toString().padStart(2, "0")}` : ""; // .toISOString()
+            let publishedDateVisual = publishedDateCanonical;
+            if (publishedDateCanonical) {
+                try {
+                    publishedDateVisual = new Intl.DateTimeFormat(props.translator.getLocale(), { dateStyle: "medium", timeStyle: undefined }).format(new Date(publishedDateCanonical));
+                } catch (err) {
+                    console.log(err);
+                }
+            }
 
             const langsArray = publicationView.languages ? publicationView.languages.map((lang) => {
 
@@ -1005,7 +1408,10 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                     label: langsArray ? langsArray.join(", ") : "",
                     langs: langsArray,
                 },
-                colPublishedDate: publishedDate,
+                colPublishedDate: { // IColumnValue_Date
+                    label: publishedDateCanonical,
+                    date: publishedDateVisual,
+                },
                 colLCP: lcp,
                 colTags: { // IColumnValue_Tags
                     label: publicationView.tags ? publicationView.tags.join(", ") : "",
@@ -1013,6 +1419,47 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                 },
                 colDuration: duration,
                 colDescription: description,
+
+                col_a11y_accessibilitySummary: publicationView.a11y_accessibilitySummary ?
+                    convertMultiLangStringToString(props.translator, publicationView.a11y_accessibilitySummary) :
+                    "",
+                // col_a11y_accessMode: { // IColumnValue_A11y_StringArray
+                //     label: publicationView.a11y_accessMode?.length ? [].concat(publicationView.a11y_accessMode).sort().join(", ") : "",
+                //     strings: publicationView.a11y_accessMode,
+                // },
+                // col_a11y_accessModeSufficient: { // IColumnValue_A11y_StringArrayArray
+                //     label: publicationView.a11y_accessModeSufficient?.length ?
+                //         publicationView.a11y_accessModeSufficient.reduce((acc, cur) => {
+                //             return `${acc}${acc.length ? " / " : ""}${cur.join(",")}`;
+                //         }, "") :
+                //         "",
+                //     strings: publicationView.a11y_accessModeSufficient,
+                // },
+                // col_a11y_accessibilityFeature: { // IColumnValue_A11y_StringArray
+                //     label: publicationView.a11y_accessibilityFeature?.length ? [].concat(publicationView.a11y_accessibilityFeature).sort().join(", ") : "",
+                //     strings: publicationView.a11y_accessibilityFeature,
+                // },
+                // col_a11y_accessibilityHazard: { // IColumnValue_A11y_StringArray
+                //     label: publicationView.a11y_accessibilityHazard?.length ? [].concat(publicationView.a11y_accessibilityHazard).sort().join(", ") : "",
+                //     strings: publicationView.a11y_accessibilityHazard,
+                // },
+                // col_a11y_certifiedBy: { // IColumnValue_A11y_StringArray
+                //     label: publicationView.a11y_certifiedBy?.length ? [].concat(publicationView.a11y_certifiedBy).sort().join(", ") : "",
+                //     strings: publicationView.a11y_certifiedBy,
+                // },
+                // col_a11y_certifierCredential: { // IColumnValue_A11y_StringArray
+                //     label: publicationView.a11y_certifierCredential?.length ? [].concat(publicationView.a11y_certifierCredential).sort().join(", ") : "",
+                //     strings: publicationView.a11y_certifierCredential,
+                // },
+                // col_a11y_certifierReport: { // IColumnValue_A11y_StringArray
+                //     label: publicationView.a11y_certifierReport?.length ? [].concat(publicationView.a11y_certifierReport).sort().join(", ") : "",
+                //     strings: publicationView.a11y_certifierReport,
+                // },
+                // col_a11y_conformsTo: { // IColumnValue_A11y_StringArray
+                //     label: publicationView.a11y_conformsTo?.length ? [].concat(publicationView.a11y_conformsTo).sort().join(", ") : "",
+                //     strings: publicationView.a11y_conformsTo,
+                // },
+
                 // colProgression: "Progression",
                 // colIdentifier: identifier,
                 // colPublicationType: publicationType,
@@ -1096,6 +1543,8 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
             {
                 Header: props.__("catalog.released"),
                 accessor: "colPublishedDate",
+                Cell: CellDate,
+                filter: "text", // because IColumnValue_BaseString instead of plain string
                 sortType: sortFunction,
             },
             {
@@ -1121,6 +1570,70 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                 Cell: CellDescription,
                 sortType: sortFunction,
             },
+
+            {
+                Header: props.__("catalog.about.button"),
+                accessor: "col_a11y_accessibilitySummary",
+                Cell: CellDescription,
+                sortType: sortFunction,
+            },
+            // {
+            //     Header: "accessMode",
+            //     accessor: "col_a11y_accessMode",
+            //     Cell: CellStringArray,
+            //     filter: "text", // because IColumnValue_BaseString instead of plain string
+            //     sortType: sortFunction,
+            // },
+            // {
+            //     Header: "accessModeSufficient",
+            //     accessor: "col_a11y_accessModeSufficient",
+            //     Cell: CellStringArrayArray,
+            //     filter: "text", // because IColumnValue_BaseString instead of plain string
+            //     sortType: sortFunction,
+            // },
+            // {
+            //     Header: "accessibilityFeature",
+            //     accessor: "col_a11y_accessibilityFeature",
+            //     Cell: CellStringArray,
+            //     filter: "text", // because IColumnValue_BaseString instead of plain string
+            //     sortType: sortFunction,
+            // },
+            // {
+            //     Header: "accessibilityHazard",
+            //     accessor: "col_a11y_accessibilityHazard",
+            //     Cell: CellStringArray,
+            //     filter: "text", // because IColumnValue_BaseString instead of plain string
+            //     sortType: sortFunction,
+            // },
+            // {
+            //     Header: "certifiedBy",
+            //     accessor: "col_a11y_certifiedBy",
+            //     Cell: CellStringArray,
+            //     filter: "text", // because IColumnValue_BaseString instead of plain string
+            //     sortType: sortFunction,
+            // },
+            // {
+            //     Header: "certifierCredential",
+            //     accessor: "col_a11y_certifierCredential",
+            //     Cell: CellStringArray,
+            //     filter: "text", // because IColumnValue_BaseString instead of plain string
+            //     sortType: sortFunction,
+            // },
+            // {
+            //     Header: "certifierReport",
+            //     accessor: "col_a11y_certifierReport",
+            //     Cell: CellStringArray,
+            //     filter: "text", // because IColumnValue_BaseString instead of plain string
+            //     sortType: sortFunction,
+            // },
+            // {
+            //     Header: "conformsTo",
+            //     accessor: "col_a11y_conformsTo",
+            //     Cell: CellStringArray,
+            //     filter: "text", // because IColumnValue_BaseString instead of plain string
+            //     sortType: sortFunction,
+            // },
+
             // {
             //     Header: props.__("publication.progression.title"),
             //     accessor: "colProgression",
@@ -1287,6 +1800,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
             // `(${tableRows.length})`
             }
             <CellGlobalFilter
+                    accessibilitySupportEnabled={props.accessibilitySupportEnabled}
                     preGlobalFilteredRows={tableInstance.preGlobalFilteredRows}
                     globalFilteredRows={tableInstance.globalFilteredRows}
                     globalFilter={tableInstance.state.globalFilter}
@@ -1295,6 +1809,18 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                     translator={props.translator}
                     displayType={props.displayType}
                     focusInputRef={props.focusInputRef}
+
+                    setShowColumnFilters={(show: boolean) => {
+                        const currentShow = showColumnFilters;
+                        setShowColumnFilters(show);
+                        setTimeout(() => {
+                            if (currentShow && !show) {
+                                for (const col of tableInstance.allColumns) {
+                                    tableInstance.setFilter(col.id, "");
+                                }
+                            }
+                        }, 200);
+                    }}
                 />
         </div></div>
 
@@ -1334,7 +1860,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
             aria-label={`${props.__("opds.firstPage")}`}
             onClick={() => tableInstance.gotoPage(0)}
             disabled={!tableInstance.canPreviousPage}>
-                <SVG svg={ArrowFirstIcon} />
+                <SVG ariaHidden={true} svg={ArrowFirstIcon} />
             </button>
             <button
             style={{
@@ -1347,7 +1873,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
             aria-label={`${props.__("opds.previous")}`}
             onClick={() => tableInstance.previousPage()}
             disabled={!tableInstance.canPreviousPage}>
-                <SVG svg={ArrowRightIcon} />
+                <SVG ariaHidden={true} svg={ArrowRightIcon} />
             </button>
             <select
                 aria-label={`${props.__("reader.navigation.currentPageTotal", {current: tableInstance.state.pageIndex + 1, total: tableInstance.pageOptions.length})}`}
@@ -1378,7 +1904,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
             aria-label={`${props.__("opds.next")}`}
             onClick={() => tableInstance.nextPage()}
             disabled={!tableInstance.canNextPage}>
-                <SVG svg={ArrowRightIcon} />
+                <SVG ariaHidden={true} svg={ArrowRightIcon} />
             </button>
             <button
             style={{
@@ -1390,7 +1916,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
             aria-label={`${props.__("opds.lastPage")}`}
             onClick={() => tableInstance.gotoPage(tableInstance.pageCount - 1)}
             disabled={!tableInstance.canNextPage}>
-                <SVG svg={ArrowLastIcon} />
+                <SVG ariaHidden={true} svg={ArrowLastIcon} />
             </button>
             </div>
         </div>
@@ -1446,6 +1972,8 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                         "100px" :
                         column.id === "colDuration" ?
                         "100px" :
+                        column.id === "col_a11y_accessibilitySummary" ?
+                        "180px" :
                         "160px";
 
                     return (<th
@@ -1498,7 +2026,10 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                         </button>
                         {
                         column.canFilter ?
-                        (<div style={{display: "block"}}>{ column.render("Filter", renderProps_Filter) }</div>)
+                        (<div style={{display: "block"}}>{ column.render("Filter", {
+                            ...renderProps_Filter,
+                            // columnFilter: column.filterValue,
+                        }) }</div>)
                         : <></>
                         }
                         </>
@@ -1517,13 +2048,13 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                             type="checkbox"
                             checked={showColumnFilters ? true : false}
                             onChange={() => {
+                                const show = showColumnFilters;
                                 setShowColumnFilters(!showColumnFilters);
-                                const s = showColumnFilters;
                                 setTimeout(() => {
-                                    if (!s) {
+                                    if (!show) {
                                         tableInstance.setGlobalFilter("");
                                     }
-                                    if (s) {
+                                    if (show) {
                                         for (const col of tableInstance.allColumns) {
                                             tableInstance.setFilter(col.id, "");
                                         }

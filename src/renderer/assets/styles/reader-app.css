@@ -377,6 +377,10 @@ button {
         display: flex;
         align-items: center;
         width: auto;
+
+        & > select {
+          color: var(--reader-fontColor);
+        }
       }
 
       & > li.ttsSelectVoice {
@@ -386,6 +390,7 @@ button {
 
         & > select {
           width: 180px;
+          color: var(--reader-fontColor);
         }
       }
 
@@ -678,6 +683,7 @@ button {
   }
 
   & .chapters_content {
+    border-left: 1px solid var(--reader-separatorColor);
     padding: 0 0 0 20px;
   }
 
@@ -689,7 +695,8 @@ button {
 
   & .line.active:not(.inert) {
     &:hover {
-      color: #808080 !important;
+      /* color: #808080 !important; */
+      background-color: var(--reader-separatorColor);
     }
 
     /* &:focus {
@@ -705,8 +712,9 @@ button {
 #chapter_settings_list {
   & .subheading {
     background-color: var(--reader-menuPartTitleColor);
-    padding: 20px;
+    padding: 10px;
     margin-bottom: 10px;
+    text-align: left;
   }
 
   & .subheading:not(.inert) {
@@ -1117,6 +1125,7 @@ input[type=radio] + label {
     padding: 1rem 8rem 1rem 5rem;
     bottom: 0;
     margin-top: 1rem;
+    color: var(--reader-fontColor);
   }
 
   & .track_reading_wrapper_noArrows {
