@@ -21,12 +21,16 @@ import ptBrCatalog from "readium-desktop/resources/locales/pt-br.json";
 import ptPtCatalog from "readium-desktop/resources/locales/pt-pt.json";
 import ruCatalog from "readium-desktop/resources/locales/ru.json";
 import zhCnCatalog from "readium-desktop/resources/locales/zh-cn.json";
+import zhTwCatalog from "readium-desktop/resources/locales/zh-tw.json";
 import koCatalog from "readium-desktop/resources/locales/ko.json";
 import svCatalog from "readium-desktop/resources/locales/sv.json";
+import caCatalog from "readium-desktop/resources/locales/ca.json";
+import glCatalog from "readium-desktop/resources/locales/gl.json";
+import euCatalog from "readium-desktop/resources/locales/eu.json";
 
 import { TFunction } from "readium-desktop/typings/en.translation";
 
-import i18next from "i18next";
+import i18next, { TOptions } from "i18next";
 
 const i18nextInstance = i18next.createInstance();
 
@@ -87,6 +91,9 @@ i18nextInstance.init({
         "zh-CN": {
             translation: zhCnCatalog,
         },
+        "zh-TW": {
+            translation: zhTwCatalog,
+        },
         "it" : {
             translation: itCatalog,
         },
@@ -98,6 +105,15 @@ i18nextInstance.init({
         },
         "sv": {
             translation: svCatalog,
+        },
+        "ca": {
+            translation: caCatalog,
+        },
+        "gl": {
+            translation: glCatalog,
+        },
+        "eu": {
+            translation: euCatalog,
         },
     },
     // lng: undefined,
@@ -140,11 +156,15 @@ export const AvailableLanguages = {
     "lt": "Lietuvių",
     "pt-BR": "Português Brasileiro",
     "pt-PT": "Português",
-    "zh-CN": "中文",
+    "zh-CN": "中文 - 中国", // "中文 - 中國"
+    "zh-TW": "中文 - 台灣", // "中文 - 台湾"
     "it": "Italiano",
     "ru": "Русский",
     "ko": "한국어",
     "sv": "Svenska",
+    "ca": "Catalan",
+    "gl": "Galician",
+    "eu": "Basque (Euskadi)",
 };
 
 interface LocalizedContent {
@@ -155,7 +175,7 @@ export type I18nTyped = TFunction;
 
 @injectable()
 export class Translator {
-    public translate: I18nTyped = this._translate;
+    public translate = this._translate as I18nTyped;
     private locale = "en";
 
     public getLocale(): string {
@@ -229,7 +249,7 @@ export class Translator {
         return "";
     }
 
-    private _translate(message: string, options: any = {}): any { // TODO any?!
+    private _translate(message: string, options: TOptions = {}): string {
         const label = i18nextInstance.t(message, options);
         if (!label || !label.length) {
             return i18nextInstanceEN.t(message, options);

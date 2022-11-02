@@ -10,6 +10,9 @@
         "skipLink": "Pasar al contenido",
         "toolbar": "Barra de herramientas"
     },
+    "apiapp": {
+        "noLibraryFound": "Biblioteca no encontrada ({{- name}})"
+    },
     "app": {
         "edit": {
             "copy": "Copiar",
@@ -66,10 +69,12 @@
             "lastAdditions": "Añadidos recientemente"
         },
         "export": "Exportar",
+        "format": "Formato",
         "lang": "Idioma",
+        "lastRead": "Último leído",
         "moreInfo": "Más información",
         "myBooks": "Mis libros",
-        "noPublicationHelpL1": "Suelta una publicación aquí",
+        "noPublicationHelpL1": "Desliza una publicación aquí",
         "noPublicationHelpL2": "o usa el botón \"+\" de arriba.",
         "noPublicationHelpL3": "Se admiten ficheros protegidos LCP.",
         "noPublicationHelpL4": "Extensiones admitidas:",
@@ -103,7 +108,8 @@
         "released": "Publicado en",
         "sort": "Ordenar por",
         "tagCount": "Número de etiquetas",
-        "tags": "Etiquetas"
+        "tags": "Etiquetas",
+        "update": ""
     },
     "dialog": {
         "closeModalWindow": "Cerrar esta ventana modal",
@@ -170,6 +176,9 @@
             "url": "Enlace:",
             "urlPlaceholder": "Enlace"
         },
+        "addFormApiapp": {
+            "title": "Añadir la cuenta de una biblioteca"
+        },
         "addMenu": "Añadir catálogo OPDS",
         "back": "Atrás",
         "breadcrumbRoot": "Catálogos",
@@ -187,19 +196,57 @@
         "network": {
             "error": "No se puede acceder al catálogo OPDS",
             "noInternet": "No hay internet",
-            "noInternetMessage": "Intenta: comprobar el cable de red, módem, rúter o wifi",
-            "reject": "Lo sentimos, ha habido un error inesperado al intentar procesar el catálogo OPDS",
-            "timeout": "Terminó el tiempo de espera de la red; por favor, vuelve a intentarlo más tarde"
+            "noInternetMessage": "Intenta: comprobar el cable de red, módem, router o wifi",
+            "reject": "Lo sentimos, se ha producido un error inesperado al intentar procesar el catálogo OPDS",
+            "timeout": "Finalizó el tiempo de espera de la red; por favor, vuelve a intentarlo más tarde"
         },
         "next": "Siguiente",
         "previous": "Anterior",
-        "shelf": "Estante"
+        "shelf": "Estante",
+        "updateForm": {
+            "name": "Nombre",
+            "namePlaceholder": "Nombre",
+            "title": "Editar catálogo OPDS",
+            "updateButton": "Editar",
+            "url": "Enlace",
+            "urlPlaceholder": "Enlace"
+        }
     },
     "publication": {
+        "accessibility": {
+            "accessModeSufficient": {
+                "textual": ""
+            },
+            "accessibilityFeature": {
+                "alternativeText": "",
+                "displayTransformability": "",
+                "longDescription": "",
+                "printPageNumbers": "",
+                "readingOrder": "",
+                "synchronizedAudioText": "",
+                "tableOfContents": ""
+            },
+            "accessibilityHazard": {
+                "flashing": "",
+                "motion": "",
+                "name": "",
+                "noFlashing": "",
+                "noMotion": "",
+                "noSimulation": "",
+                "noSound": "",
+                "none": "",
+                "simulation": "",
+                "sound": "",
+                "unknown": ""
+            },
+            "moreInformation": "",
+            "name": "",
+            "noA11y": ""
+        },
         "audio": {
             "tracks": "Pistas"
         },
-        "author": "Author",
+        "author": "Autor",
         "cancelledLcp": "Este libro no se puede leer porque la licencia LCP se ha cancelado.",
         "certificateRevoked": "El certificado está cancelado",
         "certificateSignatureInvalid": "La firma del certificado no es válida",
@@ -211,8 +258,8 @@
         },
         "expiredLcp": "Este libro no se puede leer porque la licencia LCP ha expirado.",
         "lcpEnd": "Fin",
-        "lcpRightsCopy": "Copia de personajes",
-        "lcpRightsPrint": "Copia de impresora",
+        "lcpRightsCopy": "Caracteres copiados",
+        "lcpRightsPrint": "Páginas impresas",
         "lcpStart": "Inicio",
         "licenseOutOfDate": "La licencia está desactualizada",
         "licenseSignatureDateInvalid": "La fecha de la firma de la licencia no es válida",
@@ -223,7 +270,7 @@
         "renewButton": "Renovar",
         "returnButton": "Devolver",
         "returnedLcp": "Este libro no se puede leer porque la licencia LCP se ha devuelto.",
-        "revokedLcp": "Este libro no se puede leer porque la licencia LCP Se ha cancelado.",
+        "revokedLcp": "Este libro no se puede leer porque la licencia LCP se ha cancelado.",
         "seeLess": "Ver menos",
         "seeMore": "Ver más",
         "title": "Título",
@@ -251,7 +298,7 @@
             "activate": "Activar lectura en voz alta",
             "captions": "Texto sincronizado/presentación diáfana",
             "next": "Siguiente (Lectura en voz alta)",
-            "pause": "Pausar Lectura en voz alta",
+            "pause": "Pausar (Lectura en voz alta)",
             "play": "Reproducir (Lectura en voz alta)",
             "previous": "Anterior (Lectura en voz alta)",
             "skip": "Omitir información auxiliar",
@@ -270,6 +317,8 @@
             "goToError": "Este salto de página no existe",
             "goToPlaceHolder": "Introduce un número de página",
             "goToTitle": "Ir a página",
+            "historyNext": "",
+            "historyPrevious": "",
             "infoTitle": "Información",
             "magnifyingGlassButton": "buscar en la publicación",
             "openTableOfContentsTitle": "Navegación",
@@ -324,7 +373,7 @@
                     "fit": "ajuste de página",
                     "width": "ancho de página"
                 },
-                "title": "Zum"
+                "title": "Zoom"
             },
             "reduceMotion": "Disminuir movimiento",
             "save": {

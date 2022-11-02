@@ -54,6 +54,7 @@ const supportedFileTypeLinkArray = [
     ContentType.pdf,
     ContentType.lcppdf,
     ContentType.Lpf,
+    ContentType.Zip,
 ];
 
 @injectable()
@@ -369,7 +370,7 @@ export class OpdsFeedViewConverter {
         return {
             baseUrl,
             // r2OpdsPublicationJson,
-            title,
+            documentTitle: title,
             authors,
             publishers,
             workIdentifier,

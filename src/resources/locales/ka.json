@@ -10,6 +10,9 @@
         "skipLink": "შიგთავსზე გადახტომა",
         "toolbar": "ინსტრუმენტთა პანელი"
     },
+    "apiapp": {
+        "noLibraryFound": ""
+    },
     "app": {
         "edit": {
             "copy": "ასლი",
@@ -66,7 +69,9 @@
             "lastAdditions": "ახლახანს დამატებული"
         },
         "export": "გატანა",
+        "format": "",
         "lang": "ენა",
+        "lastRead": "",
         "moreInfo": "მეტი ინფორმაცია",
         "myBooks": "ჩემი წიგნები",
         "noPublicationHelpL1": "ჩააგდე პუბლიკაცია აქ",
@@ -103,7 +108,8 @@
         "released": "გამოცემის თარიღი",
         "sort": "დალაგება",
         "tagCount": "იარლიყების რაოდენობა",
-        "tags": "იარლიყები"
+        "tags": "იარლიყები",
+        "update": ""
     },
     "dialog": {
         "closeModalWindow": "მოდალური ფანჯრის დახურვა",
@@ -170,6 +176,9 @@
             "url": "მისამართი:",
             "urlPlaceholder": "ბმული"
         },
+        "addFormApiapp": {
+            "title": ""
+        },
         "addMenu": "OPDS წყაროს დამატება",
         "back": "უკან",
         "breadcrumbRoot": "კატალოგები",
@@ -193,9 +202,47 @@
         },
         "next": "მომდევნო",
         "previous": "წინა",
-        "shelf": "თარო"
+        "shelf": "თარო",
+        "updateForm": {
+            "name": "",
+            "namePlaceholder": "",
+            "title": "",
+            "updateButton": "",
+            "url": "",
+            "urlPlaceholder": ""
+        }
     },
     "publication": {
+        "accessibility": {
+            "accessModeSufficient": {
+                "textual": ""
+            },
+            "accessibilityFeature": {
+                "alternativeText": "",
+                "displayTransformability": "",
+                "longDescription": "",
+                "printPageNumbers": "",
+                "readingOrder": "",
+                "synchronizedAudioText": "",
+                "tableOfContents": ""
+            },
+            "accessibilityHazard": {
+                "flashing": "",
+                "motion": "",
+                "name": "",
+                "noFlashing": "",
+                "noMotion": "",
+                "noSimulation": "",
+                "noSound": "",
+                "none": "",
+                "simulation": "",
+                "sound": "",
+                "unknown": ""
+            },
+            "moreInformation": "",
+            "name": "",
+            "noA11y": ""
+        },
         "audio": {
             "tracks": "აუდიო ნაკვალევები"
         },
@@ -270,6 +317,8 @@
             "goToError": "ამ გვერდის წყვეტა არ არსებობს",
             "goToPlaceHolder": "შეიტანეთ გვერდის ნომერი",
             "goToTitle": "გადადით გვერდზე",
+            "historyNext": "",
+            "historyPrevious": "",
             "infoTitle": "ინფორმაცია",
             "magnifyingGlassButton": "პუბლიკაციაში ძიება",
             "openTableOfContentsTitle": "ნავიგაცია",

@@ -44,6 +44,12 @@ const _defaults_ = Object.freeze({
         shift: true,
         key: "KeyI",
     }),
+    SpeakReaderInfoWhereAmI: Object.freeze<TKeyboardShortcut>({
+        alt: false,
+        control: true,
+        shift: true,
+        key: "KeyK",
+    }),
 
     FocusMain: Object.freeze<TKeyboardShortcut>({
         alt: false,
@@ -165,6 +171,19 @@ const _defaults_ = Object.freeze({
         control: true,
         shift: false,
         key: "KeyW",
+    }),
+
+    NavigatePreviousHistory: Object.freeze<TKeyboardShortcut>({
+        alt: false,
+        control: true,
+        shift: false,
+        key: "Backspace",
+    }),
+    NavigateNextHistory: Object.freeze<TKeyboardShortcut>({
+        alt: false,
+        control: true,
+        shift: true,
+        key: "Backspace",
     }),
 
     NavigatePreviousPage: Object.freeze<TKeyboardShortcut>({

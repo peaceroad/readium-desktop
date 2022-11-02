@@ -10,6 +10,9 @@
         "skipLink": "Hyppää sisältöön",
         "toolbar": "Työkalurivi"
     },
+    "apiapp": {
+        "noLibraryFound": ""
+    },
     "app": {
         "edit": {
             "copy": "Kopioi",
@@ -66,7 +69,9 @@
             "lastAdditions": "Viimeksi lisätty"
         },
         "export": "Vie",
+        "format": "",
         "lang": "Kieli",
+        "lastRead": "",
         "moreInfo": "Lisää tietoja",
         "myBooks": "Minun kirjani",
         "noPublicationHelpL1": "Pudota julkaisu tähän",
@@ -103,7 +108,8 @@
         "released": "Julkaistu",
         "sort": "Järjestä",
         "tagCount": "Tunnistemäärä",
-        "tags": "Tunnisteet"
+        "tags": "Tunnisteet",
+        "update": ""
     },
     "dialog": {
         "closeModalWindow": "Sulje tämä ikkuna",
@@ -170,6 +176,9 @@
             "url": "Linkki:",
             "urlPlaceholder": "Linkki"
         },
+        "addFormApiapp": {
+            "title": ""
+        },
         "addMenu": "Lisää OPDS-syöte",
         "back": "Takaisin",
         "breadcrumbRoot": "Luettelot",
@@ -193,9 +202,47 @@
         },
         "next": "Seuraava",
         "previous": "Edellinen",
-        "shelf": "Hylly"
+        "shelf": "Hylly",
+        "updateForm": {
+            "name": "",
+            "namePlaceholder": "",
+            "title": "",
+            "updateButton": "",
+            "url": "",
+            "urlPlaceholder": ""
+        }
     },
     "publication": {
+        "accessibility": {
+            "accessModeSufficient": {
+                "textual": ""
+            },
+            "accessibilityFeature": {
+                "alternativeText": "",
+                "displayTransformability": "",
+                "longDescription": "",
+                "printPageNumbers": "",
+                "readingOrder": "",
+                "synchronizedAudioText": "",
+                "tableOfContents": ""
+            },
+            "accessibilityHazard": {
+                "flashing": "",
+                "motion": "",
+                "name": "",
+                "noFlashing": "",
+                "noMotion": "",
+                "noSimulation": "",
+                "noSound": "",
+                "none": "",
+                "simulation": "",
+                "sound": "",
+                "unknown": ""
+            },
+            "moreInformation": "",
+            "name": "",
+            "noA11y": ""
+        },
         "audio": {
             "tracks": "Osat"
         },
@@ -270,6 +317,8 @@
             "goToError": "Sivua ei löydy",
             "goToPlaceHolder": "Syötä sivunumero",
             "goToTitle": "Siirry sivulle",
+            "historyNext": "",
+            "historyPrevious": "",
             "infoTitle": "tiedot",
             "magnifyingGlassButton": "Hae julkaisusta",
             "openTableOfContentsTitle": "navigaatio",

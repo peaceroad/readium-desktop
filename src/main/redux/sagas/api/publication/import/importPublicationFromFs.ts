@@ -147,8 +147,7 @@ export async function importPublicationFromFS(
         default:
 
             debug("extension not recognized", ext);
-            r2Publication = undefined;
-            break;
+            throw new Error("Content-type from server not recognized : " + ext);
     }
 
     if (!r2Publication) {
@@ -181,7 +180,11 @@ export async function importPublicationFromFS(
         //     // remains null as publication not originate from OPDS
         //     // r2OpdsPublicationJson: null,
         // },
+
+        // see documentTitle vs. publicationTitle (and publicationSubTitle) in PublicationView
+        // (and IOpdsPublicationView too, due to polymorphic NormalOrOpdsPublicationView / publicationViewMaybeOpds)
         title: convertMultiLangStringToString(r2Publication.Metadata.Title),
+
         tags: [],
         files: [],
         coverFile: null,

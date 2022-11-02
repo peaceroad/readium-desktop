@@ -10,6 +10,9 @@
         "skipLink": "Hoppa till innehåll",
         "toolbar": "vektygsfält"
     },
+    "apiapp": {
+        "noLibraryFound": "Inget bibliotek hittades ({{- name}})"
+    },
     "app": {
         "edit": {
             "copy": "Kopiera",
@@ -66,7 +69,9 @@
             "lastAdditions": "Nyligen tillagt"
         },
         "export": "Exportera",
+        "format": "Format",
         "lang": "Språk",
+        "lastRead": "Senast läst",
         "moreInfo": "Mer information",
         "myBooks": "Mina böcker",
         "noPublicationHelpL1": "Släpp en publikation här",
@@ -103,7 +108,8 @@
         "released": "Publicerad den",
         "sort": "Sortera efter",
         "tagCount": "Antal taggar",
-        "tags": "Taggar"
+        "tags": "Taggar",
+        "update": ""
     },
     "dialog": {
         "closeModalWindow": "Stäng den här dialogrutan",
@@ -170,6 +176,9 @@
             "url": "Länk:",
             "urlPlaceholder": "Länk"
         },
+        "addFormApiapp": {
+            "title": "Lägg till bibliotekskonto"
+        },
         "addMenu": "Lägg till ett OPDS-flöde",
         "back": "Tillbaka",
         "breadcrumbRoot": "Kataloger",
@@ -193,9 +202,47 @@
         },
         "next": "Nästa",
         "previous": "Föregående",
-        "shelf": "Hylla"
+        "shelf": "Hylla",
+        "updateForm": {
+            "name": "",
+            "namePlaceholder": "",
+            "title": "",
+            "updateButton": "",
+            "url": "",
+            "urlPlaceholder": ""
+        }
     },
     "publication": {
+        "accessibility": {
+            "accessModeSufficient": {
+                "textual": ""
+            },
+            "accessibilityFeature": {
+                "alternativeText": "",
+                "displayTransformability": "",
+                "longDescription": "",
+                "printPageNumbers": "",
+                "readingOrder": "",
+                "synchronizedAudioText": "",
+                "tableOfContents": ""
+            },
+            "accessibilityHazard": {
+                "flashing": "",
+                "motion": "",
+                "name": "",
+                "noFlashing": "",
+                "noMotion": "",
+                "noSimulation": "",
+                "noSound": "",
+                "none": "",
+                "simulation": "",
+                "sound": "",
+                "unknown": ""
+            },
+            "moreInformation": "",
+            "name": "",
+            "noA11y": ""
+        },
         "audio": {
             "tracks": "Spår"
         },
@@ -215,7 +262,7 @@
         "lcpRightsPrint": "Kopiera utskrift",
         "lcpStart": "Start",
         "licenseOutOfDate": "Licensen har löpt ut",
-        "licenseSignatureDateInvalid": "Licensens signeringsdatum är ogiltig",
+        "licenseSignatureDateInvalid": "Licensens signeringsdatum är ogiltigt",
         "licenseSignatureInvalid": "Licensens signatur är ogiltig",
         "progression": {
             "title": "Status"
@@ -270,6 +317,8 @@
             "goToError": "Sidnumret finns inte",
             "goToPlaceHolder": "Ange ett sidnummer",
             "goToTitle": "Gå till sida",
+            "historyNext": "",
+            "historyPrevious": "",
             "infoTitle": "information",
             "magnifyingGlassButton": "sök i publikationen",
             "openTableOfContentsTitle": "navigation",

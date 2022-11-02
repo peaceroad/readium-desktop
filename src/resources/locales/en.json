@@ -10,6 +10,9 @@
         "skipLink": "Skip to content",
         "toolbar": "toolbar"
     },
+    "apiapp": {
+        "noLibraryFound": "No library found ({{- name}})"
+    },
     "app": {
         "edit": {
             "copy": "Copy",
@@ -66,8 +69,10 @@
             "lastAdditions": "Recently added"
         },
         "export": "Export",
+        "format": "Format",
         "lang": "Language",
-        "moreInfo": "More Info",
+        "lastRead": "Last Read",
+        "moreInfo": "Book Details",
         "myBooks": "My books",
         "noPublicationHelpL1": "Drop a publication here",
         "noPublicationHelpL2": "or use the \"+\" button above.",
@@ -103,7 +108,8 @@
         "released": "Published on",
         "sort": "Sort by",
         "tagCount": "Tag count",
-        "tags": "Tags"
+        "tags": "Tags",
+        "update": "Edit"
     },
     "dialog": {
         "closeModalWindow": "Close this modal window",
@@ -170,6 +176,9 @@
             "url": "Link:",
             "urlPlaceholder": "Link"
         },
+        "addFormApiapp": {
+            "title": "Add a library account"
+        },
         "addMenu": "Add OPDS feed",
         "back": "Back",
         "breadcrumbRoot": "Catalogs",
@@ -185,17 +194,56 @@
             "goSubBook": "Subscribe"
         },
         "network": {
-            "error": "Unable to access to opds feed",
+            "error": "Error accessing feed",
             "noInternet": "No internet",
             "noInternetMessage": "Try: checking the network cable, modem, router or wifi",
-            "reject": "Sorry, there was an unexpected error when trying to process the OPDS feed",
+            "reject": "Sorry, there was an unexpected error when trying to process the feed",
             "timeout": "There was a network timeout, please try again later"
         },
         "next": "Next",
         "previous": "Previous",
-        "shelf": "Shelf"
+        "shelf": "Shelf",
+        "updateForm": {
+            "name": "Name:",
+            "namePlaceholder": "Name",
+            "title": "Edit an OPDS feed",
+            "updateButton": "Edit",
+            "url": "Link:",
+            "urlPlaceholder": "Link"
+        }
     },
     "publication": {
+        "accessibility": {
+            "accessModeSufficient": {
+                "textual": "TTS & Screen reader friendly"
+            },
+            "accessibilityFeature": {
+                "alternativeText": "Contains alternative text",
+                "displayTransformability": "Adaptable text and layout",
+                "longDescription": "Fully described graphical ressources",
+                "printPageNumbers": "Printed book pagination reference",
+                "readingOrder": "Contains a reading order",
+                "synchronizedAudioText": "Text & audio synchronised",
+                "tableOfContents": "Contains a Table Of Contents"
+            },
+            "accessibilityHazard": {
+                "flashing": "Flashing",
+                "motionSimulation": "Motion simulation",
+                "name": "Hazard:",
+                "noFlashing": "No flashing",
+                "noMotionSimulation": "No motion simulation",
+                "noSound": "No sound",
+                "none": "None",
+                "simulation": "Simulation",
+                "sound": "Sound",
+                "unknown": "Unknown"
+            },
+            "conformsTo": "Conforms to:",
+            "certifierReport": "Certifier report",
+            "moreInformation": "More information",
+            "name": "Accessibility",
+            "noA11y": "No accessibility information available"
+        },
         "audio": {
             "tracks": "Tracks"
         },
@@ -270,6 +318,8 @@
             "goToError": "This page break does not exist",
             "goToPlaceHolder": "Enter a page number",
             "goToTitle": "Go to page",
+            "historyNext": "Jump forward",
+            "historyPrevious": "Jump back",
             "infoTitle": "information",
             "magnifyingGlassButton": "search in publication",
             "openTableOfContentsTitle": "navigation",

@@ -62,16 +62,16 @@ export class OpdsControls extends React.Component<IProps, undefined> {
         const m = findMimeTypeWithExtension(ADOBE_ADEPT_XML);
         const orderLinks = (links: IOpdsLinkView[]) => {
             return Array.from(links).sort((a, b) => {
-                if (a.properties.indirectAcquisitionType === m
-                    && b.properties.indirectAcquisitionType === m) {
+                if (a.properties?.indirectAcquisitionType === m
+                    && b.properties?.indirectAcquisitionType === m) {
                         return 0;
                 }
-                if (a.properties.indirectAcquisitionType === m
-                    && b.properties.indirectAcquisitionType !== m) {
+                if (a.properties?.indirectAcquisitionType === m
+                    && b.properties?.indirectAcquisitionType !== m) {
                         return 1;
                 }
-                if (a.properties.indirectAcquisitionType !== m
-                    && b.properties.indirectAcquisitionType === m) {
+                if (a.properties?.indirectAcquisitionType !== m
+                    && b.properties?.indirectAcquisitionType === m) {
                         return -1;
                 }
                 return 0;
@@ -138,7 +138,7 @@ export class OpdsControls extends React.Component<IProps, undefined> {
                                         () => this.props.link(
                                             ln,
                                             this.props.location,
-                                            `${__("opds.menu.goBuyBook")} (${opdsPublicationView.title}))`,
+                                            `${__("opds.menu.goBuyBook")} (${opdsPublicationView.documentTitle}))`,
                                         )
                                     }
 
@@ -162,7 +162,7 @@ export class OpdsControls extends React.Component<IProps, undefined> {
                                     onClick={() => this.props.link(
                                         ln,
                                         this.props.location,
-                                        `${__("opds.menu.goLoanBook")} (${opdsPublicationView.title})`)}
+                                        `${__("opds.menu.goLoanBook")} (${opdsPublicationView.documentTitle})`)}
                                     disabled={ln.properties.indirectAcquisitionType === findMimeTypeWithExtension(ADOBE_ADEPT_XML)}
                                 >
                                     {__("opds.menu.goLoanBook")}
@@ -182,7 +182,7 @@ export class OpdsControls extends React.Component<IProps, undefined> {
                                     onClick={() => this.props.link(
                                         ln,
                                         this.props.location,
-                                        `${__("opds.menu.goSubBook")} (${opdsPublicationView.title})`)}
+                                        `${__("opds.menu.goSubBook")} (${opdsPublicationView.documentTitle})`)}
                                 >
                                     {__("opds.menu.goSubBook")}
                                 </button>
@@ -202,7 +202,7 @@ export class OpdsControls extends React.Component<IProps, undefined> {
                                         ln,
                                         this.props.location,
                                         `${__("opds.menu.goRevokeLoanBook")} (${
-                                            opdsPublicationView.title
+                                            opdsPublicationView.documentTitle
                                         })`,
                                     )
                                 }

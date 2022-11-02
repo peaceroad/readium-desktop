@@ -6,6 +6,12 @@
 // ==LICENSE-END==
 
 import "regenerator-runtime/runtime"; // for react-table (useAsyncDebounce()) see: https://github.com/TanStack/react-table/issues/2071#issuecomment-679999096
+
+// import { classThemeExample, classStyleExample } from "./AllPublicationPage.css";
+// import classNames from "classnames";
+
+import { convertMultiLangStringToString, langStringIsRTL } from "readium-desktop/renderer/common/language-string";
+import { IStringMap } from "@r2-shared-js/models/metadata-multilang";
 import { Location } from "history";
 import SVG from "readium-desktop/renderer/common/components/SVG";
 // import * as SearchIcon from "readium-desktop/renderer/assets/icons/baseline-search-24px-grey.svg";
@@ -71,22 +77,7 @@ import { keyboardShortcutsMatch } from "readium-desktop/common/keyboard";
 import {
     ensureKeyboardListenerIsInstalled, registerKeyboardListener, unregisterKeyboardListener,
 } from "readium-desktop/renderer/common/keyboard";
-
-import { IStringMap } from "@r2-shared-js/models/metadata-multilang";
 import { ipcRenderer } from "electron";
-
-// MAIN process only, not RENDERER, because of diMainGet("translator")
-// import { convertMultiLangStringToString } from "readium-desktop/main/converter/tools/localisation";
-function convertMultiLangStringToString(translator: Translator, items: string | IStringMap | undefined): string {
-    if (typeof items === "object") {
-        const langs = Object.keys(items);
-        const lang = langs.filter((l) =>
-            l.toLowerCase().includes(translator.getLocale().toLowerCase()));
-        const localeLang = lang[0];
-        return items[localeLang] || items._ || items[langs[0]];
-    }
-    return items;
-}
 
 // import {
 //     formatContributorToString,
@@ -251,6 +242,49 @@ export class AllPublicationPage extends React.Component<IProps, IState> {
     };
 }
 
+// TODO: refresh strategy, see Catalog.tsx
+// in render():
+// if (this.props.refresh) {
+//     this.props.api(CATALOG_GET_API_ID_CHANNEL)("catalog/get")();
+//     this.props.api(PUBLICATION_TAGS_API_ID_CHANNEL)("publication/getAllTags")();
+// }
+// const mapStateToProps = (state: ILibraryRootState) => ({
+//     catalog: apiState(state)(CATALOG_GET_API_ID_CHANNEL)("catalog/get"),
+//     tags: apiState(state)(PUBLICATION_TAGS_API_ID_CHANNEL)("publication/getAllTags"),
+//     refresh: apiRefreshToState(state)([
+//         "publication/importFromFs",
+//         "publication/importFromLink",
+//         "publication/delete",
+//         "publication/findAll",
+//         // "catalog/addEntry",
+//         "publication/updateTags",
+//         // "reader/setLastReadingLocation",
+//     ]),
+//     location: state.router.location,
+// });
+// const mapDispatchToProps = (dispatch: Dispatch) => ({
+//     api: apiDispatch(dispatch),
+//     apiClean: apiClean(dispatch),
+// });
+//
+// ... BUT here in this component we have (this misses "last read time stamp"?):
+// this.unsubscribe = apiSubscribe([
+//     "publication/importFromFs",
+//     "publication/delete",
+//     "publication/importFromLink",
+//     // "catalog/addEntry",
+//     "publication/updateTags",
+// ], () => {
+//     apiAction("publication/findAll")
+//         .then((publicationViews) => {
+//             this.setState({publicationViews});
+//             setTimeout(() => {
+//                 this.onKeyboardFocusSearch();
+//             }, 400);
+//         })
+//         .catch((error) => console.error("Error to fetch api publication/findAll", error));
+// });
+
 const mapStateToProps = (state: ILibraryRootState) => ({
     location: state.router.location,
     keyboardShortcuts: state.keyboard.shortcuts,
@@ -317,6 +351,9 @@ const CellGlobalFilter: React.FC<ITableCellProps_GlobalFilter> = (props) => {
 
         props.setGlobalFilter(v);
     }, 500);
+
+    // className={classNames(classThemeExample)}
+    // className={classNames(classStyleExample)}
 
     return (
         <div
@@ -467,7 +504,7 @@ const CellColumnFilter: React.FC<ITableCellProps_Filter & ITableCellProps_Column
             /*
         value={ // props.column.filterValue
             value || ""}
-            */
+             */
         }
     <input
         ref={inputRef}
@@ -587,6 +624,59 @@ const CellCoverImage: React.FC<ITableCellProps_Column & ITableCellProps_GenericC
         }} />
         </a>
     </div>);
+};
+
+const CellFormat: React.FC<ITableCellProps_Column & ITableCellProps_GenericCell & ITableCellProps_StringValue> = (props) => {
+
+    const link = (t: string) => {
+        return <a
+            title={`${t} (${props.__("header.searchPlaceholder")})`}
+            tabIndex={0}
+            onKeyPress={(e) => { if (e.key === "Enter") {
+                e.preventDefault();
+                // props.column.setFilter(t);
+                props.setShowColumnFilters(true, props.column.id, t);
+            }}}
+
+            onClick={(e) => {
+                e.preventDefault();
+                // props.column.setFilter(t);
+                props.setShowColumnFilters(true, props.column.id, t);
+            }}
+            style={{
+                display: "flex",
+                alignItems: "center",
+                textAlign: "center",
+                padding: "2px 6px",
+                fontSize: "1rem",
+                // backgroundColor: "#e7f1fb",
+                // borderRadius: "5px",
+                // border: "1px solid var(--color-tertiary)",
+                // color: "var(--color-tertiary)",
+                cursor: "pointer",
+                // textDecoration: "none",
+                textDecoration: "underline",
+                textDecorationColor: "var(--color-tertiary)",
+                textDecorationSkip: "ink",
+                marginRight: "6px",
+                marginBottom: "6px",
+        }}>{t}</a>;
+    };
+
+    const flexStyle: React.CSSProperties = {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "flex-start",
+        justifyContent: "center",
+        flexWrap: "wrap",
+        paddingTop: "0.2em",
+    };
+
+    return (<div style={{...flexStyle}}>
+        {
+        link(props.value)
+        }
+        </div>);
 };
 
 interface IColumnValue_Langs extends IColumnValue_BaseString {
@@ -819,6 +909,13 @@ const CellAuthors: React.FC<ITableCellProps_Column & ITableCellProps_GenericCell
 
     return props.value.authors?.length ?
     (
+        <div style={{
+            ...commonCellStyles(props),
+            // minWidth: props.displayType === DisplayType.Grid ? "200px" : undefined,
+            // maxWidth: props.displayType === DisplayType.Grid ? "300px" : undefined,
+            // width: props.displayType === DisplayType.Grid ? "250px" : undefined,
+        }}>
+        {
     props.value.authors.length === 1 ? (
         <div style={{...flexStyle}}>
         {
@@ -846,7 +943,10 @@ const CellAuthors: React.FC<ITableCellProps_Column & ITableCellProps_GenericCell
         })
         }
         </ul>
-    ))
+    )
+        }
+        </div>
+    )
     : <></>;
 };
 
@@ -1150,14 +1250,14 @@ const CellDate: React.FC<ITableCellProps_Column & ITableCellProps_GenericCell & 
             tabIndex={0}
             onKeyPress={(e) => { if (e.key === "Enter") {
                 e.preventDefault();
-                const t = props.value.label.substring(0, 4); // YYYY
+                const t = props.value.label.substring(0, props.column.id === "colLastReadTimestamp" ? 7 : 4); // YYYY or YYYY-MM
                 // props.column.setFilter(t);
                 props.setShowColumnFilters(true, props.column.id, t);
             }}}
 
             onClick={(e) => {
                 e.preventDefault();
-                const t = props.value.label.substring(0, 4); // YYYY
+                const t = props.value.label.substring(0, props.column.id === "colLastReadTimestamp" ? 7 : 4); // YYYY or YYYY-MM
                 // props.column.setFilter(t);
                 props.setShowColumnFilters(true, props.column.id, t);
             }}
@@ -1186,17 +1286,30 @@ const CellDate: React.FC<ITableCellProps_Column & ITableCellProps_GenericCell & 
 
 interface IColumnValue_Title extends IColumnValue_BaseString {
 
-    title: string,
+    pubTitle: string | IStringMap,
     publicationViewIdentifier: string,
 };
 interface ITableCellProps_Value_Title {
     value: IColumnValue_Title;
 }
 const CellTitle: React.FC<ITableCellProps_Column & ITableCellProps_GenericCell & ITableCellProps_Value_Title> = (props) => {
+
+    // props.value.pubTitle
+    // props.value.label
+    const pubTitleLangStr = convertMultiLangStringToString(props.translator, props.value.pubTitle);
+    const pubTitleLang = pubTitleLangStr && pubTitleLangStr[0] ? pubTitleLangStr[0].toLowerCase() : "";
+    const pubTitleIsRTL = langStringIsRTL(pubTitleLang);
+    const pubTitleStr = pubTitleLangStr && pubTitleLangStr[1] ? pubTitleLangStr[1] : "";
+
     return (<div style={{
         ...commonCellStyles(props),
         fontWeight: "bold",
-    }}><a
+        // minWidth: props.displayType === DisplayType.Grid ? "200px" : undefined,
+        // maxWidth: props.displayType === DisplayType.Grid ? "300px" : undefined,
+        // width: props.displayType === DisplayType.Grid ? "250px" : undefined,
+    }}
+    dir={pubTitleIsRTL ? "rtl" : undefined}
+    ><a
         style={{ cursor: "pointer", paddingTop: "0.4em", paddingBottom: "0.4em" }}
         tabIndex={0}
         onClick={(e) => {
@@ -1215,9 +1328,9 @@ const CellTitle: React.FC<ITableCellProps_Column & ITableCellProps_GenericCell &
                 }
             }
         }
-        title={`${props.value.title} (${props.__("catalog.bookInfo")})`}
+        title={`${pubTitleStr} (${props.__("catalog.bookInfo")})`}
     >
-        {props.value.label}
+        {pubTitleStr}
         </a>
     </div>);
 };
@@ -1247,6 +1360,8 @@ interface IColumns {
     colPublishedDate: IColumnValue_Date;
     colDescription: string;
     colLCP: string;
+    colFormat: string;
+    colLastReadTimestamp: IColumnValue_Date;
     colTags: IColumnValue_Tags;
     colDuration: string;
 
@@ -1330,6 +1445,10 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
         },
     };
 
+    // const locale = props.translator.getLocale();
+    // // https://momentjs.com/docs/#/displaying/
+    // moment.locale(locale);
+
     const tableRows = React.useMemo(() => {
         return props.publicationViews.map((publicationView) => {
 
@@ -1338,12 +1457,29 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
             // const publishers = publicationView.publishers ? formatContributorToString(publicationView.publishers, props.translator) : "";
 
             // publicationView.publishedAt = r2Publication.metadata.PublicationDate && moment(metadata.PublicationDate).toISOString();
-            const mom = publicationView.publishedAt ? moment(publicationView.publishedAt) : undefined;
-            const publishedDateCanonical = mom && mom.isValid() ? `${mom.year().toString().padStart(4, "0")}-${(mom.month() || 1).toString().padStart(2, "0")}-${(mom.day() || 1).toString().padStart(2, "0")}` : ""; // .toISOString()
+            const momPublishedDate_ = publicationView.publishedAt ? moment(publicationView.publishedAt) : undefined;
+            const momPublishedDate = momPublishedDate_ && momPublishedDate_.isValid() ? momPublishedDate_.utc() : undefined;
+            const MM = momPublishedDate ? (momPublishedDate.month() || 0) + 1 : undefined; // ZERO-based!
+            const DD = momPublishedDate ? momPublishedDate.date() || 1 : undefined; // ONE-based!
+            const publishedDateCanonical = momPublishedDate ? `${momPublishedDate.year().toString().padStart(4, "0")}-${(MM).toString().padStart(2, "0")}-${(DD).toString().padStart(2, "0")}T${(momPublishedDate.hour() || 0).toString().padStart(2, "0")}:${(momPublishedDate.minute() || 0).toString().padStart(2, "0")}:${(momPublishedDate.second() || 0).toString().padStart(2, "0")}Z` : ""; // .toISOString()
             let publishedDateVisual = publishedDateCanonical;
             if (publishedDateCanonical) {
                 try {
                     publishedDateVisual = new Intl.DateTimeFormat(props.translator.getLocale(), { dateStyle: "medium", timeStyle: undefined }).format(new Date(publishedDateCanonical));
+                } catch (err) {
+                    console.log(err);
+                }
+            }
+
+            const momLastRead_ = publicationView.lastReadTimeStamp ? moment(publicationView.lastReadTimeStamp) : undefined;
+            const momLastRead = momLastRead_ && momLastRead_.isValid() ? momLastRead_.utc() : undefined;
+            const M = momLastRead ? (momLastRead.month() || 0) + 1 : undefined; // ZERO-based!
+            const D = momLastRead ? momLastRead.date() || 1 : undefined; // ONE-based!
+            const lastReadDateCanonical = momLastRead ? `${momLastRead.year().toString().padStart(4, "0")}-${(M).toString().padStart(2, "0")}-${(D).toString().padStart(2, "0")}T${(momLastRead.hour() || 0).toString().padStart(2, "0")}:${(momLastRead.minute() || 0).toString().padStart(2, "0")}:${(momLastRead.second() || 0).toString().padStart(2, "0")}Z` : ""; // .toISOString()
+            let lastReadDateVisual = lastReadDateCanonical;
+            if (lastReadDateCanonical) {
+                try {
+                    lastReadDateVisual = new Intl.DateTimeFormat(props.translator.getLocale(), { dateStyle: "medium", timeStyle: "short" }).format(new Date(lastReadDateCanonical));
                 } catch (err) {
                     console.log(err);
                 }
@@ -1378,10 +1514,22 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
 
             const lcp = publicationView.lcp ? "LCP" : "";
 
+            const format = publicationView.isAudio ? "Audio" : publicationView.isDivina ? "Divina" : publicationView.isPDF ? "PDF" : publicationView.isDaisy ? "DAISY" : publicationView.isFXL ? "EPUB (FXL)" : "EPUB";
+
             const duration = (publicationView.duration ? formatTime(publicationView.duration) : "") + (publicationView.nbOfTracks ? ` (${props.__("publication.audio.tracks")}: ${publicationView.nbOfTracks})` : "");
 
             // const identifier = publicationView.workIdentifier ? publicationView.workIdentifier : "";
             // const publicationType = publicationView.RDFType ? publicationView.RDFType : "";
+
+            let strA11Summary = "";
+            if (publicationView.a11y_accessibilitySummary) {
+
+                const langStr = convertMultiLangStringToString(props.translator, publicationView.a11y_accessibilitySummary);
+
+                if (langStr && langStr[1]) {
+                    strA11Summary = DOMPurify.sanitize(langStr[1]).replace(/font-size:/g, "font-sizexx:");
+                }
+            }
 
             // r2PublicationJson: JsonMap;
             // lastReadingLocation?: LocatorExtended;
@@ -1389,12 +1537,12 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                 colCover: { // IColumnValue_Cover
                     label: publicationView.cover?.thumbnailUrl ?? publicationView.cover?.coverUrl ?? "",
                     publicationViewIdentifier: publicationView.identifier,
-                    title: publicationView.title,
+                    title: publicationView.documentTitle,
                 },
                 colTitle: { // IColumnValue_Title
-                    label: publicationView.title,
+                    label: publicationView.documentTitle,
                     publicationViewIdentifier: publicationView.identifier,
-                    title: publicationView.title,
+                    pubTitle: publicationView.publicationTitle,
                 },
                 colAuthors: { // IColumnValue_Authors
                     label: publicationView.authors ? publicationView.authors.join(", ") : "",
@@ -1413,6 +1561,11 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                     date: publishedDateVisual,
                 },
                 colLCP: lcp,
+                colFormat: format,
+                colLastReadTimestamp: { // IColumnValue_Date
+                    label: lastReadDateCanonical,
+                    date: lastReadDateVisual,
+                },
                 colTags: { // IColumnValue_Tags
                     label: publicationView.tags ? publicationView.tags.join(", ") : "",
                     tags: publicationView.tags,
@@ -1420,9 +1573,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                 colDuration: duration,
                 colDescription: description,
 
-                col_a11y_accessibilitySummary: publicationView.a11y_accessibilitySummary ?
-                    convertMultiLangStringToString(props.translator, publicationView.a11y_accessibilitySummary) :
-                    "",
+                col_a11y_accessibilitySummary: strA11Summary,
                 // col_a11y_accessMode: { // IColumnValue_A11y_StringArray
                 //     label: publicationView.a11y_accessMode?.length ? [].concat(publicationView.a11y_accessMode).sort().join(", ") : "",
                 //     strings: publicationView.a11y_accessMode,
@@ -1527,13 +1678,6 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                 sortType: sortFunction,
             },
             {
-                Header: props.__("catalog.publisher"),
-                accessor: "colPublishers",
-                Cell: CellPublishers,
-                filter: "text", // because IColumnValue_BaseString instead of plain string
-                sortType: sortFunction,
-            },
-            {
                 Header: props.__("catalog.lang"),
                 accessor: "colLanguages",
                 Cell: CellLangs,
@@ -1541,16 +1685,36 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                 sortType: sortFunction,
             },
             {
-                Header: props.__("catalog.released"),
-                accessor: "colPublishedDate",
+                Header: props.__("catalog.tags"),
+                accessor: "colTags",
+                Cell: CellTags,
+                filter: "text", // because IColumnValue_BaseString instead of plain string
+                sortType: sortFunction,
+            },
+            {
+                Header: props.__("catalog.format"),
+                accessor: "colFormat",
+                Cell: CellFormat,
+                sortType: sortFunction,
+            },
+            {
+                Header: props.__("catalog.lastRead"),
+                accessor: "colLastReadTimestamp",
                 Cell: CellDate,
                 filter: "text", // because IColumnValue_BaseString instead of plain string
                 sortType: sortFunction,
             },
             {
-                Header: props.__("catalog.tags"),
-                accessor: "colTags",
-                Cell: CellTags,
+                Header: props.__("catalog.publisher"),
+                accessor: "colPublishers",
+                Cell: CellPublishers,
+                filter: "text", // because IColumnValue_BaseString instead of plain string
+                sortType: sortFunction,
+            },
+            {
+                Header: props.__("catalog.released"),
+                accessor: "colPublishedDate",
+                Cell: CellDate,
                 filter: "text", // because IColumnValue_BaseString instead of plain string
                 sortType: sortFunction,
             },
@@ -1700,11 +1864,16 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
         }),
     []);
 
+    // for (const col of tableInstance.allColumns) {
+    //     tableInstance.setFilter(col.id, "");
+    // }toggleHidden
+
     // infinite render loop
     // tableInstance.setPageSize(pageSize);
-    const initialState: UsePaginationState<IColumns> = {
+    const initialState: UsePaginationState<IColumns> & TableState<IColumns> = {
         pageSize: 20, // props.displayType === DisplayType.List ? 20 : 10;
         pageIndex: 0,
+        hiddenColumns: props.displayType === DisplayType.Grid ? ["colLanguages", "colPublishers", "colPublishedDate", "colLCP", "colDuration", "colDescription", "col_a11y_accessibilitySummary"] : [],
     };
     const opts:
         TableOptions<IColumns> &
@@ -1948,6 +2117,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                 // marginRight: "1em",
                 borderSpacing: "0",
                 // minWidth: "calc(100% - 30px)",
+                width: "100%",
             }}>
             <thead>{tableInstance.headerGroups.map((headerGroup, index) =>
                 (<tr key={`headtr_${index}`} {...headerGroup.getHeaderGroupProps()}>{

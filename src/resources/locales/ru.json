@@ -10,6 +10,9 @@
         "skipLink": "Перейти к содержимому",
         "toolbar": "Панель инструментов"
     },
+    "apiapp": {
+        "noLibraryFound": ""
+    },
     "app": {
         "edit": {
             "copy": "Копировать",
@@ -66,7 +69,9 @@
             "lastAdditions": "Недавно добавленные"
         },
         "export": "Экспорт",
+        "format": "",
         "lang": "Язык",
+        "lastRead": "",
         "moreInfo": "Дополнительные сведения",
         "myBooks": "Мои книги",
         "noPublicationHelpL1": "Перетащите сюда книгу",
@@ -103,7 +108,8 @@
         "released": "Дата издания",
         "sort": "Сортировать по",
         "tagCount": "Количество тегов",
-        "tags": "Теги"
+        "tags": "Теги",
+        "update": ""
     },
     "dialog": {
         "closeModalWindow": "Закрыть это модальное окно",
@@ -170,6 +176,9 @@
             "url": "Ссылка :",
             "urlPlaceholder": "Ссылка"
         },
+        "addFormApiapp": {
+            "title": ""
+        },
         "addMenu": "Добавить OPDS каталог",
         "back": "Назад",
         "breadcrumbRoot": "Каталоги",
@@ -193,9 +202,47 @@
         },
         "next": "Следующая",
         "previous": "Прошлая",
-        "shelf": "Полка"
+        "shelf": "Полка",
+        "updateForm": {
+            "name": "",
+            "namePlaceholder": "",
+            "title": "",
+            "updateButton": "",
+            "url": "",
+            "urlPlaceholder": ""
+        }
     },
     "publication": {
+        "accessibility": {
+            "accessModeSufficient": {
+                "textual": ""
+            },
+            "accessibilityFeature": {
+                "alternativeText": "",
+                "displayTransformability": "",
+                "longDescription": "",
+                "printPageNumbers": "",
+                "readingOrder": "",
+                "synchronizedAudioText": "",
+                "tableOfContents": ""
+            },
+            "accessibilityHazard": {
+                "flashing": "",
+                "motion": "",
+                "name": "",
+                "noFlashing": "",
+                "noMotion": "",
+                "noSimulation": "",
+                "noSound": "",
+                "none": "",
+                "simulation": "",
+                "sound": "",
+                "unknown": ""
+            },
+            "moreInformation": "",
+            "name": "",
+            "noA11y": ""
+        },
         "audio": {
             "tracks": "Треки"
         },
@@ -270,6 +317,8 @@
             "goToError": "Этот разрыв страницы не существует",
             "goToPlaceHolder": "Введите номер страницы",
             "goToTitle": "Перейти на страницу",
+            "historyNext": "",
+            "historyPrevious": "",
             "infoTitle": "информация",
             "magnifyingGlassButton": "искать в книге",
             "openTableOfContentsTitle": "навигация",

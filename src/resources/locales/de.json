@@ -10,6 +10,9 @@
         "skipLink": "Gehe zum Inhalt",
         "toolbar": "symbolleiste"
     },
+    "apiapp": {
+        "noLibraryFound": ""
+    },
     "app": {
         "edit": {
             "copy": "Kopieren",
@@ -66,7 +69,9 @@
             "lastAdditions": "Kürzlich hinzugefügt"
         },
         "export": "Export",
+        "format": "",
         "lang": "Sprache",
+        "lastRead": "",
         "moreInfo": "Mehr Informationen",
         "myBooks": "Meine Bücher",
         "noPublicationHelpL1": "Geben Sie die Publikation ab",
@@ -103,7 +108,8 @@
         "released": "Veröffentlicht am",
         "sort": "Sortieren nach",
         "tagCount": "Anzahl der Tags",
-        "tags": "Tags"
+        "tags": "Tags",
+        "update": ""
     },
     "dialog": {
         "closeModalWindow": "Dieses Fenster schließen",
@@ -170,6 +176,9 @@
             "url": "Feed-Link:",
             "urlPlaceholder": ""
         },
+        "addFormApiapp": {
+            "title": ""
+        },
         "addMenu": "OPDS-Feed hinzufügen",
         "back": "Zurück",
         "breadcrumbRoot": "",
@@ -193,9 +202,47 @@
         },
         "next": "Nächster",
         "previous": "Bisherige",
-        "shelf": ""
+        "shelf": "",
+        "updateForm": {
+            "name": "",
+            "namePlaceholder": "",
+            "title": "",
+            "updateButton": "",
+            "url": "",
+            "urlPlaceholder": ""
+        }
     },
     "publication": {
+        "accessibility": {
+            "accessModeSufficient": {
+                "textual": ""
+            },
+            "accessibilityFeature": {
+                "alternativeText": "",
+                "displayTransformability": "",
+                "longDescription": "",
+                "printPageNumbers": "",
+                "readingOrder": "",
+                "synchronizedAudioText": "",
+                "tableOfContents": ""
+            },
+            "accessibilityHazard": {
+                "flashing": "",
+                "motion": "",
+                "name": "",
+                "noFlashing": "",
+                "noMotion": "",
+                "noSimulation": "",
+                "noSound": "",
+                "none": "",
+                "simulation": "",
+                "sound": "",
+                "unknown": ""
+            },
+            "moreInformation": "",
+            "name": "",
+            "noA11y": ""
+        },
         "audio": {
             "tracks": "Spuren"
         },
@@ -270,6 +317,8 @@
             "goToError": "Diese Seite existiert nicht",
             "goToPlaceHolder": "Gehe zur Seite",
             "goToTitle": "Gehe zur Seite",
+            "historyNext": "",
+            "historyPrevious": "",
             "infoTitle": "Informationen",
             "magnifyingGlassButton": "",
             "openTableOfContentsTitle": "Navigation",
