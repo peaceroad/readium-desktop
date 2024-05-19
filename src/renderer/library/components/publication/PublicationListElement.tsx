@@ -15,9 +15,8 @@ import { TPublication } from "readium-desktop/common/type/publication.type";
 import { IOpdsPublicationView } from "readium-desktop/common/views/opds";
 import { PublicationView } from "readium-desktop/common/views/publication";
 import * as MenuIcon from "readium-desktop/renderer/assets/icons/menu.svg";
-import * as stylesButtons from "readium-desktop/renderer/assets/styles/components/buttons.css";
-import * as stylesDropDown from "readium-desktop/renderer/assets/styles/components/dropdown.css";
-import * as stylesPublications from "readium-desktop/renderer/assets/styles/components/publications.css";
+import * as stylesButtons from "readium-desktop/renderer/assets/styles/components/buttons.scss";
+import * as stylesPublications from "readium-desktop/renderer/assets/styles/components/publications.scss";
 import {
     TranslatorProps, withTranslator,
 } from "readium-desktop/renderer/common/components/hoc/translator";
@@ -28,7 +27,6 @@ import {
     formatContributorToString,
 } from "readium-desktop/renderer/common/logics/formatContributor";
 import { TDispatch } from "readium-desktop/typings/redux";
-import { v4 as uuidv4 } from "uuid";
 import { convertMultiLangStringToString, langStringIsRTL } from "readium-desktop/renderer/common/language-string";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -45,12 +43,7 @@ interface IBaseProps extends TranslatorProps {
 interface IProps extends IBaseProps, ReturnType<typeof mapDispatchToProps>, ReturnType<typeof mapDispatchToProps> {
 }
 
-interface IState {
-    menuOpen: boolean;
-}
-
-export class PublicationListElement extends React.Component<IProps, IState> {
-    private menuId: string;
+export class PublicationListElement extends React.Component<IProps> {
     private buttonRef: React.RefObject<HTMLButtonElement>;
 
     constructor(props: IProps) {
@@ -58,16 +51,8 @@ export class PublicationListElement extends React.Component<IProps, IState> {
 
         this.buttonRef = React.createRef<HTMLButtonElement>();
 
-        this.state = {
-            menuOpen: false,
-        };
-
         // this.deletePublication = this.deletePublication.bind(this);
-        this.toggleMenu = this.toggleMenu.bind(this);
-        this.openCloseMenu = this.openCloseMenu.bind(this);
         this.focusButton = this.focusButton.bind(this);
-
-        this.menuId = "menu-" + uuidv4();
     }
 
     public render(): React.ReactElement<{}> {
@@ -105,7 +90,6 @@ export class PublicationListElement extends React.Component<IProps, IState> {
 
         const authors = formatContributorToString(pub.authors, translator);
 
-        // publicationViewMaybeOpds.documentTitle
         const pubTitleLangStr = convertMultiLangStringToString(translator, (pub as PublicationView).publicationTitle || pub.documentTitle);
         const pubTitleLang = pubTitleLangStr && pubTitleLangStr[0] ? pubTitleLangStr[0].toLowerCase() : "";
         const pubTitleIsRTL = langStringIsRTL(pubTitleLang);
@@ -121,18 +105,9 @@ export class PublicationListElement extends React.Component<IProps, IState> {
                             svg={MenuIcon}
                         />)
                     }
-                    content={(
-                        <div
-                            id={this.menuId}
-                            className={(this.state.menuOpen ? stylesDropDown.dropdown_menu : null )}
-                        >
-                            {this.props.menuContent}
-                        </div>
-                    )}
-                    open={this.state.menuOpen}
-                    dir="left"
-                    toggle={this.openCloseMenu}
-                />
+                >
+                    {this.props.menuContent}
+                </Menu>
                 {/* <button
                     type="button"
                     aria-expanded={this.state.menuOpen}
@@ -179,14 +154,6 @@ export class PublicationListElement extends React.Component<IProps, IState> {
                 } */}
             </>
         );
-    }
-
-    private openCloseMenu() {
-        this.setState({ menuOpen: !this.state.menuOpen });
-    }
-
-    private toggleMenu() {
-        this.setState({ menuOpen: !this.state.menuOpen });
     }
 
     private focusButton() {

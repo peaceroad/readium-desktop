@@ -17,11 +17,13 @@ import { rootSaga } from "readium-desktop/main/redux/sagas";
 import { PersistRootState, RootState } from "readium-desktop/main/redux/states";
 import { IS_DEV } from "readium-desktop/preprocessor-directives";
 import { tryCatch, tryCatchSync } from "readium-desktop/utils/tryCatch";
-import { applyMiddleware, createStore, type Store } from "redux";
+import { applyMiddleware, legacy_createStore as createStore, type Store } from "redux";
 import createSagaMiddleware, { SagaMiddleware } from "redux-saga";
 import { applyPatch } from "rfc6902";
 
 import { reduxPersistMiddleware } from "../middleware/persistence";
+import { readerConfigInitialState } from "readium-desktop/common/redux/states/reader";
+import { defaultDisableRTLFLip } from "readium-desktop/common/redux/states/renderer/rtlFlip";
 
 // import { composeWithDevTools } from "remote-redux-devtools";
 const REDUX_REMOTE_DEVTOOLS_PORT = 7770;
@@ -62,9 +64,17 @@ const recoveryReduxState = async (runtimeState: object): Promise<object> => {
 
     ok(Array.isArray(patch));
 
-    const errors = applyPatch(runtimeState, patch);
-
-    ok(errors.reduce((pv, cv) => pv && !cv, true));
+    // RangeError: Maximum call stack size exceeded
+    // diffAny
+    // node_modules/rfc6902/diff.js:262:17
+    // dist
+    // node_modules/rfc6902/diff.js:135:36
+    try {
+        const errors = applyPatch(runtimeState, patch);
+        ok(errors.reduce((pv, cv) => pv && !cv, true));
+    } catch (err) {
+        console.log(err);
+    }
 
     ok(typeof runtimeState === "object", "state not defined after patch");
 
@@ -195,9 +205,21 @@ export async function initStore()
     debug("REDUX STATE VALUE :: ", typeof reduxState, reduxState ? Object.keys(reduxState) : "nil");
     // debug(reduxState);
 
+    const forceDisableReaderDefaultConfigAndSessionForTheNewUI: Partial<PersistRootState> = {
+        reader: {
+            defaultConfig: readerConfigInitialState,
+            disableRTLFlip: reduxState?.reader?.disableRTLFlip || { disabled: defaultDisableRTLFLip },
+        },
+        session: {
+            state: true,
+        },
+    };
     const preloadedState = reduxState ? {
         ...reduxState,
-    } : {};
+        ...forceDisableReaderDefaultConfigAndSessionForTheNewUI,
+    } : {
+        ...forceDisableReaderDefaultConfigAndSessionForTheNewUI,
+    };
 
     const sagaMiddleware = createSagaMiddleware();
 
@@ -216,11 +238,11 @@ export async function initStore()
 
     const store = createStore(
         rootReducer,
-        preloadedState,
+        preloadedState as {},
         middleware,
     );
 
     sagaMiddleware.run(rootSaga);
 
-    return [store as Store<RootState>, sagaMiddleware];
+    return [store, sagaMiddleware];
 }

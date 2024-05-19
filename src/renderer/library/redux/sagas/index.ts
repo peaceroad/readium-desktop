@@ -12,9 +12,8 @@ import * as publicationInfoSyncTags from "readium-desktop/renderer/common/redux/
 // eslint-disable-next-line local-rules/typed-redux-saga-use-typed-effects
 import { all, call, put, take } from "redux-saga/effects";
 
-import * as publicationInfoOpds from "../../../common/redux/sagas/dialog/publicationInfoOpds";
-import * as publicationInfoReaderAndLib from "../../../common/redux/sagas/dialog/publicationInfoReaderAndLib";
-import * as catalog from "./catalog";
+import * as publicationInfoOpds from "readium-desktop/renderer/common/redux/sagas/dialog/publicationInfoOpds";
+import * as publicationInfoReaderAndLib from "readium-desktop/renderer/common/redux/sagas/dialog/publicationInfoReaderAndLib";
 import * as history from "./history";
 import * as i18n from "./i18n";
 import * as lcp from "./lcp";
@@ -56,9 +55,5 @@ export function* rootSaga() {
         publicationInfoSyncTags.saga(),
 
         load.saga(),
-
-        catalog.saga(),
-
     ]);
-
 }

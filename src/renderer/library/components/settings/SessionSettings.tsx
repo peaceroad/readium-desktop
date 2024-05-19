@@ -8,16 +8,15 @@
 import * as React from "react";
 import { connect } from "react-redux";
 import * as DoneIcon from "readium-desktop/renderer/assets/icons/done.svg";
-import * as stylesGlobal from "readium-desktop/renderer/assets/styles/global.css";
-import * as stylesInputs from "readium-desktop/renderer/assets/styles/components/inputs.css";
+import * as stylesGlobal from "readium-desktop/renderer/assets/styles/global.scss";
 import {
     TranslatorProps, withTranslator,
 } from "readium-desktop/renderer/common/components/hoc/translator";
-import { apiAction } from "readium-desktop/renderer/library/apiAction";
-import { ILibraryRootState } from "readium-desktop/renderer/library/redux/states";
+import { ILibraryRootState } from "readium-desktop/common/redux/states/renderer/libraryRootState";
 import { TDispatch } from "readium-desktop/typings/redux";
 
 import SVG from "../../../common/components/SVG";
+import { sessionActions } from "readium-desktop/common/redux/actions";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IBaseProps extends TranslatorProps {
@@ -30,11 +29,7 @@ interface IBaseProps extends TranslatorProps {
 interface IProps extends IBaseProps, ReturnType<typeof mapStateToProps>, ReturnType<typeof mapDispatchToProps> {
 }
 
-interface IState {
-    sessionEnabled: boolean;
-}
-
-class SessionSettings extends React.Component<IProps, IState> {
+class SessionSettings extends React.Component<IProps> {
 
     constructor(props: IProps) {
         super(props);
@@ -43,31 +38,27 @@ class SessionSettings extends React.Component<IProps, IState> {
         };
     }
 
-    public componentDidMount() {
-        this.getSession();
-    }
-
     public render(): React.ReactElement<{}> {
         const { __ } = this.props;
         return (
             <>
-                <section>
+                <section className="settings_session-section">
                     <div className={stylesGlobal.heading}>
                         <h2>{__("settings.session.title")}</h2>
                     </div>
-                    <form className={stylesInputs.radio_list}>
+                    <form>
                         <div>
                             <input
                                 id={"session-true"}
                                 type="radio"
                                 lang={__("settings.session.yes")}
                                 name="language"
-                                onChange={() => this.setSession(true)}
-                                checked={this.state.sessionEnabled === true}
+                                onChange={() => this.props.setSession(true)}
+                                checked={this.props.session === true}
                             />
                             <label htmlFor={"session-true"}>
                                 {
-                                    this.state.sessionEnabled === true && <SVG svg={DoneIcon} ariaHidden />
+                                    this.props.session === true && <SVG svg={DoneIcon} ariaHidden />
                                 }
                                 {
                                     __("settings.session.yes")
@@ -80,12 +71,12 @@ class SessionSettings extends React.Component<IProps, IState> {
                                 type="radio"
                                 lang={__("settings.session.no")}
                                 name="language"
-                                onChange={() => this.setSession(false)}
-                                checked={this.state.sessionEnabled === false}
+                                onChange={() => this.props.setSession(false)}
+                                checked={this.props.session === false}
                             />
                             <label htmlFor={"session-false"}>
                                 {
-                                    this.state.sessionEnabled === false && <SVG svg={DoneIcon} ariaHidden />
+                                    this.props.session === false && <SVG svg={DoneIcon} ariaHidden />
                                 }
                                 {
                                     __("settings.session.no")
@@ -97,33 +88,20 @@ class SessionSettings extends React.Component<IProps, IState> {
             </>
         );
     }
-
-    private getSession = () => {
-        apiAction("session/isEnabled")
-            .then((sessionEnabled) => this.setState({ sessionEnabled }))
-            .catch((error) => console.error("Error to fetch api publication/findAll", error));
-    };
-
-    private setSession = async (bool: boolean) => {
-        this.setState({ sessionEnabled: bool });
-
-        try {
-            await apiAction("session/enable", bool);
-        } catch {
-
-            this.getSession();
-        }
-    };
 }
 
 const mapStateToProps = (state: ILibraryRootState, _props: IBaseProps) => {
     return {
         locale: state.i18n.locale,
+        session: state.session.state,
     };
 };
 
-const mapDispatchToProps = (_dispatch: TDispatch, _props: IBaseProps) => {
+const mapDispatchToProps = (dispatch: TDispatch, _props: IBaseProps) => {
     return {
+        setSession: (enable: boolean) => {
+            dispatch(sessionActions.enable.build(enable));
+        },
     };
 };
 

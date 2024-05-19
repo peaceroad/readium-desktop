@@ -6,7 +6,7 @@
 // ==LICENSE-END==
 
 import {
-    apiActions, authActions, downloadActions, i18nActions, keyboardActions, readerActions,
+    apiActions, authActions, catalogActions, downloadActions, i18nActions, keyboardActions, lcpActions, readerActions, sessionActions, themeActions, publicationActions, wizardActions,
 } from "readium-desktop/common/redux/actions";
 import { syncFactory } from "readium-desktop/renderer/common/redux/middleware/syncFactory";
 
@@ -31,6 +31,27 @@ const SYNCHRONIZABLE_ACTIONS: string[] = [
     keyboardActions.reloadShortcuts.ID,
 
     downloadActions.abort.ID,
+
+    sessionActions.enable.ID,
+
+    lcpActions.renewPublicationLicense.ID,
+    lcpActions.returnPublication.ID,
+    lcpActions.unlockPublicationWithPassphrase.ID,
+
+    catalogActions.getCatalog.ID, // request to get catalog view
+
+    readerActions.disableRTLFlip.ID,
+
+    readerActions.configSetDefault.ID, // readerConfig
+
+    publicationActions.readingFinished.ID,
+    themeActions.setTheme.ID,
+
+    readerActions.bookmark.pop.ID,
+    readerActions.bookmark.push.ID,
+    readerActions.bookmark.update.ID,
+
+    wizardActions.setWizard.ID,
 ];
 
 export const reduxSyncMiddleware = syncFactory(SYNCHRONIZABLE_ACTIONS);

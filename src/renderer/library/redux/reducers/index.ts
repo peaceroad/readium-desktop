@@ -20,12 +20,29 @@ import {
 import { priorityQueueReducer } from "readium-desktop/utils/redux-reducers/pqueue.reducer";
 import { combineReducers, Reducer } from "redux";
 
-import { ILibraryRootState } from "../states";
+// import { ILibraryRootState } from "readium-desktop/common/redux/states/renderer/libraryRootState";
 
 import { RouterState } from "redux-first-history";
+import { sessionReducer } from "readium-desktop/common/redux/reducers/session";
+import { catalogViewReducer } from "./catalog";
+import { tagReducer } from "./tag";
+import { readerDefaultConfigReducer } from "readium-desktop/common/redux/reducers/reader/defaultConfig";
+import { themeReducer } from "readium-desktop/common/redux/reducers/theme";
 
-export const rootReducer = (routerReducer: Reducer<RouterState>) => {
-    return combineReducers<ILibraryRootState>({
+// import { ReaderConfig } from "readium-desktop/common/models/reader";
+import { readerRTLFlipReducer } from "readium-desktop/common/redux/reducers/reader/rtlFlip";
+import { wizardReducer } from "readium-desktop/common/redux/reducers/wizard";
+import { versionUpdateReducer } from "readium-desktop/common/redux/reducers/version-update";
+
+export const rootReducer = (routerReducer: Reducer<RouterState>) => { // : Reducer<Partial<ILibraryRootState>>
+    return combineReducers({ // ILibraryRootState
+        versionUpdate: versionUpdateReducer,
+        theme: themeReducer,
+        reader: combineReducers({
+            defaultConfig: readerDefaultConfigReducer,
+            disableRTLFlip: readerRTLFlipReducer,
+        }),
+        session: sessionReducer,
         i18n: i18nReducer,
         opds: combineReducers({
             browser: combineReducers({
@@ -64,5 +81,10 @@ export const rootReducer = (routerReducer: Reducer<RouterState>) => {
         history: historyReducer,
         keyboard: keyboardReducer,
         load: loadReducer,
+        publication:  combineReducers({
+            catalog: catalogViewReducer,
+            tag: tagReducer,
+        }),
+        wizard: wizardReducer,
     });
 };

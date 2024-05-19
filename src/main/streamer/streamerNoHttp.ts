@@ -123,7 +123,7 @@ if (true) { // !_USE_HTTP_STREAMER) {
                 readiumcssJson.urlRoot = THORIUM_READIUM2_ELECTRON_HTTP_PROTOCOL + "://0.0.0.0";
             }
             if (IS_DEV) {
-                console.log("_____ readiumCssJson.urlRoot (setupReadiumCSS() transformer): ", readiumcssJson.urlRoot);
+                debug("_____ readiumCssJson.urlRoot (setupReadiumCSS() transformer): ", readiumcssJson.urlRoot);
             }
 
             // import * as mime from "mime-types";
@@ -1095,6 +1095,7 @@ const transformerIFrames: TTransformFunction = (
 
 export function initSessions() {
     app.commandLine.appendSwitch("autoplay-policy", "no-user-gesture-required");
+    app.commandLine.appendSwitch("enable-speech-dispatcher");
 
     Transformers.instance().add(new TransformerHTML(transformerIFrames));
 

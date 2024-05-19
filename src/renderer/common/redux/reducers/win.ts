@@ -5,14 +5,16 @@
 // that can be found in the LICENSE file exposed on Github (readium) in the project repository.
 // ==LICENSE-END==
 
+import { type Reducer } from "redux";
+
 import { winActions } from "readium-desktop/renderer/common/redux/actions";
-import { WinState } from "readium-desktop/renderer/common/redux/states/win";
+import { WinState } from "readium-desktop/common/redux/states/win";
 
 const initialState: WinState = {
     identifier: undefined,
 };
 
-export function winReducer(
+function winReducer_(
     state: WinState = initialState,
     action: winActions.initRequest.TAction,
     ): WinState {
@@ -27,3 +29,5 @@ export function winReducer(
             return state;
     }
 }
+
+export const winReducer = winReducer_ as Reducer<ReturnType<typeof winReducer_>>;

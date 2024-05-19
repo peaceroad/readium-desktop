@@ -14,7 +14,7 @@ import { setMenu } from "readium-desktop/main/menu";
 import { winActions } from "readium-desktop/main/redux/actions";
 import { RootState } from "readium-desktop/main/redux/states";
 import {
-    _RENDERER_LIBRARY_BASE_URL, _VSCODE_LAUNCH, IS_DEV, OPEN_DEV_TOOLS,
+    _RENDERER_LIBRARY_BASE_URL, _VSCODE_LAUNCH, IS_DEV, OPEN_DEV_TOOLS, _CONTINUOUS_INTEGRATION_DEPLOY,
 } from "readium-desktop/preprocessor-directives";
 import { ObjectValues } from "readium-desktop/utils/object-keys-values";
 // eslint-disable-next-line local-rules/typed-redux-saga-use-typed-effects
@@ -22,9 +22,12 @@ import { put } from "redux-saga/effects";
 import { call as callTyped, select as selectTyped } from "typed-redux-saga/macro";
 
 import { contextMenuSetup } from "@r2-navigator-js/electron/main/browser-window-tracker";
+import { WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH } from "readium-desktop/common/constant";
 
 // Logger
 const debug = debug_("readium-desktop:createLibraryWindow");
+
+const ENABLE_DEV_TOOLS = IS_DEV || _CONTINUOUS_INTEGRATION_DEPLOY;
 
 // Global reference to the main window,
 // so the garbage collector doesn't close it.
@@ -43,13 +46,13 @@ export function* createLibraryWindow(_action: winActions.library.openRequest.TAc
 
     libWindow = new BrowserWindow({
         ...windowBound,
-        minWidth: 800,
-        minHeight: 600,
+        minWidth: WINDOW_MIN_WIDTH,
+        minHeight: WINDOW_MIN_HEIGHT,
         webPreferences: {
             // enableRemoteModule: false,
             allowRunningInsecureContent: false,
             backgroundThrottling: true,
-            devTools: IS_DEV, // this does not automatically open devtools, just enables them (see Electron API openDevTools())
+            devTools: ENABLE_DEV_TOOLS, // this does not automatically open devtools, just enables them (see Electron API openDevTools())
             nodeIntegration: true,
             contextIsolation: false,
             nodeIntegrationInWorker: false,
@@ -60,24 +63,30 @@ export function* createLibraryWindow(_action: winActions.library.openRequest.TAc
         icon: path.join(__dirname, "assets/icons/icon.png"),
     });
 
-    if (IS_DEV) {
+    if (ENABLE_DEV_TOOLS) {
         const wc = libWindow.webContents;
         contextMenuSetup(wc, wc.id);
+    }
 
+    if (IS_DEV) {
         libWindow.webContents.on("did-finish-load", () => {
+            // see app.whenReady() in src/main/redux/sagas/app.ts
+            // // app.whenReady().then(() => {
+            // // });
+            // setTimeout(() => {
+            //     const {
+            //         default: installExtension,
+            //         REACT_DEVELOPER_TOOLS,
+            //         REDUX_DEVTOOLS,
+            //     // eslint-disable-next-line @typescript-eslint/no-var-requires
+            //     } = require("electron-devtools-installer");
 
-            const {
-                default: installExtension,
-                REACT_DEVELOPER_TOOLS,
-                REDUX_DEVTOOLS,
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            } = require("electron-devtools-installer");
-
-            [REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS].forEach((extension) => {
-                installExtension(extension)
-                    .then((name: string) => debug("Added Extension: ", name))
-                    .catch((err: Error) => debug("An error occurred: ", err));
-            });
+            //     [REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS].forEach((extension) => {
+            //         installExtension(extension)
+            //             .then((name: string) => debug("electron-devtools-installer OK (library window): ", name))
+            //             .catch((err: Error) => debug("electron-devtools-installer ERROR (library window): ", err));
+            //     });
+            // }, 1000);
 
             // the dispatching of 'openSucess' action must be in the 'did-finish-load' event
             // because webpack-dev-server automaticaly refresh the window.
@@ -90,6 +99,7 @@ export function* createLibraryWindow(_action: winActions.library.openRequest.TAc
         if (_VSCODE_LAUNCH !== "true" && OPEN_DEV_TOOLS) {
             setTimeout(() => {
                 if (!libWindow.isDestroyed()) {
+                    debug("opening dev tools (library) ...");
                     libWindow.webContents.openDevTools({ activate: true, mode: "detach" });
                 }
             }, 2000);

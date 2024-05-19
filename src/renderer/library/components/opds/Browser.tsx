@@ -11,11 +11,15 @@ import {
     TranslatorProps, withTranslator,
 } from "readium-desktop/renderer/common/components/hoc/translator";
 import LibraryLayout from "readium-desktop/renderer/library/components/layout/LibraryLayout";
-import { ILibraryRootState } from "readium-desktop/renderer/library/redux/states";
+import { ILibraryRootState } from "readium-desktop/common/redux/states/renderer/libraryRootState";
 
 import BreadCrumb from "../layout/BreadCrumb";
 import BrowserResult from "./BrowserResult";
 import Header from "./Header";
+import SearchForm from "./SearchForm";
+import * as stylesCatalogs from "readium-desktop/renderer/assets/styles/components/catalogs.scss";
+import SVG from "readium-desktop/renderer/common/components/SVG";
+import * as ForbiddenIcon from "readium-desktop/renderer/assets/icons/forbidden-icon.svg";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IBaseProps extends TranslatorProps {
@@ -37,15 +41,25 @@ class Browser extends React.Component<IProps, undefined> {
     public render(): React.ReactElement<IProps>  {
         const secondaryHeader = <Header/>;
         const breadCrumb = <BreadCrumb breadcrumb={this.props.breadrumb} />;
+        const search = <SearchForm />;
+        const catalogTitle = this.props.breadrumb[1]?.name;
+        
 
         return (
             <LibraryLayout
-                title={this.props.__("header.catalogs")}
+                page={this.props.__("opds.breadcrumbRoot")}
+                title={catalogTitle}
                 secondaryHeader={secondaryHeader}
                 breadCrumb={breadCrumb}
+                search={search}
             >
-                {this.props.breadrumb.length &&
+                {this.props.breadrumb.length ?
                     <BrowserResult/>
+                    :
+                    <p className={stylesCatalogs.noPublication}>
+                        <SVG ariaHidden svg={ForbiddenIcon} />
+                        {this.props.__("opds.empty")}
+                    </p>
                 }
             </LibraryLayout>
         );

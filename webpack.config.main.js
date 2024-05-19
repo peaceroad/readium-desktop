@@ -45,7 +45,7 @@ const _externalsCache = new Set();
 if (nodeEnv !== "production") {
     const nodeExternals = require("webpack-node-externals");
     const neFunc = nodeExternals({
-        allowlist: ["nanoid", "normalize-url", "node-fetch", "data-uri-to-buffer", /^fetch-blob/, /^formdata-polyfill/],
+        allowlist: ["timeout-signal", "nanoid", "normalize-url", "node-fetch", "data-uri-to-buffer", /^fetch-blob/, /^formdata-polyfill/],
         importType: function (moduleName) {
             if (!_externalsCache.has(moduleName)) {
                 console.log(`WEBPACK EXTERNAL (MAIN): [${moduleName}]`);
@@ -224,6 +224,14 @@ let config = Object.assign(
                     {
                         from: path.join(__dirname, "resources"),
                         to: "assets/icons",
+                    },
+                ],
+            }),
+            new CopyWebpackPlugin({
+                patterns: [
+                    {
+                        from: path.join(__dirname, "src", "renderer", "assets", "fonts"),
+                        to: "assets/fonts",
                     },
                 ],
             }),

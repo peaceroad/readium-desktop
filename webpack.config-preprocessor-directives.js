@@ -1,7 +1,7 @@
 const webpack = require("webpack");
 
-const { version, build } = require("./package.json");
-var git = require("git-rev-sync");
+const { version, build, name } = require("./package.json");
+// var git = require("git-rev-sync");
 
 const portApp = process.env.PORT_APP || "8090";
 const portReader = process.env.PORT_READER || "8191";
@@ -14,7 +14,7 @@ const isDev = nodeEnv === "development";
 
 const isVisualStudioCodeLaunch = process.env.VSCODE_LAUNCH || "false";
 
-const isContinuousIntegrationDeploy = process.env.TRAVIS_OS_NAME_ ? true : false;
+const isContinuousIntegrationDeploy = process.env.GITHUB_TOKEN_RELEASE_PUBLISH ? true : false;
 
 const rendererLibraryBaseUrl = isDev ? "http://localhost:" + portApp + "/" : "file://";
 
@@ -41,10 +41,11 @@ const telemetrySecret = process.env.THORIUM_TELEMETRY_SECRET || "";
 
 const data = {
     __APP_VERSION__: JSON.stringify(version),
-    __APP_NAME__: JSON.stringify(build.productName),
-    __GIT_BRANCH__: JSON.stringify(git.branch()),
-    __GIT_DATE__: JSON.stringify(git.date()),
-    __GIT_SHORT__: JSON.stringify(git.short()),
+    __PACK_NAME__: JSON.stringify(name), // EDRLab.ThoriumReader
+    __APP_NAME__: JSON.stringify(build.productName), // Thorium
+    // __GIT_BRANCH__: JSON.stringify(git.branch()),
+    // __GIT_DATE__: JSON.stringify(git.date()),
+    // __GIT_SHORT__: JSON.stringify(git.short()),
     __NODE_ENV__: JSON.stringify(nodeEnv),
     __VSCODE_LAUNCH__: JSON.stringify(isVisualStudioCodeLaunch),
     __NODE_MODULE_RELATIVE_URL__: JSON.stringify(nodeModuleRelativeUrl),

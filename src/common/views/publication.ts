@@ -29,9 +29,10 @@ export interface PublicationView extends Identifiable {
     isDivina?: boolean;
     isPDF?: boolean;
     isDaisy?: boolean;
-    isFXL?: boolean;
+    isFixedLayoutPublication?: boolean;
 
     lastReadTimeStamp?: number;
+    readingFinished: boolean;
 
     a11y_accessMode?: string[];
     a11y_accessibilityFeature?: string[];

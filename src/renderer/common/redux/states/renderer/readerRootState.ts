@@ -6,13 +6,17 @@
 // ==LICENSE-END==
 
 import { ReaderConfig, ReaderInfo } from "readium-desktop/common/models/reader";
-import { ICommonRootState } from "readium-desktop/common/redux/states/renderer/commonRootState";
+import { IRendererCommonRootState } from "readium-desktop/common/redux/states/rendererCommonRootState";
+import { IRTLFlipState } from "readium-desktop/common/redux/states/renderer/rtlFlip";
 
-export interface IReaderRootState extends ICommonRootState {
+export interface IReaderRootState extends IRendererCommonRootState {
     reader: IReaderStateReader;
 }
 
 export interface IReaderStateReader {
     config: ReaderConfig;
     info: ReaderInfo;
+
+    disableRTLFlip: IRTLFlipState;
+    defaultConfig: ReaderConfig;
 }

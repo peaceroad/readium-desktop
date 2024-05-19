@@ -7,13 +7,14 @@
 
 import { ReaderConfig, ReaderConfigStringsAdjustables } from "readium-desktop/common/models/reader";
 import {
-    TChangeEventOnInput, TChangeEventOnSelect, TKeyboardEventOnAnchor, TMouseEventOnAnchor,
+    TChangeEventOnInput, TKeyboardEventOnAnchor, TMouseEventOnAnchor,
     TMouseEventOnSpan,
 } from "readium-desktop/typings/react";
 
-import { Locator as R2Locator } from "@r2-shared-js/models/locator";
+import { Locator as R2Locator } from "@r2-navigator-js/electron/common/locator";
 import { Publication as R2Publication } from "@r2-shared-js/models/publication";
-import { IEventBusPdfPlayer, TToc } from "../pdf/common/pdfReader.type";
+import { TToc } from "../pdf/common/pdfReader.type";
+import { TdivinaReadingMode } from "readium-desktop/common/redux/states/renderer/divina";
 
 export const fontSize: string[] = [
     "75%",
@@ -109,6 +110,7 @@ export default optionsValues;
 
 export interface IReaderMenuProps {
     open: boolean;
+    focus: number;
     r2Publication: R2Publication;
     // tslint:disable-next-line: max-line-length
     handleLinkClick: (event: TMouseEventOnSpan | TMouseEventOnAnchor | TKeyboardEventOnAnchor | undefined, url: string, closeNavPanel?: boolean) => void;
@@ -119,22 +121,24 @@ export interface IReaderMenuProps {
     isPdf: boolean;
     pdfNumberOfPages: number;
 
-    openedSection: number | undefined;
+    openedSection: string;
+    annotationUUID: string;
+    resetAnnotationUUID: () => void;
+    setOpenedSection: (v: string) => void;
 }
 
-export type TdivinaReadingMode = "single" | "double" | "scroll" | "guided";
 export const isDivinaReadingMode = (v: any): v is TdivinaReadingMode => {
     return ["single", "double", "scroll", "guided"].includes(v);
 };
 
-export interface IReaderOptionsProps {
+export interface IReaderSettingsProps {
     indexes: AdjustableSettingsNumber;
     open: boolean;
     readerConfig: ReaderConfig;
-    handleSettingChange: (
-        event: TChangeEventOnInput | TChangeEventOnSelect | undefined,
-        name: keyof ReaderConfig,
-        value?: string | boolean) => void;
+    // handleSettingChange: (
+    //     event: TChangeEventOnInput | TChangeEventOnSelect | undefined,
+    //     name: keyof ReaderConfig,
+    //     value?: string | boolean) => void;
     handleIndexChange: (
         event: TChangeEventOnInput,
         name: keyof ReaderConfigStringsAdjustables) => void;
@@ -145,10 +149,20 @@ export interface IReaderOptionsProps {
 
     divinaReadingMode: TdivinaReadingMode;
     divinaReadingModeSupported: TdivinaReadingMode[];
-
-    pdfEventBus: IEventBusPdfPlayer;
     isDivina: boolean;
     isPdf: boolean;
+    isFXL: boolean;
 
-    openedSection: number | undefined;
+    // openedSection: number | undefined;
+    disableRTLFlip: boolean;
+    setDisableRTLFlip: (disabled: boolean) => void;
+    zenMode: boolean;
+    setZenMode: (value : boolean) => void;
+    searchEnable: boolean;
+}
+
+export interface IPopoverDialogProps {
+    dockingMode: "full" | "left" | "right";
+    dockedMode: boolean;
+    setDockingMode: (m: "full" | "left" | "right") => void;
 }

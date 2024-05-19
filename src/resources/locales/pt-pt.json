@@ -4,13 +4,16 @@
         "closeDialog": "Fechar",
         "importFile": "Importar publicação",
         "leftSlideButton": "Deslizar lista para a esquerda",
-        "mainContent": "conteúdo principal",
+        "mainContent": "Conteúdo principal",
         "rightSlideButton": "Deslizar lista para a direita",
         "searchBook": "Procurar por título",
         "skipLink": "Ir para o conteúdo",
-        "toolbar": "barra de ferramentas"
+        "toolbar": "Barra de ferramentas"
     },
     "apiapp": {
+        "documentation": "",
+        "howItWorks": "",
+        "informations": "",
         "noLibraryFound": "Nenhuma biblioteca encontrada ({{- name}})"
     },
     "app": {
@@ -37,13 +40,16 @@
                 }
             }
         },
+        "update": {
+            "message": "",
+            "title": ""
+        },
         "window": {
             "showLibrary": "Mostrar biblioteca / estante"
         }
     },
     "catalog": {
         "about": {
-            "button": "Mais informações",
             "title": "Sobre {{- appName}}"
         },
         "addBookToLib": "Importar",
@@ -68,21 +74,24 @@
             "continueReadingPdf": "Retomar PDF",
             "lastAdditions": "Adicionados recentemente"
         },
-        "export": "Exportar",
+        "export": "Guardar como",
         "format": "Formato",
         "lang": "Idioma",
-        "lastRead": "Último lido",
+        "lastRead": "Última leitura",
         "moreInfo": "Mais informações",
         "myBooks": "Meus livros",
-        "noPublicationHelpL1": "Solte uma publicação aqui",
-        "noPublicationHelpL2": "ou use o botão \"+\" acima.",
+        "noPublicationHelpL1": "Solte aqui uma publicação",
+        "noPublicationHelpL2": "ou use o botão \"{{- importTitle }}\" acima.",
         "noPublicationHelpL3": "Ficheiros protegidos por LCP são suportados.",
         "noPublicationHelpL4": "Extensões suportadas:",
         "numberOfPages": "Número de páginas",
         "opds": {
             "auth": {
                 "cancel": "Cancelar",
-                "login": "Autenticar"
+                "login": "Autenticar",
+                "password": "",
+                "register": "",
+                "username": ""
             },
             "info": {
                 "availableSince": "Desde",
@@ -94,8 +103,8 @@
                     "unknown": "Desconhecido"
                 },
                 "availableUntil": "Até",
-                "copyAvalaible": "Número de disponíveis",
-                "copyTotal": "Número de cópias",
+                "copyAvalaible": "Disponíveis",
+                "copyTotal": "Exemplares",
                 "holdPosition": "Sua posição na fila",
                 "holdTotal": "Reservado",
                 "numberOfItems": "Número de itens",
@@ -107,51 +116,54 @@
         "readBook": "Ler",
         "released": "Publicado em",
         "sort": "Ordenar por",
+        "tag": "",
         "tagCount": "Contagem de etiquetas",
         "tags": "Etiquetas",
-        "update": ""
+        "update": "Atualizar"
     },
     "dialog": {
-        "closeModalWindow": "Fechar esta janela modal",
+        "cancel": "Cancelar",
         "deleteFeed": "Deseja realmente eliminar este catálogo?",
         "deletePublication": "Deseja realmente eliminar este documento?",
         "import": "Deseja realmente importar estes ficheiros:",
         "importError": "ocorreu um erro, verifique a extensão do ficheiro ({{acceptedExtension}})",
-        "no": "Não",
         "renew": "Deseja realmente renovar a licença deste documento?",
         "return": "Deseja realmente devolver a licença deste documento?",
-        "yes": "Yes"
+        "yes": "Sim"
     },
     "error": {
         "errorBox": {
             "error": "Mensagem de erro:",
-            "message": "Um erro ocorreu em {{- filename}}",
+            "message": "Ocorreu um erro em {{- filename}}",
             "title": "Erro interno {{- appName}}"
         }
     },
     "header": {
         "allBooks": "Todos os livros",
-        "books": "Meus livros",
         "catalogs": "Catálogos",
-        "downloads": "Transferências",
+        "downloads": "Descarregamentos",
+        "fitlerTagTitle": "",
         "gridTitle": "Vista de grelha",
         "home": "Menu de estante",
         "homeTitle": "entrada",
         "importTitle": "Importar uma publicação",
         "listTitle": "Vista de lista",
+        "myCatalogs": "",
         "refreshTitle": "recarregar",
         "searchPlaceholder": "Procurar",
         "searchTitle": "Iniciar uma pesquisa",
-        "settings": "Configurações"
+        "settings": "Configurações",
+        "viewMode": ""
     },
     "library": {
         "lcp": {
-            "cancel": "Cancelar",
-            "hint": "(Dica : {{- hint}})",
-            "password": "Senha",
-            "sentence": "Esta publicação precisa de uma senha LCP para poder ser aberta: ",
-            "submit": "Enviar",
-            "urlHint": "Esqueceu-se da sua frase-senha? Encontre alguma ajuda aqui"
+            "hint": "(Dica: {{- hint}})",
+            "password": "Frase-passe",
+            "sentence": "Esta publicação necessita de uma frase-passe LCP para poder ser aberta: ",
+            "urlHint": "Esqueceu-se da sua frase-passe? Encontre alguma ajuda aqui",
+            "whatIsLcp?": "",
+            "whatIsLcpInfoDetails": "",
+            "whatIsLcpInfoDetailsLink": ""
         }
     },
     "message": {
@@ -160,11 +172,11 @@
         },
         "import": {
             "alreadyImport": "{{- title}} já foi importado",
-            "fail": "Falha ao importar {{- path}}. Verifique se o ficheiro é válido.",
+            "fail": "Falha ao importar {{- path}}. Erro: {{- err}}.",
             "success": "Foi concluída a importação de {{- title}}."
         },
         "open": {
-            "error": "O documento não pode ser aberto: {{- err}}"
+            "error": "Não foi possível abrir o documento: {{- err}}"
         }
     },
     "opds": {
@@ -172,18 +184,18 @@
             "addButton": "Adicionar",
             "name": "Nome:",
             "namePlaceholder": "Nome",
-            "title": "Adicionar fonte OPDS",
             "url": "Endereço:",
             "urlPlaceholder": "Hiperligação"
         },
         "addFormApiapp": {
             "title": "Adicionar uma conta de biblioteca"
         },
-        "addMenu": "Adicionar fonte OPDS",
-        "back": "Voltar",
+        "addMenu": "Adicionar sinal OPDS",
         "breadcrumbRoot": "Catálogos",
+        "documentation": "",
         "empty": "Nenhum documento encontrado",
         "firstPage": "Primeira",
+        "informations": "",
         "lastPage": "Última",
         "menu": {
             "aboutBook": "Sobre este livro",
@@ -194,55 +206,55 @@
             "goSubBook": "Subscrever"
         },
         "network": {
-            "error": "Não foi possível aceder à fonte OPDS",
+            "error": "Não foi possível aceder ao sinal OPDS",
             "noInternet": "Sem Internet",
-            "noInternetMessage": "Tente: verificar o cabo de rede, modem, router ou wi-fi",
-            "reject": "Desculpe, ocorreu um erro inesperado ao tentar processar a fonte OPDS",
+            "noInternetMessage": "Verifique o cabo de rede, modem, router ou o wi-fi",
+            "reject": "Desculpe, ocorreu um erro inesperado ao tentar processar o sinal OPDS",
             "timeout": "Foi atingido o máximo de tempo de espera na rede. Por favor, tente novamente mais tarde"
         },
         "next": "Seguinte",
         "previous": "Anterior",
         "shelf": "Estante",
         "updateForm": {
-            "name": "",
-            "namePlaceholder": "",
-            "title": "",
-            "updateButton": "",
-            "url": "",
-            "urlPlaceholder": ""
-        }
+            "name": "Nome",
+            "title": "Editar um sinal OPDS",
+            "updateButton": "Editar",
+            "url": "Endereço"
+        },
+        "whatIsOpds": ""
     },
     "publication": {
         "accessibility": {
             "accessModeSufficient": {
-                "textual": ""
+                "textual": "Amigável para TTS e leitores de ecrã"
             },
             "accessibilityFeature": {
-                "alternativeText": "",
-                "displayTransformability": "",
-                "longDescription": "",
-                "printPageNumbers": "",
-                "readingOrder": "",
-                "synchronizedAudioText": "",
-                "tableOfContents": ""
+                "alternativeText": "Contém texto alternativo",
+                "displayTransformability": "Texto e visual adaptável",
+                "longDescription": "Recursos gráficos totalmente descritos",
+                "printPageNumbers": "Referência de paginação de livro impresso",
+                "readingOrder": "Contém ordenação de leitura",
+                "synchronizedAudioText": "Texto e áudio sincronizados",
+                "tableOfContents": "Contém índice"
             },
             "accessibilityHazard": {
-                "flashing": "",
-                "motion": "",
-                "name": "",
-                "noFlashing": "",
-                "noMotion": "",
-                "noSimulation": "",
-                "noSound": "",
-                "none": "",
-                "simulation": "",
-                "sound": "",
-                "unknown": ""
+                "flashing": "Piscar",
+                "motionSimulation": "Simulação de movimento",
+                "name": "Perigo",
+                "noFlashing": "Sem piscar",
+                "noMotionSimulation": "Sem simulação de movimento",
+                "noSound": "Sem som",
+                "none": "Nenhum",
+                "sound": "Som",
+                "unknown": "Desconhecido"
             },
-            "moreInformation": "",
-            "name": "",
-            "noA11y": ""
+            "certifierReport": "Relatório do certificador",
+            "conformsTo": "Em conformidade com:",
+            "moreInformation": "Mais informações",
+            "name": "Acessibilidade",
+            "noA11y": "Nenhuma informação de acessibilidade disponível"
         },
+        "actions": "",
         "audio": {
             "tracks": "Faixas"
         },
@@ -251,115 +263,144 @@
         "certificateRevoked": "O certificado foi revogado",
         "certificateSignatureInvalid": "A assinatura do certificado é inválida",
         "cover": {
-            "img": "imagem de capa"
+            "img": "Imagem de capa"
         },
+        "day": "",
+        "days": "",
         "duration": {
             "title": "Duração"
         },
+        "expired": "",
         "expiredLcp": "Este livro não pode ser lido porque a licença LCP expirou.",
         "lcpEnd": "Fim",
         "lcpRightsCopy": "Caracteres copiados",
         "lcpRightsPrint": "Páginas impressas",
         "lcpStart": "Início",
+        "licenceLCP": "",
         "licenseOutOfDate": "Licença caducada",
         "licenseSignatureDateInvalid": "A data de assinatura da licença é inválida",
         "licenseSignatureInvalid": "A assinatura da licença é inválida",
+        "licensed": "",
+        "markAsRead": "",
+        "notStarted": "",
+        "onGoing": "",
         "progression": {
             "title": "Progressão"
         },
+        "read": "",
+        "remainingTime": "",
         "renewButton": "Renovar",
         "returnButton": "Devolver",
         "returnedLcp": "Este livro não pode ser lido porque a licença LCP foi devolvida.",
         "revokedLcp": "Este livro não pode ser lido porque a licença LCP foi revogada.",
         "seeLess": "Ver menos",
         "seeMore": "Ver mais",
+        "timeLeft": "",
         "title": "Título",
-        "userKeyCheckInvalid": "A frase-senha está incorreta"
+        "userKeyCheckInvalid": "A frase-passe está incorreta"
     },
     "reader": {
-        "divina": {
-            "mute": "silenciar áudio",
-            "unmute": "silenciar áudio"
+        "annotations": {
+            "Color": "",
+            "addNote": "",
+            "advancedMode": "",
+            "annotationsOptions": "",
+            "highlight": "",
+            "noSelectionToast": "",
+            "quickAnnotations": "",
+            "saveNote": "",
+            "toggleMarginMarks": ""
         },
-        "footerInfo": {
-            "lessInfo": "menos informações",
-            "moreInfo": "mais informações"
+        "divina": {
+            "mute": "Silenciar áudio",
+            "unmute": "Ativar áudio"
+        },
+        "fxl": {
+            "fit": ""
         },
         "marks": {
             "annotations": "Anotações",
             "bookmarks": "Marcadores",
             "delete": "Apagar",
             "edit": "Editar",
+            "goTo": "",
             "landmarks": "Pontos de referência",
+            "saveMark": "",
             "search": "Pesquisar",
+            "searchResult": "",
             "toc": "Índice"
         },
         "media-overlays": {
             "activate": "Ativar narração",
-            "captions": "Legendas",
+            "captions": "Legendas / vista limpa",
+            "captionsDescription": "",
             "next": "Narração seguinte",
             "pause": "Pausar narração",
             "play": "Tocar narração",
             "previous": "Narração anterior",
             "skip": "Saltável",
+            "skipDescription": "",
             "speed": "Velocidade de reprodução da narração",
             "stop": "Parar narração",
             "title": "Narração"
         },
         "navigation": {
-            "backHomeTitle": "voltar à estante",
-            "bookmarkTitle": "marcador",
+            "annotationTitle": "",
+            "backHomeTitle": "Voltar à estante",
+            "bookmarkTitle": "Marcador",
             "currentPage": "Página atual: {{- current}}",
             "currentPageTotal": "Página atual: {{- current}}/{{- total}}",
-            "detachWindowTitle": "mostrar biblioteca / janela da estante",
-            "fullscreenTitle": "abrir modo de ecrã completo",
+            "detachWindowTitle": "Mostrar biblioteca / janela da estante",
+            "fullscreenTitle": "Abrir em ecrã completo",
             "goTo": "Ir para",
             "goToError": "Esta quebra de página não existe",
             "goToPlaceHolder": "Digite um n.º de página",
             "goToTitle": "Ir para a página",
-            "historyNext": "",
-            "historyPrevious": "",
-            "infoTitle": "informações",
-            "magnifyingGlassButton": "pesquisar no documento",
-            "openTableOfContentsTitle": "navegação",
+            "historyNext": "Saltar para a frente",
+            "historyPrevious": "Saltar para trás",
+            "infoTitle": "Informações",
+            "magnifyingGlassButton": "Pesquisar no documento",
+            "openTableOfContentsTitle": "Navegação",
+            "page": "",
             "pdfscalemode": "Ajustar à página ou largura",
-            "quitFullscreenTitle": "sair do modo de ecrã completo",
-            "readBookTitle": "Começar a ler o livro",
-            "settingsTitle": "configurações"
+            "settingsTitle": "Configurações"
         },
         "picker": {
-            "annotationTitle": "Anotações",
             "search": {
                 "founds": "{{- nResults}} correspondência(s)",
                 "input": "texto a corresponder",
                 "next": "Seguinte",
                 "notFound": "sem correspondências",
                 "previous": "Anterior",
+                "results": "",
                 "submit": "Procurar"
             },
-            "searchTitle": "Pesquisar"
+            "searchTitle": "Pesquisar:"
         },
         "settings": {
             "column": {
-                "auto": "Automático",
+                "auto": "Predefinido",
                 "one": "1 col.",
-                "oneTitle": "uma coluna",
                 "title": "Colunas",
-                "two": "2 cols.",
-                "twoTitle": "duas colunas"
+                "two": "2 cols."
             },
+            "customizeReader": "",
+            "disabled": "",
             "display": "Visualização",
             "disposition": {
                 "title": "Visual"
             },
             "font": "Tipo de letra",
             "fontSize": "Tamanho da letra",
+            "infoCustomFont": "",
             "justification": "Alinhamento",
             "justify": "Justificar",
             "letterSpacing": "Espaçamento de letras",
             "lineSpacing": "Espaçamento de linhas",
             "margin": "Margem",
             "noFootnotes": "Desativar notas de rodapé",
+            "noRTLFlip": "Desativar interface Direita para esquerda",
+            "noRuby": "Ocultar Ruby Japonês",
             "paginated": "Paginado",
             "paraSpacing": "Espaçamento de parágrafos",
             "pdfZoom": {
@@ -375,19 +416,20 @@
                 },
                 "title": "Zoom"
             },
+            "preview": "",
             "reduceMotion": "Reduzir movimento",
-            "save": {
-                "apply": "guardar",
-                "reset": "redefinir",
-                "title": "Configuração"
-            },
             "scrolled": "Rolável",
             "spacing": "Espaçamento",
             "text": "Texto",
             "theme": {
                 "name": {
+                    "Contrast1": "",
+                    "Contrast2": "",
+                    "Contrast3": "",
+                    "Contrast4": "",
                     "Neutral": "Neutro",
                     "Night": "Escuro",
+                    "Paper": "",
                     "Sepia": "Sépia"
                 },
                 "title": "Tema"
@@ -403,12 +445,13 @@
         },
         "tts": {
             "activate": "Ativar Texto para voz",
-            "default": "Voz: padrão do sistema",
+            "default": "Voz: predefinição do sistema",
             "next": "Texto para voz - seguinte",
             "pause": "Pausar Texto para voz",
             "play": "Executar Texto para voz",
             "previous": "Texto para voz - anterior",
-            "sentenceDetect": "Dividir texto de texto para voz",
+            "sentenceDetect": "Dividir texto de Texto para voz",
+            "sentenceDetectDescription": "",
             "speed": "Velocidade de Texto para voz",
             "stop": "Parar Texto para voz",
             "voice": "Voz de Texto para voz"
@@ -421,14 +464,12 @@
         "keyboard": {
             "advancedMenu": "Menu",
             "cancel": "Cancelar",
-            "edit": "Editar",
+            "disclaimer": "",
             "editUserJson": "Editar ficheiro de utilizador...",
-            "hide": "Ocultar",
             "keyboardShortcuts": "Atalhos de teclado",
             "loadUserJson": "Carregar de ficheiro de utilizador",
             "resetDefaults": "Redefinir (carregar predefinições)",
-            "save": "Guardar",
-            "show": "Mostrar"
+            "save": "Guardar"
         },
         "language": {
             "languageChoice": "Escolha de idioma"
@@ -437,6 +478,46 @@
             "no": "Desativar",
             "title": "Guardar sessão",
             "yes": "Ativar"
+        },
+        "tabs": {
+            "appearance": "",
+            "general": "",
+            "keyboardShortcuts": ""
+        },
+        "theme": {
+            "auto": "",
+            "dark": "",
+            "description": "",
+            "light": "",
+            "title": ""
+        }
+    },
+    "wizard": {
+        "buttons": {
+            "discover": "",
+            "goToBooks": "",
+            "next": ""
+        },
+        "description": {
+            "annotations": "",
+            "catalogs": "",
+            "home": "",
+            "readingView1": "",
+            "readingView2": "",
+            "yourBooks": ""
+        },
+        "dontShow": "",
+        "tab": {
+            "annotations": "",
+            "catalogs": "",
+            "home": "",
+            "readingView": "",
+            "yourBooks": ""
+        },
+        "title": {
+            "allBooks": "",
+            "newFeature": "",
+            "welcome": ""
         }
     }
 }

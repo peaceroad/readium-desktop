@@ -134,8 +134,18 @@ export class OpdsFeedViewConverter {
                 undefined;
 
             return {
-                indirectAcquisitionType: indirectAcquisitions?.reduce<string>((pv, cv) => {
-                    return typeof cv?.TypeAcquisition === "string" ? cv.TypeAcquisition : pv;
+                indirectAcquisitionTypes: indirectAcquisitions?.reduce<{ top: string, child: string | undefined} | undefined>((pv, cv) => {
+                    if (typeof cv?.TypeAcquisition === "string") {
+                        const child = cv.Children?.reduce<string | undefined>((pv_, cv_) => {
+                            return typeof cv_?.TypeAcquisition === "string" ? cv_.TypeAcquisition : pv_;
+                        }, undefined);
+                        return {
+                            top: cv.TypeAcquisition,
+                            child,
+                        };
+                    } else {
+                        return pv;
+                    }
                 }, undefined),
                 lcpHashedPassphrase,
                 numberOfItems: properties.NumberOfItems || undefined,
@@ -260,7 +270,10 @@ export class OpdsFeedViewConverter {
         const workIdentifier = metadata.Identifier;
         const description = metadata.Description;
         const languages = metadata.Language;
+
         const title = convertMultiLangStringToString(metadata.Title);
+        // console.log(`=-=-==-=-${JSON.stringify(metadata.Title)}---${title}`);
+
         const publishedAt = metadata.PublicationDate &&
             moment(metadata.PublicationDate).toISOString();
 
@@ -335,24 +348,24 @@ export class OpdsFeedViewConverter {
                 type: ContentType.Opds2Pub,
                 rel: "self",
             }),
-            this.convertFilterLinksToView(baseUrl, r2OpdsPublication.Links, {
-                type: [
-                    ContentType.AtomXml,
-                    ContentType.Opds2,
-                ],
-            }),
+            // this.convertFilterLinksToView(baseUrl, r2OpdsPublication.Links, {
+            //     type: [
+            //         ContentType.AtomXml,
+            //         ContentType.Opds2,
+            //     ],
+            // }),
         );
         const catalogLinkView = fallback(
             this.convertFilterLinksToView(baseUrl, r2OpdsPublication.Links, {
                 type: ["application/atom+xml;profile=opds-catalog;kind=acquisition", ContentType.Opds2],
                 rel: "http://opds-spec.org/catalog",
             }),
-            this.convertFilterLinksToView(baseUrl, r2OpdsPublication.Links, {
-                type: [
-                    ContentType.AtomXml,
-                    ContentType.Opds2,
-                ],
-            }),
+            // this.convertFilterLinksToView(baseUrl, r2OpdsPublication.Links, {
+            //     type: [
+            //         ContentType.AtomXml,
+            //         ContentType.Opds2,
+            //     ],
+            // }),
         );
 
         const revokeLoanLinkView = this.convertFilterLinksToView(baseUrl, r2OpdsPublication.Links, {
@@ -390,6 +403,22 @@ export class OpdsFeedViewConverter {
             duration,
             nbOfTracks,
             catalogLinkView,
+
+            // legacy vs. modern a11y metadata structure
+            a11y_accessMode: r2OpdsPublication.Metadata.Accessibility?.AccessMode || r2OpdsPublication.Metadata.AccessMode, // string[]
+            a11y_accessibilityFeature: r2OpdsPublication.Metadata.Accessibility?.Feature || r2OpdsPublication.Metadata.AccessibilityFeature, // string[]
+            a11y_accessibilityHazard: r2OpdsPublication.Metadata.Accessibility?.Hazard || r2OpdsPublication.Metadata.AccessibilityHazard, // string[]
+
+            a11y_certifiedBy: r2OpdsPublication.Metadata.Accessibility?.Certification?.CertifiedBy || r2OpdsPublication.Metadata.CertifiedBy, // string[]
+            a11y_certifierCredential: r2OpdsPublication.Metadata.Accessibility?.Certification?.Credential || r2OpdsPublication.Metadata.CertifierCredential, // string[]
+            a11y_certifierReport: r2OpdsPublication.Metadata.Accessibility?.Certification?.Report || r2OpdsPublication.Metadata.CertifierReport, // string[]
+            a11y_conformsTo: r2OpdsPublication.Metadata.Accessibility?.ConformsTo || r2OpdsPublication.Metadata.ConformsTo, // string[]
+
+            a11y_accessModeSufficient: r2OpdsPublication.Metadata.Accessibility?.AccessModeSufficient || r2OpdsPublication.Metadata.AccessModeSufficient, // (string[])[]
+
+            // convertMultiLangStringToString
+            a11y_accessibilitySummary: r2OpdsPublication.Metadata.Accessibility?.Summary || r2OpdsPublication.Metadata.AccessibilitySummary, // string | IStringMap
+
         };
     }
     public convertOpdsAuthToView(r2OpdsAuth: OPDSAuthenticationDoc, baseUrl: string): IOpdsResultView {

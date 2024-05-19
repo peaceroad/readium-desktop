@@ -49,7 +49,7 @@ const _externalsCache = new Set();
 if (nodeEnv !== "production") {
     const nodeExternals = require("webpack-node-externals");
     const neFunc = nodeExternals({
-        allowlist: ["nanoid", "normalize-url", "node-fetch", "data-uri-to-buffer", /^fetch-blob/, /^formdata-polyfill/],
+        allowlist: ["timeout-signal", "nanoid", "normalize-url", "node-fetch", "data-uri-to-buffer", /^fetch-blob/, /^formdata-polyfill/],
         importType: function (moduleName) {
             if (!_externalsCache.has(moduleName)) {
                 console.log(`WEBPACK EXTERNAL (LIBRARY): [${moduleName}]`);
@@ -103,7 +103,63 @@ console.log(JSON.stringify(externals, null, "  "));
 ////// EXTERNALS
 ////// ================================
 
-const cssLoaderConfig = [
+// const cssLoaderConfig = [
+//     {
+//         loader: nodeEnv !== "production" ? "style-loader" : MiniCssExtractPlugin.loader,
+//         options: {
+//             // publicPath: "./styling", // preprocessorDirectives.rendererReaderBaseUrl,
+//             // hmr: _enableHot,
+//             // reloadAll: true,
+//             esModule: false,
+//         },
+//     },
+//     {
+//         loader: "css-loader",
+//         options: {
+//             url: false,
+//             import: {
+//                 filter: (url, media, resourcePath) => {
+//                     console.log("css-loader IMPORT (LIBRARY): ", url, media, resourcePath);
+//                     return true;
+//                 },
+//             },
+//             importLoaders: 1,
+//             modules: {
+//                 // auto: false,
+//                 // mode: "local",
+//                 // exportOnlyLocals: true,
+//                 // exportGlobals: true,
+//                 namedExport: false,
+//                 exportLocalsConvention: 'as-is',
+//                 localIdentName: "[local]",
+//             },
+//             // modules: nodeEnv !== "production" && false ? { // MUST USE STRICT BASE64, NO PATH DEPENDENT (OTHERWISE BREAK CROSS-FILE CSS CLASSES WITH IDENTICAL NAMES, E.G. SUBCLASSES IN NESTED STATEMENTS)
+//             //     localIdentName: "[path][name]__[local]--[contenthash:base64:5]",
+//             // } : {
+//             //     getLocalIdent: (context, localIdentName, localName, options) => {
+//             //         // const checkSum = crypto.createHash("sha256");
+//             //         // checkSum.update(localName);
+//             //         // const hexStr = checkSum.digest("hex");
+//             //         // const b64Str = Buffer.from(hexStr, "hex").toString("base64");
+//             //         // const h = "z_" + b64Str;
+//             //         // console.log("getLocalIdent LIBRARY: ", h, context.resourcePath, localName);
+//             //         // return h;
+//             //         return localName;
+//             //     },
+//             //     // localIdentName: "[contenthash:base64]",
+//             //     // localIdentHashPrefix: "contenthash",
+//             //     // localIdentHashSalt: "_",
+//             //     // localIdentHashFunction: "md4", // sha256
+//             //     // localIdentHashDigest: "hex", // base64
+//             //     // localIdentHashDigestLength: 20,
+//             // },
+//             esModule: false,
+//         },
+//     },
+//     "postcss-loader",
+// ];
+
+const scssLoaderConfig = [
     {
         loader: nodeEnv !== "production" ? "style-loader" : MiniCssExtractPlugin.loader,
         options: {
@@ -129,6 +185,8 @@ const cssLoaderConfig = [
                 // mode: "local",
                 // exportOnlyLocals: true,
                 // exportGlobals: true,
+                namedExport: false,
+                exportLocalsConvention: 'as-is',
                 localIdentName: "[local]",
             },
             // modules: nodeEnv !== "production" && false ? { // MUST USE STRICT BASE64, NO PATH DEPENDENT (OTHERWISE BREAK CROSS-FILE CSS CLASSES WITH IDENTICAL NAMES, E.G. SUBCLASSES IN NESTED STATEMENTS)
@@ -154,7 +212,15 @@ const cssLoaderConfig = [
             esModule: false,
         },
     },
-    "postcss-loader",
+    {
+        loader: "sass-loader",
+        options: {
+            // Prefer `dart-sass`
+            implementation: require("sass"),
+            additionalData: `@import "./src/renderer/assets/styles/partials/variables.scss";`,
+            warnRuleAsWarning: true,
+        },
+    },
 ];
 
 let config = Object.assign(
@@ -225,7 +291,7 @@ let config = Object.assign(
                     ],
                 },
                 {
-                    // loader: "file-loader?name=assets/[name].[md5:hash].[ext]",
+                    // loader: "file-loader?name=assets/[name].[md5:hash][ext]",
                     // type: 'javascript/auto',
                     // options: {
                     //     esModule: false,
@@ -233,7 +299,7 @@ let config = Object.assign(
                     test: /\.(png|jpe?g|gif|ico)$/,
                     type: "asset/resource",
                     generator: {
-                        filename: "assets/[name].[md5:hash].[ext]",
+                        filename: "assets/[name].[md5:hash][ext]",
                     },
                 },
                 {
@@ -242,8 +308,16 @@ let config = Object.assign(
                     test: /\.svg$/,
                 },
                 {
+                    test: /\.ttf$/,
+                    type: "asset/resource",
+                    generator: {
+                        filename: "assets/fonts/[name][ext]",
+                    },
+                },
+                // useful ?
+                {
                     exclude: /src/,
-                    // loader: "file-loader?name=assets/[name].[md5:hash].[ext]",
+                    // loader: "file-loader?name=assets/[name].[md5:hash][ext]",
                     // type: 'javascript/auto',
                     // options: {
                     //     esModule: false,
@@ -252,7 +326,7 @@ let config = Object.assign(
                     test: /\.(woff|woff2|ttf|eot|svg)$/,
                     type: "asset/resource",
                     generator: {
-                        filename: "assets/[name].[md5:hash].[ext]",
+                        filename: "assets/[name].[md5:hash][ext]",
                     },
                 },
                 {
@@ -358,9 +432,13 @@ if (nodeEnv !== "production") {
     // if (_enableHot) {
     //     cssLoaderConfig.unshift("css-hot-loader");
     // }
+    // config.module.rules.push({
+    //     test: /\.css$/,
+    //     use: cssLoaderConfig,
+    // });
     config.module.rules.push({
-        test: /\.css$/,
-        use: cssLoaderConfig,
+        test: /\.scss$/,
+        use: scssLoaderConfig,
     });
 } else {
     config.optimization = {
@@ -398,13 +476,17 @@ if (nodeEnv !== "production") {
     );
 
     config.plugins.push(new webpack.IgnorePlugin({ resourceRegExp: /^devtron$/ }));
-    config.plugins.push(new webpack.IgnorePlugin({ resourceRegExp: /^react-axe$/ }));
+    config.plugins.push(new webpack.IgnorePlugin({ resourceRegExp: /^@axe-core\/react$/ }));
 
     // Minify and uglify in production environment
     //config.plugins.push(new UglifyJsPlugin());
+    // config.module.rules.push({
+    //     test: /\.css$/,
+    //     use: cssLoaderConfig,
+    // });
     config.module.rules.push({
-        test: /\.css$/,
-        use: cssLoaderConfig,
+        test: /\.scss$/,
+        use: scssLoaderConfig,
     });
 }
 

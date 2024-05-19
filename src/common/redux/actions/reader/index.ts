@@ -6,6 +6,7 @@
 // ==LICENSE-END==
 
 import * as attachModeRequest from "./attachModeRequest";
+import * as clipboardCopy from "./clipboardCopy";
 import * as closeError from "./closeError";
 import * as closeRequest from "./closeRequest";
 import * as closeRequestFromPublication from "./closeRequestFromPublication";
@@ -17,6 +18,9 @@ import * as fullScreenRequest from "./fullScreenRequest";
 import * as openError from "./openError";
 import * as openRequest from "./openRequest";
 import * as setReduxState from "./setReduxState";
+import * as disableRTLFlip from "./rtlFlip";
+import * as bookmark from "./bookmarks";
+import * as annotation from "./annotations";
 
 export {
     openRequest,
@@ -31,4 +35,8 @@ export {
     setReduxState,
     closeRequestFromPublication,
     fullScreenRequest,
+    clipboardCopy,
+    disableRTLFlip,
+    bookmark,
+    annotation,
 };

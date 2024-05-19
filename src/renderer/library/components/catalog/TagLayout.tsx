@@ -5,12 +5,10 @@
 // that can be found in the LICENSE file exposed on Github (readium) in the project repository.
 // ==LICENSE-END==
 
-import classNames from "classnames";
 import * as React from "react";
 import * as ArrowIcon from "readium-desktop/renderer/assets/icons/chevron-down.svg";
-import * as stylesDropDown from "readium-desktop/renderer/assets/styles/components/dropdown.css";
-import * as stylesGlobal from "readium-desktop/renderer/assets/styles/global.css";
-import * as stylesTags from "readium-desktop/renderer/assets/styles/components/tags.css";
+import * as stylesGlobal from "readium-desktop/renderer/assets/styles/global.scss";
+import * as stylesTags from "readium-desktop/renderer/assets/styles/components/tags.scss";
 import {
     TranslatorProps, withTranslator,
 } from "readium-desktop/renderer/common/components/hoc/translator";
@@ -31,24 +29,12 @@ interface IBaseProps extends TranslatorProps {
 interface IProps extends IBaseProps {
 }
 
-interface IState {
-        showMenu: boolean;
-}
+class GridTagLayout extends React.Component<IProps> {
 
-class GridTagLayout extends React.Component<IProps, IState> {
-
-    constructor(props: IProps) {
-        super(props);
-
-        this.state = {
-            showMenu: false,
-        };
-        this.togglemenu = this.togglemenu.bind(this);
-    }
     public render(): React.ReactElement<{}> {
         const { __ } = this.props;
         return (
-            <section>
+            <section style={{marginTop: "20px"}}>
                 <div className={stylesGlobal.heading}>
                     <h2>{__("catalog.tags")}</h2>
                     {this.props.tags.length === 0 ?
@@ -61,15 +47,9 @@ class GridTagLayout extends React.Component<IProps, IState> {
                                     <SVG ariaHidden={true} svg={ArrowIcon} />
                                 </>
                             }
-                            content={
-                                <div className={classNames(stylesDropDown.dropdown_menu, stylesDropDown.dropdown_right)}>
-                                    {this.props.content}
-                                </div>
-                            }
-                            open={this.state.showMenu}
-                            dir="right"
-                            toggle={this.togglemenu}
-                        />
+                        >
+                            {this.props.content}
+                        </Menu>
                     }
                 </div>
                 {this.props.tags.length === 0 ?
@@ -89,12 +69,6 @@ class GridTagLayout extends React.Component<IProps, IState> {
                 }
             </section>
         );
-    }
-
-    private togglemenu() {
-        this.setState({
-            showMenu: !this.state.showMenu,
-        });
     }
 }
 

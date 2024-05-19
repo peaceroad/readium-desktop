@@ -5,7 +5,6 @@
 // that can be found in the LICENSE file exposed on Github (readium) in the project repository.
 // ==LICENSE-END==
 
-import { AbortSignal } from "abort-controller";
 import timeoutSignal from "timeout-signal";
 import * as debug_ from "debug";
 import { promises as fsp } from "fs";
@@ -22,6 +21,7 @@ import { tryCatch, tryCatchSync } from "readium-desktop/utils/tryCatch";
 import { diMainGet, opdsAuthFilePath } from "../di";
 import { fetchWithCookie } from "./fetch";
 import { digestAuthentication, parseDigestString} from "readium-desktop/utils/digest";
+import { ProxyAgent } from "proxy-agent";
 
 // Logger
 const filename_ = "readium-desktop:main/http";
@@ -199,6 +199,7 @@ export async function httpFetchRawResponse(
     //
     // options.redirect = "manual"; // handle cookies
 
+
     // https://github.com/node-fetch/node-fetch#custom-agent
     // httpAgent doesn't works // err: Protocol "http:" not supported. Expected "https:
     // https://github.com/edrlab/thorium-reader/issues/1323#issuecomment-911772951
@@ -209,13 +210,28 @@ export async function httpFetchRawResponse(
     const httpAgent = new http.Agent({
         timeout: options.timeout || DEFAULT_HTTP_TIMEOUT,
     });
-    options.agent = (parsedURL: URL) => {
-        if (parsedURL.protocol === "http:") {
-            return httpAgent;
-        } else {
-            return httpsAgent;
-        }
-    };
+
+    const proxyAgent = new ProxyAgent({
+        httpAgent: httpAgent,
+        httpsAgent: httpsAgent,
+        // getProxyForUrl: (url) => {
+        //     debug("need to proxify this URL: ", url);
+        //     return "http://127.0.0.1:8888"
+        // }
+    });
+
+    // seems already implemented in the ProxyAgent package: 
+    // https://github.com/TooTallNate/proxy-agents/blob/70023c12abe0d014004af6309ff7d0fdbaa60875/packages/proxy-agent/src/index.ts#L122
+    // so not used anymore
+    // options.agent = (parsedURL: URL) => {
+    //     if (parsedURL.protocol === "http:") {
+    //         return httpAgent;
+    //     } else {
+    //         return httpsAgent;
+    //     }
+    // };
+
+    options.agent = proxyAgent;
 
     // if (!options.agent && url.toString().startsWith("https:")) {
     //     const httpsAgent = new https.Agent({
@@ -277,13 +293,15 @@ export async function httpFetchRawResponse(
     try {
         response = await fetchWithCookie(url.toString(), options);
     } finally {
-        // module-level weakmap of timeouts,
-        // see https://github.com/node-fetch/timeout-signal/blob/main/index.js
-        if (timeSignal) {
-            try {
-                timeoutSignal.clear(timeSignal);
-            } catch {}
-        }
+        // FIXED in https://github.com/node-fetch/timeout-signal/releases/tag/v2.0.0
+        // // module-level weakmap of timeouts,
+        // // see https://github.com/node-fetch/timeout-signal/blob/main/index.js
+        // if (timeSignal) {
+        //     try {
+        //         timeoutSignal.clear(timeSignal);
+        //     } catch {}
+        // }
+
         // our local, closure-level timeout
         if (timeout) {
             clearTimeout(timeout);
@@ -292,6 +310,7 @@ export async function httpFetchRawResponse(
     }
 
     debug("fetch URL:", `${url}`);
+    debug("Response URL:", response.url);
     debug("Method", options.method);
     debug("Request headers :");
     debug(options.headers);
@@ -391,6 +410,19 @@ export async function httpFetchFormattedResponse<TData = undefined>(
     try {
         const response = await httpFetchRawResponse(url, options, locale);
 
+        const responseURL = new URL(response.url);
+        const urlURL = new URL(url);
+
+        // handle authentication if url and response url missmatch and if an authentication token is present
+        if (
+            options.method === "get" &&
+            responseURL.href !== urlURL.href &&
+            response.status === 401 &&
+            (await getAuthenticationToken(responseURL))?.accessToken
+        ) {
+            return httpGetWithAuth(true)(response.url, options, callback, locale);
+        }
+
         debug("Response headers :");
         debug({ ...response.headers.raw() });
         debug("###");
@@ -455,10 +487,9 @@ export async function httpFetchFormattedResponse<TData = undefined>(
         debug(result);
         debug("#################");
 
-    } finally {
-        result = await handleCallback(result, callback);
     }
 
+    result = await handleCallback(result, callback);
     return result;
 }
 
@@ -626,6 +657,22 @@ export const httpPost: typeof httpFetchFormattedResponse =
 
         options = options || {};
         options.method = "post";
+        arg[1] = options;
+
+        // do not risk showing plaintext password in console / command line shell
+        // debug("Body:");
+        // debug(options.body);
+
+        return httpFetchFormattedResponse(...arg);
+    };
+
+export const httpPut: typeof httpFetchFormattedResponse =
+    async (...arg) => {
+
+        let [, options] = arg;
+
+        options = options || {};
+        options.method = "put";
         arg[1] = options;
 
         // do not risk showing plaintext password in console / command line shell

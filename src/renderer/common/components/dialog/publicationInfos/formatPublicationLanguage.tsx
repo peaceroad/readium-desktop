@@ -6,51 +6,41 @@
 // ==LICENSE-END==
 
 import * as React from "react";
-import { AvailableLanguages, I18nTyped } from "readium-desktop/common/services/translator";
+import { AvailableLanguages } from "readium-desktop/common/services/translator";
 import { TPublication } from "readium-desktop/common/type/publication.type";
-import * as stylesBookDetailsDialog from "readium-desktop/renderer/assets/styles/bookDetailsDialog.css";
+import * as stylesBookDetailsDialog from "readium-desktop/renderer/assets/styles/bookDetailsDialog.scss";
 
 export interface IProps {
-    publication: TPublication;
-    __: I18nTyped;
+    publicationViewMaybeOpds: TPublication;
 }
 
 export const FormatPublicationLanguage: React.FC<IProps> = (props) => {
 
-    const { publication, __ } = props;
+    const { publicationViewMaybeOpds } = props;
 
-    if (publication.languages) {
+    if (publicationViewMaybeOpds.languages) {
 
         let publicationLanguageArray: React.ReactElement[] = [];
 
-        publicationLanguageArray = publication.languages.map(
+        publicationLanguageArray = publicationViewMaybeOpds.languages.map(
             (lang: string, index: number) => {
 
                 // Note: "pt-PT" in the i18next ResourceBundle is not captured because key match reduced to "pt"
                 // Also: pt-pt vs. pt-PT case sensitivity
                 // Also zh-CN (mandarin chinese)
-                const l = lang.split("-")[0];
 
-                // because dynamic label does not pass typed i18n compilation
-                const translate = __ as (str: string) => string;
-
-                // The backticks is not captured by the i18n scan script (automatic detection of translate("...") calls)
-                let ll = translate(`languages.${l}`).replace(`languages.${l}`, lang);
-
-                const lg = AvailableLanguages[l as keyof typeof AvailableLanguages];
-                if (lg && lang == ll) {
-                    ll = lg;
-                }
+                const l = lang.split("-")[0] as keyof typeof AvailableLanguages;
+                const ll = AvailableLanguages[l] || lang;
 
                 const note = (lang !== ll) ? ` (${lang})` : "";
-                const suffix = ((index < (publication.languages.length - 1)) ? ", " : "");
+                const suffix = ((index < (publicationViewMaybeOpds.languages.length - 1)) ? ", " : "");
 
-                return (<i
+                return (<span
                     key={"lang-" + index}
                     className={stylesBookDetailsDialog.allowUserSelect}
                 >
                     {ll + note + suffix}
-                </i>);
+                </span>);
 
             });
 

@@ -1,4 +1,22 @@
 module.exports = {
+    ignorePatterns: [
+        ".vscode/*",
+        ".history/*",
+        ".github/*",
+        ".git/*",
+        "dist/*",
+        "docs/*",
+        "img/*",
+        "node_modules/*",
+        "resources/*",
+        "external-assets/*",
+        "scripts/*",
+        "src/typings/*",
+        "src/resources/*",
+        "src/renderer/assets/*",
+        "src/renderer/reader/pdf/*"
+    ],
+    // ignorePatterns: [ "*.*" ],
     parser: "@typescript-eslint/parser",
     env: {
         node: true,
@@ -7,6 +25,8 @@ module.exports = {
         es2020: true,
     },
     parserOptions: {
+        project: true,
+        tsconfigRootDir: __dirname,
         ecmaVersion: 2020,
         sourceType: "module",
         ecmaFeatures: {
@@ -20,32 +40,41 @@ module.exports = {
     },
     extends: [
         "plugin:react/recommended",
-        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-type-checked",
         "prettier",
         "plugin:prettier/recommended",
     ],
-    plugins: ["unused-imports", "prettier", "eslint-plugin-local-rules"],
+    plugins: [
+        // "unused-imports",
+        "prettier",
+        "eslint-plugin-local-rules",
+    ],
     rules: {
         quotes: ["error", "double"],
         "comma-dangle": ["error", "always-multiline"],
         "eol-last": ["error", "always"],
         semi: ["error", "always"],
 
+        "@typescript-eslint/no-unsafe-member-access": 0,
+        "@typescript-eslint/no-unsafe-return": 0,
+        "@typescript-eslint/no-unsafe-assignment": 0,
+        "@typescript-eslint/no-unsafe-call": 0,
+        "@typescript-eslint/no-unsafe-argument": 0,
+        "@typescript-eslint/no-unnecessary-type-assertion": 0,
+        "@typescript-eslint/restrict-template-expressions": 0,
+        "@typescript-eslint/no-redundant-type-constituents": 0,
+        "@typescript-eslint/no-base-to-string": 0,
+        "@typescript-eslint/no-misused-promises": 0,
+        "@typescript-eslint/require-await": 0,
+        "@typescript-eslint/no-floating-promises": 0,
+        "@typescript-eslint/unbound-method": 0,
+
+        "@typescript-eslint/no-unsafe-enum-comparison": 0,
+        "@typescript-eslint/restrict-plus-operands": 0,
+
         "no-unused-vars": 0,
-        "@typescript-eslint/no-unused-vars": 0,
-        // "@typescript-eslint/no-unused-vars": [
-        //     "error",
-        //     {
-        //         vars: "all",
-        //         args: "all",
-        //         argsIgnorePattern: "^_",
-        //         varsIgnorePattern: "^_",
-        //         caughtErrorsIgnorePattern: "^_",
-        //         caughtErrors: "all",
-        //     },
-        // ],
-        "unused-imports/no-unused-imports": "error",
-        "unused-imports/no-unused-vars": [
+        // "@typescript-eslint/no-unused-vars": 0,
+        "@typescript-eslint/no-unused-vars": [
             "error",
             {
                 vars: "all",
@@ -56,6 +85,18 @@ module.exports = {
                 caughtErrors: "all",
             },
         ],
+        // "unused-imports/no-unused-imports": "error",
+        // "unused-imports/no-unused-vars": [
+        //     "error",
+        //     {
+        //         vars: "all",
+        //         args: "all",
+        //         argsIgnorePattern: "^_",
+        //         varsIgnorePattern: "^_",
+        //         caughtErrorsIgnorePattern: "^_",
+        //         caughtErrors: "all",
+        //     },
+        // ],
 
         // react/jsx-uses-react
         // react/jsx-uses-vars

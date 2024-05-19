@@ -7,14 +7,15 @@
 
 import classNames from "classnames";
 import * as debug_ from "debug";
-import * as DOMPurify from "dompurify";
+import DOMPurify from "dompurify";
 import * as React from "react";
 import { I18nTyped, Translator } from "readium-desktop/common/services/translator";
 import { TPublication } from "readium-desktop/common/type/publication.type";
-import * as stylesBookDetailsDialog from "readium-desktop/renderer/assets/styles/bookDetailsDialog.css";
-import * as stylesBlocks from "readium-desktop/renderer/assets/styles/components/blocks.css";
-import * as stylesButtons from "readium-desktop/renderer/assets/styles/components/buttons.css";
-import * as stylesGlobal from "readium-desktop/renderer/assets/styles/global.css";
+import * as stylesBookDetailsDialog from "readium-desktop/renderer/assets/styles/bookDetailsDialog.scss";
+import * as stylePublication from "readium-desktop/renderer/assets/styles/publicationInfos.scss";
+import SVG from "../../SVG";
+import * as ChevronDown from "readium-desktop/renderer/assets/icons/chevron-down.svg";
+import * as ChevronUp from "readium-desktop/renderer/assets/icons/chevron-up.svg";
 
 // Logger
 const debug = debug_("readium-desktop:renderer:publicationInfoDescription");
@@ -22,7 +23,7 @@ debug("_");
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IProps {
-    publication: TPublication;
+    publicationViewMaybeOpds: TPublication;
     __: I18nTyped;
     translator: Translator;
 }
@@ -55,28 +56,27 @@ export default class PublicationInfoDescription extends React.Component<IProps, 
 
     public componentDidUpdate(prevProps: IProps) {
 
-        if (this.props.publication !== prevProps.publication) {
+        if (this.props.publicationViewMaybeOpds !== prevProps.publicationViewMaybeOpds) {
             setTimeout(this.needSeeMoreButton, 500);
         }
     }
 
     public render() {
-        const { publication: { description }, __ } = this.props;
+        const { publicationViewMaybeOpds: { description }, __ } = this.props;
 
         if (!description) return <></>;
         const textSanitize = DOMPurify.sanitize(description).replace(/font-size:/g, "font-sizexx:");
         if (!textSanitize) return <></>;
         return (
             <>
-                <div className={stylesGlobal.heading}>
-                    <h3>{__("catalog.description")}</h3>
+                <div className={stylePublication.publicationInfo_heading}>
+                    <h4>{__("catalog.description")}</h4>
                 </div>
-                <div className={classNames(stylesBlocks.block_line, stylesBlocks.description_see_more)}>
+                <div className={stylePublication.publicationInfo_description_bloc}>
                     <div
                         ref={this.descriptionWrapperRef}
                         className={classNames(
                             stylesBookDetailsDialog.descriptionWrapper,
-                            this.state.needSeeMore && stylesGlobal.mb_30,
                             this.state.needSeeMore && stylesBookDetailsDialog.hideEnd,
                             this.state.seeMore && stylesBookDetailsDialog.seeMore,
                         )}
@@ -90,7 +90,8 @@ export default class PublicationInfoDescription extends React.Component<IProps, 
                     </div>
                     {
                         this.state.needSeeMore &&
-                        <button aria-hidden className={stylesButtons.button_see_more} onClick={this.toggleSeeMore}>
+                        <button aria-hidden className={stylePublication.publicationInfo_description_bloc_seeMore} onClick={this.toggleSeeMore}>
+                            <SVG ariaHidden svg={this.state.seeMore ? ChevronUp : ChevronDown} />
                             {
                                 this.state.seeMore
                                     ? __("publication.seeLess")

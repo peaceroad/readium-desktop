@@ -29,8 +29,9 @@ export async function search(searchInput: string, data: ISearchDocument): Promis
     // so we need it here to compute CSS Selectors
     let toParse = data.isFixedLayout ? data.xml : data.xml.replace(
         /<body([\s\S]*?)>/gm,
-        "<body$1><a href=\"DUMMY_URL\">DUMMY LNIK</a>",
+        "<body$1><a href=\"DUMMY_URL\">DUMMY LINK</a>",
     );
+    // console.log(`===data.isFixedLayout ${data.isFixedLayout}`, data.xml);
 
     const contentType = data.contentType ? (data.contentType as DOMParserSupportedType) : ContentType.Xhtml;
     try {
@@ -48,6 +49,49 @@ export async function search(searchInput: string, data: ISearchDocument): Promis
             toParse,
             contentType,
         );
+
+        const iter = xmlDom.createNodeIterator(
+            xmlDom.body,
+            NodeFilter.SHOW_CDATA_SECTION,
+            // 'textContent' excludes comments and processing instructions but includes CDATA! (such as <style> inside <svg>)
+            // ... but, we trim the DOM ahead of time to avoid this corner case
+            {
+                acceptNode: (_node) => NodeFilter.FILTER_ACCEPT,
+            },
+        );
+        let cdataNode: Node | undefined;
+        while (cdataNode = iter.nextNode()) {
+            console.log("SEARCH REMOVE CDATA... [[" + cdataNode.nodeValue + "]]");
+            if (cdataNode.parentNode) {
+                cdataNode.parentNode.removeChild(cdataNode);
+            }
+        }
+
+        const sub = data.xml.substring(0, 400);
+        if (/lang\s*=\s*["']ja/.test(sub)) {
+            const iter = xmlDom.createNodeIterator(
+                xmlDom.body,
+                NodeFilter.SHOW_ELEMENT,
+                {
+                    acceptNode: (node) => {
+                        const lower = node.nodeName.toLowerCase();
+                        if ((lower === "rt" || lower === "rp") && node.parentElement?.nodeName.toLowerCase() === "ruby") {
+
+                            return NodeFilter.FILTER_ACCEPT;
+                        }
+                        return NodeFilter.FILTER_REJECT;
+                    },
+                },
+            );
+            let rubyNode: Node | undefined;
+            while (rubyNode = iter.nextNode()) {
+                if (rubyNode.parentNode) {
+                    // console.log("removed: " + rubyNode.textContent)
+                    rubyNode.parentNode.removeChild(rubyNode);
+                }
+            }
+        }
+
         return searchDocDomSeek(searchInput, xmlDom, data.href);
     } catch (e) {
         console.error("DOM Parser error", e);

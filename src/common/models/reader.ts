@@ -8,6 +8,7 @@
 import { PublicationView } from "readium-desktop/common/views/publication";
 
 import { Publication as R2Publication } from "@r2-shared-js/models/publication";
+import { IAnnotationReaderConfigState } from "../redux/states/renderer/annotation";
 
 export enum ReaderMode {
     Attached = "attached",
@@ -39,25 +40,32 @@ export interface ReaderConfigStringsAdjustables {
     lineHeight: string;
 }
 
+export type TTheme = "neutral" | "sepia" | "night" | "contrast1" | "contrast2" | "contrast3"   | "contrast4" | "paper";
+
 export interface ReaderConfigStrings extends ReaderConfigStringsAdjustables {
     // using string instead of enum here, because values provided dynamically in code (mapped types)
     // textAlignEnum.justify | textAlignEnum.left | textAlignEnum.right | textAlignEnum.start
     align: string; // textAlignEnum | "auto";
-
+    theme: TTheme;
     colCount: string;
     font: string;
 }
 
 export interface ReaderConfigBooleans {
+
+    // not used ?
     dark: boolean;
-    invert: boolean;
+
+    sepia: boolean;
     night: boolean;
+
+    invert: boolean;
     paged: boolean;
     readiumcss: boolean;
-    sepia: boolean;
     enableMathJax: boolean;
     reduceMotion: boolean;
     noFootnotes: boolean;
+    noRuby: boolean;
     darken: boolean;
     mediaOverlaysEnableSkippability: boolean;
     ttsEnableSentenceDetection: boolean;
@@ -65,7 +73,7 @@ export interface ReaderConfigBooleans {
     ttsEnableOverlayMode: boolean;
 }
 
-export interface ReaderConfig extends ReaderConfigStrings, ReaderConfigBooleans {
+export interface ReaderConfig extends ReaderConfigStrings, ReaderConfigBooleans, IAnnotationReaderConfigState {
 }
 
 // export interface BookmarkCollection {

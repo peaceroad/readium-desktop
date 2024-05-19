@@ -6,23 +6,26 @@
 // ==LICENSE-END==
 
 import { ReaderConfig, ReaderInfo, ReaderMode } from "readium-desktop/common/models/reader";
-import { ICommonRootState } from "readium-desktop/common/redux/states/renderer/commonRootState";
-import { IDivinaState } from "readium-desktop/renderer/reader/redux/state/divina";
-import { IHighlightHandlerState } from "readium-desktop/renderer/reader/redux/state/highlight";
-import { IPickerState } from "readium-desktop/renderer/reader/redux/state/picker";
-import { ISearchState } from "readium-desktop/renderer/reader/redux/state/search";
+import { IRendererCommonRootState } from "readium-desktop/common/redux/states/rendererCommonRootState";
+import { IDivinaState } from "readium-desktop/common/redux/states/renderer/divina";
+import { IHighlightHandlerState, IHighlightMounterState } from "./highlight";
+import { IPickerState } from "./picker";
+import { ISearchState } from "./search";
 import { TMapState } from "readium-desktop/utils/redux-reducers/map.reducer";
 
-import { IHighlight } from "@r2-navigator-js/electron/common/highlight";
+// import { IHighlight } from "@r2-navigator-js/electron/common/highlight";
 import { LocatorExtended } from "@r2-navigator-js/electron/renderer";
 
 import { TBookmarkState } from "../bookmark";
+import { IRTLFlipState } from "./rtlFlip";
+import { IAnnotationModeState, TAnnotationState } from "./annotation";
 
-export interface IReaderRootState extends ICommonRootState {
+export interface IReaderRootState extends IRendererCommonRootState {
     reader: IReaderStateReader;
     picker: IPickerState;
     search: ISearchState;
     mode: ReaderMode;
+    annotation: IAnnotationModeState;
 }
 
 export interface IReaderStateReader {
@@ -30,9 +33,13 @@ export interface IReaderStateReader {
     info: ReaderInfo;
     locator: LocatorExtended;
     bookmark: TBookmarkState;
+    annotation: TAnnotationState;
     highlight: {
         handler: TMapState<string, IHighlightHandlerState>;
-        mounter: TMapState<string, IHighlight>;
+        mounter: TMapState<string, IHighlightMounterState>;
     };
     divina: IDivinaState;
+
+    disableRTLFlip: IRTLFlipState;
+    defaultConfig: ReaderConfig; // sync across all app
 }

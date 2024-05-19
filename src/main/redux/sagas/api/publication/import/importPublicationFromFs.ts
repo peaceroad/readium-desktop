@@ -27,6 +27,7 @@ import { Publication as R2Publication } from "@r2-shared-js/models/publication";
 import { DaisyParsePromise } from "@r2-shared-js/parser/daisy";
 import { convertDaisyToReadiumWebPub } from "@r2-shared-js/parser/daisy-convert-to-epub";
 import { EpubParsePromise } from "@r2-shared-js/parser/epub";
+import { acceptedExtensionArray } from "readium-desktop/common/extension";
 
 // Logger
 const debug = debug_("readium-desktop:main#saga/api/publication/import/publicationFromFs");
@@ -43,7 +44,7 @@ export async function importPublicationFromFS(
     let r2Publication: R2Publication;
 
     let { ext } = path.parse(filePath);
-    if (filePath.endsWith(acceptedExtensionObject.nccHtml)) {
+    if (filePath.replace(/\\/g, "/").endsWith("/" + acceptedExtensionObject.nccHtml)) {
         ext = acceptedExtensionObject.nccHtml;
     }
     switch (ext) {
@@ -79,12 +80,32 @@ export async function importPublicationFromFS(
 
             r2Publication = await DaisyParsePromise(filePath);
 
-            const pathFile = await createTempDir(nanoid(8), "misc");
-            const packagePath = await convertDaisyToReadiumWebPub(pathFile, r2Publication);
+            const outputDirPath = await createTempDir(nanoid(8), "misc");
+            let packagePath = await convertDaisyToReadiumWebPub(outputDirPath, r2Publication, undefined);
 
-            // after PublicationParsePromise, cleanup zip handler
-            // (no need to fetch ZIP data beyond this point)
-            r2Publication.freeDestroy();
+            const isFullTextAudio = r2Publication.Metadata?.AdditionalJSON &&
+                // dtb:multimediaContent ==> audio,text
+                (r2Publication.Metadata.AdditionalJSON["dtb:multimediaType"] === "audioFullText" ||
+                r2Publication.Metadata.AdditionalJSON["ncc:multimediaType"] === "audioFullText" || (
+                    !r2Publication.Metadata.AdditionalJSON["dtb:multimediaType"] &&
+                    !r2Publication.Metadata.AdditionalJSON["ncc:multimediaType"]
+                ));
+            if (isFullTextAudio && !r2Publication.Spine?.length) {
+                debug("%%%%% FAILED audio+text DAISY convert, trying again as audio-only ...");
+
+                // after PublicationParsePromise, cleanup zip handler
+                // (no need to fetch ZIP data beyond this point)
+                r2Publication.freeDestroy();
+
+                r2Publication = await DaisyParsePromise(filePath);
+
+                // TODO: delete file contents (webpub zip) inside pathFile? shouldn't be necessary as fs.createWriteStream() by default overrides, so does fs.writeFileSync() in the case of generateDaisyAudioManifestOnly
+                packagePath = await new Promise((reso) => {
+                    setTimeout(async () => {
+                        reso(await convertDaisyToReadiumWebPub(outputDirPath, r2Publication, undefined, true));
+                    }, 500);
+                });
+            }
 
             if (packagePath) {
                 return await importPublicationFromFS(packagePath);
@@ -145,9 +166,10 @@ export async function importPublicationFromFS(
             break;
 
         default:
-
             debug("extension not recognized", ext);
-            throw new Error("Content-type from server not recognized : " + ext);
+            throw new Error(diMainGet("translator").translate("dialog.importError", {
+                acceptedExtension: `[${ext}] ${acceptedExtensionArray.join(" ")}`,
+            }));
     }
 
     if (!r2Publication) {
@@ -183,7 +205,7 @@ export async function importPublicationFromFS(
 
         // see documentTitle vs. publicationTitle (and publicationSubTitle) in PublicationView
         // (and IOpdsPublicationView too, due to polymorphic NormalOrOpdsPublicationView / publicationViewMaybeOpds)
-        title: convertMultiLangStringToString(r2Publication.Metadata.Title),
+        title: convertMultiLangStringToString(r2Publication.Metadata.Title) || "-", // some publications do not have a title :( ... we patch here, but in previous versions of Thorium this was not done so we must still check for possible empty title edge-cases in previously-created database entries (we do not change the DB on load+save, we just normalise erroneous values at consumption time)
 
         tags: [],
         files: [],

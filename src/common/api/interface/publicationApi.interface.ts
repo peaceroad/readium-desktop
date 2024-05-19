@@ -28,8 +28,6 @@ export interface IPublicationApi {
         identifier: string,
         tags: string[],
     ) => SagaGenerator<PublicationView>;
-    getAllTags: (
-    ) => SagaGenerator<string[]>;
     importFromLink: (
         link: IOpdsLinkView,
         pub?: IOpdsPublicationView,
@@ -50,6 +48,8 @@ export interface IPublicationApi {
     exportPublication: (
         publicationView: PublicationView,
     ) => SagaGenerator<void>;
+    readingFinishedRefresh: (
+    ) => SagaGenerator<void>;
 }
 
 export interface IPublicationModuleApi {
@@ -58,11 +58,11 @@ export interface IPublicationModuleApi {
     "publication/findAll": IPublicationApi["findAll"];
     "publication/findByTag": IPublicationApi["findByTag"];
     "publication/updateTags": IPublicationApi["updateTags"];
-    "publication/getAllTags": IPublicationApi["getAllTags"];
     "publication/importFromLink": IPublicationApi["importFromLink"];
     "publication/importFromFs": IPublicationApi["importFromFs"];
     "publication/importFromString": IPublicationApi["importFromString"];
     "publication/search": IPublicationApi["search"];
     "publication/searchEqTitle": IPublicationApi["searchEqTitle"];
     "publication/exportPublication": IPublicationApi["exportPublication"];
+    "publication/readingFinishedRefresh": IPublicationApi["readingFinishedRefresh"];
 }

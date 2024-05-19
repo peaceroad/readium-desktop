@@ -14,9 +14,7 @@ import { Container } from "inversify";
 import * as path from "path";
 import { Translator } from "readium-desktop/common/services/translator";
 import { ok } from "readium-desktop/common/utils/assert";
-import { CatalogApi } from "readium-desktop/main/api/catalog";
-import { LcpApi } from "readium-desktop/main/api/lcp";
-import { LocatorViewConverter } from "readium-desktop/main/converter/locator";
+// import { LocatorViewConverter } from "readium-desktop/main/converter/locator";
 import { OpdsFeedViewConverter } from "readium-desktop/main/converter/opds";
 import { PublicationViewConverter } from "readium-desktop/main/converter/publication";
 import { OpdsFeedRepository } from "readium-desktop/main/db/repository/opds";
@@ -32,20 +30,20 @@ import {
 import { type Store } from "redux";
 import { SagaMiddleware } from "redux-saga";
 
-import { KeyboardApi } from "./api/keyboard";
-import { ReaderApi } from "./api/reader";
-import { SessionApi } from "./api/session";
 import { httpBrowserApi, publicationApi } from "./redux/sagas/api";
 import { opdsApi } from "./redux/sagas/api/opds";
 import { apiappApi } from "./redux/sagas/api";
 import { RootState } from "./redux/states";
 import { OpdsService } from "./services/opds";
+import { LSDManager } from "./services/lsd";
 
 // import { streamer } from "readium-desktop/main/streamerHttp";
 // import { Server } from "@r2-streamer-js/http/server";
 
 // Logger
 const debug = debug_("readium-desktop:main:di");
+
+const FORCE_PROD_DB_IN_DEV = false;
 
 export const CONFIGREPOSITORY_REDUX_PERSISTENCE = "CONFIGREPOSITORY_REDUX_PERSISTENCE";
 const capitalizedAppName = _APP_NAME.charAt(0).toUpperCase() + _APP_NAME.substring(1);
@@ -61,7 +59,7 @@ if (!fs.existsSync(userDataPath)) {
 
 const configDataFolderPath = path.join(
     userDataPath,
-    `config-data-json${(_NODE_ENV === "development" || _CONTINUOUS_INTEGRATION_DEPLOY) ? "-dev" : ""}`,
+    `config-data-json${!FORCE_PROD_DB_IN_DEV && (_NODE_ENV === "development" || _CONTINUOUS_INTEGRATION_DEPLOY) ? "-dev" : ""}`,
 );
 if (!fs.existsSync(configDataFolderPath)) {
     fs.mkdirSync(configDataFolderPath);
@@ -124,14 +122,14 @@ export const memoryLoggerFilename = path.join(
 // Create databases
 //
 
-const rootDbPath = path.join(
-    userDataPath,
-    (_NODE_ENV === "development" || _CONTINUOUS_INTEGRATION_DEPLOY) ? "db-dev-sqlite" : "db",
-);
+// const rootDbPath = path.join(
+//     userDataPath,
+//     (_NODE_ENV === "development" || _CONTINUOUS_INTEGRATION_DEPLOY) ? "db-dev-sqlite" : "db",
+// );
 
-if (!fs.existsSync(rootDbPath)) {
-    fs.mkdirSync(rootDbPath);
-}
+// if (!fs.existsSync(rootDbPath)) {
+//     fs.mkdirSync(rootDbPath);
+// }
 
 const publicationRepository = new PublicationRepository();
 
@@ -140,7 +138,7 @@ const opdsFeedRepository = new OpdsFeedRepository();
 // Create filesystem storage for publications
 const publicationRepositoryPath = path.join(
     userDataPath,
-    (_NODE_ENV === "development" || _CONTINUOUS_INTEGRATION_DEPLOY) ? "publications-dev" : "publications",
+    !FORCE_PROD_DB_IN_DEV && (_NODE_ENV === "development" || _CONTINUOUS_INTEGRATION_DEPLOY) ? "publications-dev" : "publications",
 );
 
 if (!fs.existsSync(publicationRepositoryPath)) {
@@ -198,8 +196,8 @@ container.bind<OpdsFeedRepository>(diSymbolTable["opds-feed-repository"]).toCons
 // Create converters
 container.bind<PublicationViewConverter>(diSymbolTable["publication-view-converter"])
     .to(PublicationViewConverter).inSingletonScope();
-container.bind<LocatorViewConverter>(diSymbolTable["locator-view-converter"])
-    .to(LocatorViewConverter).inSingletonScope();
+// container.bind<LocatorViewConverter>(diSymbolTable["locator-view-converter"])
+//    .to(LocatorViewConverter).inSingletonScope();
 container.bind<OpdsFeedViewConverter>(diSymbolTable["opds-feed-view-converter"])
     .to(OpdsFeedViewConverter).inSingletonScope();
 
@@ -219,21 +217,14 @@ container.bind<DeviceIdManager>(diSymbolTable["device-id-manager"]).toConstantVa
 
 // Create lcp manager
 container.bind<LcpManager>(diSymbolTable["lcp-manager"]).to(LcpManager).inSingletonScope();
+container.bind<LSDManager>(diSymbolTable["lsd-manager"]).to(LSDManager).inSingletonScope();
 container.bind<OpdsService>(diSymbolTable["opds-service"]).to(OpdsService).inSingletonScope();
 
 // API
-container.bind<CatalogApi>(diSymbolTable["catalog-api"]).to(CatalogApi).inSingletonScope();
-// container.bind<PublicationApi>(diSymbolTable["publication-api"]).to(PublicationApi).inSingletonScope();
-
 container.bind(diSymbolTable["publication-api"]).toConstantValue(publicationApi);
 container.bind(diSymbolTable["opds-api"]).toConstantValue(opdsApi);
 container.bind(diSymbolTable["apiapp-api"]).toConstantValue(apiappApi);
 container.bind(diSymbolTable["httpbrowser-api"]).toConstantValue(httpBrowserApi);
-
-container.bind<KeyboardApi>(diSymbolTable["keyboard-api"]).to(KeyboardApi).inSingletonScope();
-container.bind<LcpApi>(diSymbolTable["lcp-api"]).to(LcpApi).inSingletonScope();
-container.bind<ReaderApi>(diSymbolTable["reader-api"]).to(ReaderApi).inSingletonScope();
-container.bind<SessionApi>(diSymbolTable["session-api"]).to(SessionApi).inSingletonScope();
 
 let libraryWin: BrowserWindow;
 
@@ -274,20 +265,16 @@ interface IGet {
     (s: "publication-repository"): PublicationRepository;
     (s: "opds-feed-repository"): OpdsFeedRepository;
     (s: "publication-view-converter"): PublicationViewConverter;
-    (s: "locator-view-converter"): LocatorViewConverter;
+//    (s: "locator-view-converter"): LocatorViewConverter;
     (s: "opds-feed-view-converter"): OpdsFeedViewConverter;
     (s: "publication-storage"): PublicationStorage;
     // (s: "streamer"): Server;
     (s: "device-id-manager"): DeviceIdManager;
     (s: "lcp-manager"): LcpManager;
-    (s: "catalog-api"): CatalogApi;
     (s: "publication-api"): typeof publicationApi;
     (s: "opds-api"): typeof opdsApi;
     (s: "apiapp-api"): typeof apiappApi;
     (s: "httpbrowser-api"): typeof httpBrowserApi;
-    (s: "keyboard-api"): KeyboardApi;
-    (s: "lcp-api"): LcpApi;
-    (s: "reader-api"): ReaderApi;
     (s: "saga-middleware"): SagaMiddleware;
     // minor overload type used in api.ts/LN32
     (s: keyof typeof diSymbolTable): any;

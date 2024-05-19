@@ -14,10 +14,11 @@ import { Font } from "readium-desktop/common/models/font";
 export const FONT_ID_DEFAULT = "DEFAULT";
 export const FONT_ID_VOID = "VOID";
 
-const fontList: Font[] =
+export const FONT_LIST: Font[] =
 [{
     id: FONT_ID_DEFAULT,
-    label: "Default font",
+    label: "Original font",
+    fontFamily: "",
 }, {
     id: "OLD",
     label: "Old Style",
@@ -47,10 +48,33 @@ const fontList: Font[] =
     id: "MONO",
     label: "Monospace",
     fontFamily: "\"Andale Mono\", Consolas, monospace",
+},
+// {
+//     id: FONT_ID_VOID,
+//     label: "...",
+//     fontFamily: "Consolas, monospace",
+// }
+];
+const FONT_LIST_JA: Font[] =
+[{
+    id: "JA",
+    label: "日本語 SERIF (H)",
+    // eslint-disable-next-line quotes
+    fontFamily: `"ＭＳ Ｐ明朝", "MS PMincho", "Hiragino Mincho Pro", "ヒラギノ明朝 Pro W3", "游明朝", "YuMincho", "ＭＳ 明朝", "MS Mincho", "Hiragino Mincho ProN", serif`,
 }, {
-    id: FONT_ID_VOID,
-    label: "...",
-    fontFamily: "Consolas, monospace",
+    id: "JA-SANS",
+    label: "日本語 SANS (H)",
+    // eslint-disable-next-line quotes
+    fontFamily: `"ＭＳ Ｐゴシック", "MS PGothic", "Hiragino Kaku Gothic Pro W3", "ヒラギノ角ゴ Pro W3", "Hiragino Sans GB", "ヒラギノ角ゴシック W3", "游ゴシック", "YuGothic", "ＭＳ ゴシック", "MS Gothic", "Hiragino Sans", sans-serif`,
+}, {
+    id: "JA-V",
+    label: "日本語 SERIF (V)",
+    // eslint-disable-next-line quotes
+    fontFamily: `"ＭＳ 明朝", "MS Mincho", "Hiragino Mincho Pro", "ヒラギノ明朝 Pro W3", "游明朝", "YuMincho", "ＭＳ Ｐ明朝", "MS PMincho", "Hiragino Mincho ProN", serif`,
+}, {
+    id: "JA-V-SANS",
+    label: "日本語 SANS (V)",
+    // eslint-disable-next-line quotes
+    fontFamily: `"ＭＳ ゴシック", "MS Gothic", "Hiragino Kaku Gothic Pro W3", "ヒラギノ角ゴ Pro W3", "Hiragino Sans GB", "ヒラギノ角ゴシック W3", "游ゴシック", "YuGothic", "ＭＳ Ｐゴシック", "MS PGothic", "Hiragino Sans", sans-serif`,
 }];
-
-export default fontList;
+export const FONT_LIST_WITH_JA = FONT_LIST.concat(...FONT_LIST_JA);

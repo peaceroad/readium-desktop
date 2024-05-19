@@ -5,23 +5,19 @@
 // that can be found in the LICENSE file exposed on Github (readium) in the project repository.
 // ==LICENSE-END==
 
-import classNames from "classnames";
 import * as React from "react";
-import { connect } from "react-redux";
-import { DialogType, DialogTypeName } from "readium-desktop/common/models/dialog";
-import * as dialogActions from "readium-desktop/common/redux/actions/dialog";
-import * as stylesButtons from "readium-desktop/renderer/assets/styles/components/buttons.css";
-import * as stylesGlobal from "readium-desktop/renderer/assets/styles/global.css";
-import * as stylesInputs from "readium-desktop/renderer/assets/styles/components/inputs.css";
-import * as stylesModals from "readium-desktop/renderer/assets/styles/components/modals.css";
-import Dialog from "readium-desktop/renderer/common/components/dialog/Dialog";
+import * as Dialog from "@radix-ui/react-dialog";
+import * as stylesInputs from "readium-desktop/renderer/assets/styles/components/inputs.scss";
+import * as stylesModals from "readium-desktop/renderer/assets/styles/components/modals.scss";
+import * as stylesButtons from "readium-desktop/renderer/assets/styles/components/buttons.scss";
+import * as QuitIcon from "readium-desktop/renderer/assets/icons/baseline-close-24px.svg";
+import SVG from "readium-desktop/renderer/common/components/SVG";
 import {
     TranslatorProps, withTranslator,
 } from "readium-desktop/renderer/common/components/hoc/translator";
 import { apiAction } from "readium-desktop/renderer/library/apiAction";
-import { ILibraryRootState } from "readium-desktop/renderer/library/redux/states";
-import { TMouseEventOnInput } from "readium-desktop/typings/react";
-import { TDispatch } from "readium-desktop/typings/redux";
+import { IOpdsFeedView } from "readium-desktop/common/views/opds";
+import classNames from "classnames";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IBaseProps extends TranslatorProps {
@@ -31,116 +27,100 @@ interface IBaseProps extends TranslatorProps {
 // ReturnType<typeof mapStateToProps>
 // ReturnType<typeof mapDispatchToProps>
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface IProps extends IBaseProps, ReturnType<typeof mapDispatchToProps>, ReturnType<typeof mapStateToProps> {
+interface IProps extends IBaseProps {
+    feed: IOpdsFeedView;
+    trigger: React.ReactNode;
 }
 
 interface IState {
-    name: string | undefined;
+    title: string | undefined;
     url: string | undefined;
 }
 
 class OpdsFeedUpdateForm extends React.Component<IProps, IState> {
-    private focusRef: React.RefObject<HTMLInputElement>;
-    private buttonRef: React.RefObject<HTMLButtonElement>;
-
     constructor(props: IProps) {
         super(props);
-
-        this.focusRef = React.createRef<HTMLInputElement>();
-        this.buttonRef = React.createRef<HTMLButtonElement>();
-
         this.state = {
-            name: undefined,
-            url: undefined,
+            title: props.feed?.title,
+            url: props.feed?.url,
         };
-
-        this.update = this.update.bind(this);
     }
-
-    public componentDidMount() {
-        if (this.focusRef?.current) {
-            this.focusRef.current.focus();
-        }
-    }
-
     public render(): React.ReactElement<{}> {
-        if (!this.props.open) {
-            return (<></>);
-        }
 
-        const { __, closeDialog } = this.props;
-        const { name, url } = this.state;
-        return (
-            <Dialog
-                open={true}
-                close={closeDialog}
-                id={stylesModals.opds_form_dialog}
-                title={__("opds.updateForm.title")}
-            >
-                <form className={stylesModals.modal_dialog_form_wrapper}>
-                    <div className={classNames(stylesModals.modal_dialog_body, stylesModals.modal_dialog_body_centered)}>
-                        <div className={stylesGlobal.w_50}>
-                            <div className={stylesInputs.form_group}>
-                                <label>{__("opds.updateForm.name")}</label>
+        const { __ } = this.props;
+        const { title, url } = this.state;
+        return <Dialog.Root>
+            <Dialog.Trigger asChild>
+                {this.props.trigger}
+            </Dialog.Trigger>
+            <Dialog.Portal>
+                <div className={stylesModals.modal_dialog_overlay}></div>
+                <Dialog.Content className={stylesModals.modal_dialog}>
+                    <div className={stylesModals.modal_dialog_header}>
+                        <Dialog.Title>
+                            {__("opds.updateForm.title")}
+                        </Dialog.Title>
+                        <div>
+                            <Dialog.Close asChild>
+                                <button className={stylesButtons.button_transparency_icon} aria-label="Close">
+                                    <SVG ariaHidden={true} svg={QuitIcon} />
+                                </button>
+                            </Dialog.Close>
+                        </div>
+                    </div>
+                    <form className={stylesModals.modal_dialog_body}>
+                        <div>
+                            <div className={classNames(stylesInputs.form_group, stylesInputs.form_group_catalog)}>
+                                <label htmlFor="title">{__("opds.updateForm.name")}</label>
                                 <input
+                                    className="R2_CSS_CLASS__FORCE_NO_FOCUS_OUTLINE"
+                                    id="title"
+                                    value={title}
                                     onChange={(e) => this.setState({
-                                        name: e.target.value,
-                                        url: this.state.url || this.props.feed.url,
+                                        title: e.target.value,
+                                        // url: this.state.url || this.props.feed.url,
                                     })}
                                     type="text"
                                     aria-label={__("opds.updateForm.name")}
-                                    defaultValue={this.props.feed.title}
-                                    ref={this.focusRef}
-                                    onKeyPress={
-                                        (e) =>
-                                            e.key === "Enter" && this.buttonRef?.current && this.buttonRef.current.click()
-                                    }
+                                    required
                                 />
                             </div>
-                            <div className={stylesInputs.form_group}>
-                                <label>{__("opds.updateForm.url")}</label>
+                            <div className={classNames(stylesInputs.form_group, stylesInputs.form_group_catalog)}>
+                                <label htmlFor="url">{__("opds.updateForm.url")}</label>
                                 <input
+                                    className="R2_CSS_CLASS__FORCE_NO_FOCUS_OUTLINE"
+                                    id="url"
+                                    value={url}
                                     onChange={(e) => this.setState({
-                                        name: this.state.name || this.props.feed.title,
+                                        // name: this.state.name || this.props.feed.title,
                                         url: e.target.value,
                                     })}
                                     type="text"
                                     aria-label={__("opds.updateForm.url")}
-                                    defaultValue={this.props.feed.url}
-                                    onKeyPress={
-                                        (e) =>
-                                            e.key === "Enter" && this.buttonRef?.current && this.buttonRef.current.click()
-                                    }
+                                    required
                                 />
                             </div>
                         </div>
-                    </div>
-                    <div className={stylesModals.modal_dialog_footer}>
-                        <button
-                            onClick={closeDialog}
-                            className={stylesButtons.button_primary}
-                        >
-                            {__("opds.back")}
-                        </button>
-                        <button
-                            disabled={!name || !url}
-                            type="submit"
-                            onClick={this.update}
-                            className={stylesButtons.button_primary}
-                            ref={this.buttonRef}
-                        >
-                            {__("opds.updateForm.updateButton")}
-                        </button>
-                    </div>
-                </form>
-            </Dialog>
-        );
+                        <div className={stylesModals.modal_dialog_footer}>
+                            <Dialog.Close asChild>
+                                <button className={stylesButtons.button_secondary_blue}>{__("dialog.cancel")}</button>
+                            </Dialog.Close>
+                            <Dialog.Close asChild>
+                                <button type="submit" disabled={!title || !url} className={stylesButtons.button_primary_blue} onClick={() => this.update()}>{__("opds.updateForm.updateButton")}</button>
+                            </Dialog.Close>
+                        </div>
+                    </form>
+                </Dialog.Content>
+            </Dialog.Portal>
+        </Dialog.Root>;
     }
 
-    public update(e: TMouseEventOnInput) {
-        e.preventDefault();
-        const title = this.state.name;
+    private update = () => {
+        const title = this.state.title;
         const url = this.state.url;
+        if (!title || !url) {
+            return;
+        }
         apiAction("opds/deleteFeed", this.props.feed.identifier).then(() => {
             apiAction("opds/addFeed", { title, url }).catch((err) => {
                 console.error("Error to fetch api opds/addFeed", err);
@@ -148,24 +128,8 @@ class OpdsFeedUpdateForm extends React.Component<IProps, IState> {
         }).catch((err) => {
             console.error("Error to fetch api opds/deleteFeed", err);
         });
-        this.props.closeDialog();
-    }
+    };
 
 }
 
-const mapDispatchToProps = (dispatch: TDispatch, _props: IBaseProps) => {
-    return {
-        closeDialog: () => {
-            dispatch(
-                dialogActions.closeRequest.build(),
-            );
-        },
-    };
-};
-
-const mapStateToProps = (state: ILibraryRootState, _props: IBaseProps) => ({
-    open: state.dialog.type === DialogTypeName.OpdsFeedUpdateForm,
-    feed: (state.dialog.data as DialogType[DialogTypeName.DeleteOpdsFeedConfirm]).feed,
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(withTranslator(OpdsFeedUpdateForm));
+export default withTranslator(OpdsFeedUpdateForm);

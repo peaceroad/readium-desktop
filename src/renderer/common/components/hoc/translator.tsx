@@ -14,11 +14,34 @@ export interface TranslatorProps {
     translator?: Translator;
 }
 
-type TComponentConstructor<P> = React.ComponentClass<P> | React.StatelessComponent<P>;
+type TComponentConstructor<P> = React.ComponentClass<P> | React.FunctionComponent<P>;
 
-export function withTranslator<Props>(WrappedComponent: TComponentConstructor<Props & TranslatorProps>) {
-    const WrapperComponent = class extends React.Component<Props & TranslatorProps, undefined> {
+export function withTranslator<Props>(WrappedComponent: TComponentConstructor<React.PropsWithChildren<Props & TranslatorProps>>) {
+    const WrapperComponent = class extends React.Component<React.PropsWithChildren<Props & TranslatorProps>, undefined> {
         public static displayName: string;
+        unsubscribe_: () => void | undefined;
+
+        // from useTranslator.ts
+        // const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+        // React.useEffect(() => {
+        //     const handleLocaleChange = () => {
+        //         forceUpdate();
+        //     };
+        //     return translator.subscribe(handleLocaleChange);
+        // }, [translator.subscribe]);
+
+        constructor(props: React.PropsWithChildren<Props & TranslatorProps>) {
+            super(props);
+
+            this.unsubscribe_ = undefined;
+        }
+
+        componentWillUnmount(): void {
+            if (this.unsubscribe_) {
+                this.unsubscribe_();
+                this.unsubscribe_ = undefined;
+            }
+        }
 
         public render() {
 
@@ -36,6 +59,10 @@ export function withTranslator<Props>(WrappedComponent: TComponentConstructor<Pr
                             //         translator,
                             //     },
                             // );
+
+                            if (!this.unsubscribe_) {
+                                this.unsubscribe_ = translator.subscribe(() => { this.forceUpdate(); });
+                            }
 
                             const newProps = {
                                 ...this.props,

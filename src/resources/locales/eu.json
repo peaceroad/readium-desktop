@@ -11,6 +11,9 @@
         "toolbar": "Tresna-barra"
     },
     "apiapp": {
+        "documentation": "",
+        "howItWorks": "",
+        "informations": "",
         "noLibraryFound": ""
     },
     "app": {
@@ -37,13 +40,16 @@
                 }
             }
         },
+        "update": {
+            "message": "",
+            "title": ""
+        },
         "window": {
             "showLibrary": "Erakutsi liburutegia"
         }
     },
     "catalog": {
         "about": {
-            "button": "Informazio gehiago",
             "title": "Honi buruz {{appName}}"
         },
         "addBookToLib": "Inportatu",
@@ -75,14 +81,17 @@
         "moreInfo": "Informazio gehiago",
         "myBooks": "Nire liburuak",
         "noPublicationHelpL1": "Lerratu argitalpen bat hemen",
-        "noPublicationHelpL2": "edo erabili goiko \"+\" botoia.",
+        "noPublicationHelpL2": "edo erabili goiko \"{{- importTitle }}\" botoia.",
         "noPublicationHelpL3": "LCP fitxategi babestuak onartzen badituzte.",
         "noPublicationHelpL4": "Luzapen onartuak:",
         "numberOfPages": "Orrialde-kopurua",
         "opds": {
             "auth": {
                 "cancel": "Utzi",
-                "login": "Hasi saioa"
+                "login": "Hasi saioa",
+                "password": "",
+                "register": "",
+                "username": ""
             },
             "info": {
                 "availableSince": "Noiztik",
@@ -107,17 +116,17 @@
         "readBook": "Irakurri",
         "released": "Hemen argitaratua",
         "sort": "Ordenatu honen arabera",
+        "tag": "",
         "tagCount": "Etiketa kopurua",
         "tags": "Etiketak",
         "update": ""
     },
     "dialog": {
-        "closeModalWindow": "Itxi modu-leiho hau",
+        "cancel": "Ezeztatu",
         "deleteFeed": "Ziur zaude katalogo hau ezabatu nahi duzula?",
         "deletePublication": "Ziur zaude argitalpen hau ezabatu nahi duzula?",
         "import": "Ziur zaude fitxategi hauek inportatu nahi dituzula?",
         "importError": "Errore bat gertatu da. Egiaztatu zure fitxategiaren luzapena ({{acceptedExtension}})",
-        "no": "Ez",
         "renew": "Ziur zaude argitalpen honetarako lizentzia berritu nahi duzula?",
         "return": "Ziur zaude lizentzia itzuli nahi duzula argitalpen honetarako?",
         "yes": "Bai"
@@ -131,27 +140,30 @@
     },
     "header": {
         "allBooks": "Liburu guztiak",
-        "books": "Nire liburuak",
         "catalogs": "Katalogoak",
         "downloads": "Deskargak",
+        "fitlerTagTitle": "",
         "gridTitle": "Lauki-formako aurkezpena",
         "home": "Liburutegiko menu nagusia",
         "homeTitle": "Hasiera",
         "importTitle": "Inportatu argitalpena",
         "listTitle": "Zerrendako aurkezpena",
+        "myCatalogs": "",
         "refreshTitle": "Kargatu",
         "searchPlaceholder": "Bilatu",
         "searchTitle": "Hasi bilaketa",
-        "settings": "Konfigurazio-aukerak"
+        "settings": "Konfigurazio-aukerak",
+        "viewMode": ""
     },
     "library": {
         "lcp": {
-            "cancel": "Ezeztatu",
             "hint": "(Adierazi : {{- hint}})",
             "password": "Pasahitza",
             "sentence": "Argitalpen honek LCP pasahitza behar du irekitzeko: ",
-            "submit": "Bidali",
-            "urlHint": "Pasahitza ahaztu duzu? Bilatu laguntza hemen"
+            "urlHint": "Pasahitza ahaztu duzu? Bilatu laguntza hemen",
+            "whatIsLcp?": "",
+            "whatIsLcpInfoDetails": "",
+            "whatIsLcpInfoDetailsLink": ""
         }
     },
     "message": {
@@ -172,7 +184,6 @@
             "addButton": "Erantsi",
             "name": "Izena:",
             "namePlaceholder": "Izena",
-            "title": "OPDS katalogoa gehitzea",
             "url": "Lotura:",
             "urlPlaceholder": "Lotura"
         },
@@ -180,10 +191,11 @@
             "title": ""
         },
         "addMenu": "OPDS katalogoa gehitzea",
-        "back": "Atzera",
         "breadcrumbRoot": "Katalogoak",
+        "documentation": "",
         "empty": "Ez da argitalpenik aurkitu",
         "firstPage": "Lehena",
+        "informations": "",
         "lastPage": "Azkena",
         "menu": {
             "aboutBook": "Liburu honi buruz",
@@ -205,12 +217,11 @@
         "shelf": "Apala",
         "updateForm": {
             "name": "",
-            "namePlaceholder": "",
             "title": "",
             "updateButton": "",
-            "url": "",
-            "urlPlaceholder": ""
-        }
+            "url": ""
+        },
+        "whatIsOpds": ""
     },
     "publication": {
         "accessibility": {
@@ -228,21 +239,22 @@
             },
             "accessibilityHazard": {
                 "flashing": "",
-                "motion": "",
+                "motionSimulation": "",
                 "name": "",
                 "noFlashing": "",
-                "noMotion": "",
-                "noSimulation": "",
+                "noMotionSimulation": "",
                 "noSound": "",
                 "none": "",
-                "simulation": "",
                 "sound": "",
                 "unknown": ""
             },
+            "certifierReport": "",
+            "conformsTo": "",
             "moreInformation": "",
             "name": "",
             "noA11y": ""
         },
+        "actions": "",
         "audio": {
             "tracks": "Tracks"
         },
@@ -253,60 +265,87 @@
         "cover": {
             "img": "Azaleko irudia"
         },
+        "day": "",
+        "days": "",
         "duration": {
             "title": "Iraupena"
         },
+        "expired": "",
         "expiredLcp": "Liburu hau ezin da irakurri LCP lizentzia iraungi delako.",
         "lcpEnd": "Amaiera",
         "lcpRightsCopy": "Pertsonaien kopia",
         "lcpRightsPrint": "Inprimagailuaren kopia",
         "lcpStart": "Hasiera",
+        "licenceLCP": "",
         "licenseOutOfDate": "Lizentzia ez dago eguneratuta",
         "licenseSignatureDateInvalid": "Lizentzia-sinaduraren data ez da baliozkoa",
         "licenseSignatureInvalid": "Lizentziaren sinadura ez da baliozkoa",
+        "licensed": "",
+        "markAsRead": "",
+        "notStarted": "",
+        "onGoing": "",
         "progression": {
             "title": "Aurrerapena"
         },
+        "read": "",
+        "remainingTime": "",
         "renewButton": "Berritu",
         "returnButton": "Itzuli",
         "returnedLcp": "Liburu hau ezin da irakurri LCP lizentzia itzuli delako.",
         "revokedLcp": "Liburu hau ezin da irakurri LCP lizentzia bertan behera utzi delako.",
         "seeLess": "Ikusi gutxiago",
         "seeMore": "Gehiago ikusi",
+        "timeLeft": "",
         "title": "Titulua",
         "userKeyCheckInvalid": "Pasahitza ez da zuzena"
     },
     "reader": {
+        "annotations": {
+            "Color": "",
+            "addNote": "",
+            "advancedMode": "",
+            "annotationsOptions": "",
+            "highlight": "",
+            "noSelectionToast": "",
+            "quickAnnotations": "",
+            "saveNote": "",
+            "toggleMarginMarks": ""
+        },
         "divina": {
             "mute": "isildu",
             "unmute": "isiltzeari utzi"
         },
-        "footerInfo": {
-            "lessInfo": "Informazio gutxiago",
-            "moreInfo": "informazio gehiago"
+        "fxl": {
+            "fit": ""
         },
         "marks": {
             "annotations": "Oharrak",
             "bookmarks": "Markatzaileak",
             "delete": "Ezabatu",
             "edit": "Editatu",
+            "goTo": "",
             "landmarks": "Erreferentzia-puntuak",
+            "saveMark": "",
             "search": "Bilatu",
+            "searchResult": "",
             "toc": "Eduki-taula"
         },
         "media-overlays": {
             "activate": "Aktibatu ozenki irakurtzea",
             "captions": "Testu sinkronizatua/aurkezpen diafanoa",
+            "captionsDescription": "",
             "next": "Hurrengoa (ozenki irakurtzea)",
             "pause": "Geldiarazi (ozenki irakurri)",
             "play": "Erreproduzitu (ozenki irakurtzea)",
             "previous": "Aurrekoa (ozenki irakurtzea)",
             "skip": "Ez jarri informazio osagarririk",
+            "skipDescription": "",
             "speed": "Ozen irakurtzeko erreprodukzio-abiadura",
             "stop": "Gelditu ozenki irakurtzea",
             "title": "Ozenki irakurtzea"
         },
         "navigation": {
+            "annotationTitle": "",
             "backHomeTitle": "Itzuli liburutegira",
             "bookmarkTitle": "Markatzailea",
             "currentPage": "Uneko orrialdea: {{- current}}",
@@ -322,19 +361,18 @@
             "infoTitle": "Informazioa",
             "magnifyingGlassButton": "bilatu argitalpenean",
             "openTableOfContentsTitle": "Nabigazioa",
+            "page": "",
             "pdfscalemode": "Orriaren doikuntza edo zabalera",
-            "quitFullscreenTitle": "Pantaila osoko modutik ateratzea",
-            "readBookTitle": "Hasi liburua irakurtzen",
             "settingsTitle": "Konfigurazio-aukerak"
         },
         "picker": {
-            "annotationTitle": "Oharrak:",
             "search": {
                 "founds": "{{- nResults}} aurkitutako",
                 "input": "bilaketa-testua",
                 "next": "Hurrengoa",
                 "notFound": "ez dago bat etortzerik",
                 "previous": "Aurrekoa",
+                "results": "",
                 "submit": "Aurkitu"
             },
             "searchTitle": "Bilatu:"
@@ -343,23 +381,26 @@
             "column": {
                 "auto": "Automatiko",
                 "one": "1 zut.",
-                "oneTitle": "Zutabe bat",
                 "title": "Zutabeak",
-                "two": "2 zutabeak",
-                "twoTitle": "Bi zutabe"
+                "two": "2 zutabeak"
             },
+            "customizeReader": "",
+            "disabled": "",
             "display": "Bistaratzea",
             "disposition": {
                 "title": "Xedapena"
             },
             "font": "Iturria",
             "fontSize": "Letra-tamaina",
+            "infoCustomFont": "",
             "justification": "Lerrokadura",
             "justify": "Justifikatu",
             "letterSpacing": "Letren tartea",
             "lineSpacing": "Lerroartea",
             "margin": "Marjina",
             "noFootnotes": "Oin-oharrak desaktibatu",
+            "noRTLFlip": "",
+            "noRuby": "",
             "paginated": "Orrazkera",
             "paraSpacing": "Paragrafoen arteko tartea",
             "pdfZoom": {
@@ -375,19 +416,20 @@
                 },
                 "title": "Zoom"
             },
+            "preview": "",
             "reduceMotion": "Mugimendua gutxitu",
-            "save": {
-                "apply": "Gorde",
-                "reset": "Berrezarri",
-                "title": "Konfigurazioa"
-            },
             "scrolled": "Desplazagarria",
             "spacing": "Tartea",
             "text": "Testua",
             "theme": {
                 "name": {
+                    "Contrast1": "",
+                    "Contrast2": "",
+                    "Contrast3": "",
+                    "Contrast4": "",
                     "Neutral": "Neutrala",
                     "Night": "Gauez",
+                    "Paper": "",
                     "Sepia": "Sepia"
                 },
                 "title": "Antolamendu"
@@ -409,6 +451,7 @@
             "play": "Erreproduzitu (testua ahotsez)",
             "previous": "Aurrekoa (testua ahotsez)",
             "sentenceDetect": "Zatitu (testua ahotsez)",
+            "sentenceDetectDescription": "",
             "speed": "Ahotsezko testurako erreprodukzio-abiadura",
             "stop": "Ahotsezko testua gelditu",
             "voice": "TTSrako ahotsa"
@@ -421,14 +464,12 @@
         "keyboard": {
             "advancedMenu": "Menu nagusia",
             "cancel": "Indargabetu ",
-            "edit": "Editatu",
+            "disclaimer": "",
             "editUserJson": "Editatu erabiltzaile-fitxategia",
-            "hide": "Ezkutatu",
             "keyboardShortcuts": "Teklatuko lasterbideak",
             "loadUserJson": "Kargatu erabiltzaile-fitxategia",
             "resetDefaults": "Lehenetsitako balioak berrezartzea",
-            "save": "Gorde",
-            "show": "Erakutsi"
+            "save": "Gorde"
         },
         "language": {
             "languageChoice": "Hizkuntza hautatzea"
@@ -437,6 +478,46 @@
             "no": "Desgaitu",
             "title": "Gorde saioa",
             "yes": "Gaitu"
+        },
+        "tabs": {
+            "appearance": "",
+            "general": "",
+            "keyboardShortcuts": ""
+        },
+        "theme": {
+            "auto": "",
+            "dark": "",
+            "description": "",
+            "light": "",
+            "title": ""
+        }
+    },
+    "wizard": {
+        "buttons": {
+            "discover": "",
+            "goToBooks": "",
+            "next": ""
+        },
+        "description": {
+            "annotations": "",
+            "catalogs": "",
+            "home": "",
+            "readingView1": "",
+            "readingView2": "",
+            "yourBooks": ""
+        },
+        "dontShow": "",
+        "tab": {
+            "annotations": "",
+            "catalogs": "",
+            "home": "",
+            "readingView": "",
+            "yourBooks": ""
+        },
+        "title": {
+            "allBooks": "",
+            "newFeature": "",
+            "welcome": ""
         }
     }
 }

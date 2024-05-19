@@ -12,16 +12,15 @@ import { I18nTyped, Translator } from "readium-desktop/common/services/translato
 import { TPublication } from "readium-desktop/common/type/publication.type";
 import { formatTime } from "readium-desktop/common/utils/time";
 import { IOpdsBaseLinkView } from "readium-desktop/common/views/opds";
-import * as stylesBookDetailsDialog from "readium-desktop/renderer/assets/styles/bookDetailsDialog.css";
-import * as stylesColumns from "readium-desktop/renderer/assets/styles/components/columns.css";
-import * as stylesPublications from "readium-desktop/renderer/assets/styles/components/publications.css";
-import * as stylesGlobal from "readium-desktop/renderer/assets/styles/global.css";
+import * as stylesBookDetailsDialog from "readium-desktop/renderer/assets/styles/bookDetailsDialog.scss";
+import * as stylesGlobal from "readium-desktop/renderer/assets/styles/global.scss";
+import * as stylePublication from "readium-desktop/renderer/assets/styles/publicationInfos.scss";
 
 import { TaJsonDeserialize } from "@r2-lcp-js/serializable";
 import { LocatorExtended } from "@r2-navigator-js/electron/renderer";
 import { Publication as R2Publication } from "@r2-shared-js/models/publication";
 
-import Cover from "../../Cover";
+import Cover, { CoverWithForwardedRef } from "../../Cover";
 import { FormatContributorWithLink } from "./FormatContributorWithLink";
 import { FormatPublicationLanguage } from "./formatPublicationLanguage";
 import { FormatPublisherDate } from "./formatPublisherDate";
@@ -29,16 +28,26 @@ import LcpInfo from "./LcpInfo";
 import PublicationInfoDescription from "./PublicationInfoDescription";
 import { convertMultiLangStringToString, langStringIsRTL } from "readium-desktop/renderer/common/language-string";
 import PublicationInfoA11y from "./publicationInfoA11y";
+import { PublicationView } from "readium-desktop/common/views/publication";
+import * as Dialog from "@radix-ui/react-dialog";
+import * as stylesModals from "readium-desktop/renderer/assets/styles/components/modals.scss";
+import SVG from "../../SVG";
+import * as OnGoingBookIcon from "readium-desktop/renderer/assets/icons/ongoingBook-icon.svg";
+import * as ChevronUp from "readium-desktop/renderer/assets/icons/chevron-up.svg";
+import * as ChevronDown from "readium-desktop/renderer/assets/icons/chevron-down.svg";
+
+
+
 
 export interface IProps {
-    publication: TPublication;
+    publicationViewMaybeOpds: TPublication;
     r2Publication: R2Publication | null;
     manifestUrlR2Protocol: string | null;
     handleLinkUrl: ((url: string) => void) | undefined;
-    toggleCoverZoomCb: (coverZoom: boolean) => void;
+    // toggleCoverZoomCb: (coverZoom: boolean) => void;
     ControlComponent?: React.ComponentType<any>;
     TagManagerComponent: React.ComponentType<any>;
-    coverZoom: boolean;
+    // coverZoom: boolean;
     focusWhereAmI: boolean;
     pdfPlayerNumberOfPages: number | undefined; // super hacky :(
     divinaNumberOfPages: number | undefined; // super hacky :(
@@ -101,22 +110,22 @@ const Progression = (props: {
         // (Audiobooks, PDF, Divina, EPUB FXL and reflow ... page number vs. string types)
         try {
 
-        const isAudio = locatorExt.audioPlaybackInfo
-            // total duration can be undefined with badly-constructed publications,
-            // for example we found some LibriVox W3C LPF audiobooks missing duration property on reading order resources
-            && locatorExt.audioPlaybackInfo.globalDuration
-            && typeof locatorExt.locator.locations.position === "number"; // .progression is local to audio item in reading order playlist
+            const isAudio = locatorExt.audioPlaybackInfo
+                // total duration can be undefined with badly-constructed publications,
+                // for example we found some LibriVox W3C LPF audiobooks missing duration property on reading order resources
+                && locatorExt.audioPlaybackInfo.globalDuration
+                && typeof locatorExt.locator.locations.position === "number"; // .progression is local to audio item in reading order playlist
 
-        const isDivina = r2Publication && isDivinaFn(r2Publication);
-        const isPdf = r2Publication && isPdfFn(r2Publication);
+            const isDivina = r2Publication && isDivinaFn(r2Publication);
+            const isPdf = r2Publication && isPdfFn(r2Publication);
 
         // locatorExt.docInfo.isFixedLayout
-        const isFixedLayout = r2Publication && // && !r2Publication.PageList
+        const isFixedLayoutPublication = r2Publication && // && !r2Publication.PageList
             r2Publication.Metadata?.Rendition?.Layout === "fixed";
 
-        let txtProgression: string | undefined;
-        let txtPagination: string | undefined;
-        let txtHeadings: JSX.Element | undefined;
+            let txtProgression: string | undefined;
+            let txtPagination: string | undefined;
+            let txtHeadings: JSX.Element | undefined;
 
         if (isAudio) {
             const percent = Math.round(locatorExt.locator.locations.position * 100);
@@ -199,7 +208,7 @@ const Progression = (props: {
                 return l.Href === locatorExt.locator.href;
             });
             if (spineIndex >= 0) {
-                if (isFixedLayout) {
+                if (isFixedLayoutPublication) {
                     const pageNum = spineIndex + 1;
                     const totalPages = r2Publication.Spine.length;
 
@@ -210,7 +219,16 @@ const Progression = (props: {
                     // reflow: no totalPages, potentially just currentPage which is locatorExt.epubPage
 
                     if (locatorExt.epubPage) {
-                        txtPagination = __("reader.navigation.currentPage", { current: `${locatorExt.epubPage}` });
+                        let epubPage = locatorExt.epubPage;
+                        if (epubPage.trim().length === 0 && locatorExt.epubPageID && r2Publication.PageList) {
+                            const p = r2Publication.PageList.find((page) => {
+                                return page.Title && page.Href && page.Href.endsWith(`#${locatorExt.epubPageID}`);
+                            });
+                            if (p) {
+                                epubPage = p.Title;
+                            }
+                        }
+                        txtPagination = __("reader.navigation.currentPage", { current: epubPage });
                     }
 
                     // no virtual global .position in the current implementation,
@@ -224,7 +242,7 @@ const Progression = (props: {
                         const hs = locatorExt.headings.filter((h, _i) => {
                             if (h.level < rank
                                 // && (h.id || i === locatorExt.headings.length - 1)
-                                ) {
+                            ) {
 
                                 rank = h.level;
                                 return true;
@@ -234,81 +252,85 @@ const Progression = (props: {
                         // WARNING: .reverse() is in-place same-array mutation! (not a new array)
                         // ...but we're chaining with .filter() so that locatorExt.headings is not modified
 
-                        let k = 0;
-                        const summary = hs.reduce((arr, h, i) => {
-                            return arr.concat(
-                                <span key={`_h${k++}`}>{i === 0 ? " " : " / "}</span>,
-                                <span key={`_h${k++}`} style={{fontWeight: "bold"}}>h{h.level} </span>,
-                                <span key={`_h${k++}`} style={{border: "1px solid grey", padding: "2px"}}>{h.txt ? `${h.txt}` : `${h.id ? `[${h.id}]` : "_"}`}</span>,
+                            let k = 0;
+                            const summary = hs.reduce<React.ReactElement[]>((arr, h, i) => {
+                                return arr.concat(
+                                    <div style={{ display: "flex", gap: "5px", flex: "1",overflow: "hidden", textWrap: "nowrap", paddingRight: "2px", width: Math.ceil(100 / (arr.length + 1)) + "%"}}>
+                                        <span key={`_h${k++}`}>{i === 0 ? " " : " / "}</span>
+                                        <span key={`_h${k++}`} style={{ fontWeight: "bold" }}>h{h.level} </span>
+                                        <span key={`_h${k++}`} style={{overflow: "hidden", textOverflow: "ellipsis"}}>{h.txt ? `${h.txt}` : `${h.id ? `[${h.id}]` : "_"}`}</span>
+                                    </div>,
                                 );
-                        }, []);
+                            }, []);
 
                         // WARNING: .reverse() is in-place same-array mutation! (not a new array)
                         // ...which is why we use .slice() to create an instance copy
                         // (locatorExt.headings isn't modified)
                         // Note: instead of .slice(), Array.from() works too
                         const details = locatorExt.headings.slice().reverse().
-                        // filter((h, i) => {
-                        //     return h.id || i === 0;
-                        // }).
-                        reduce((arr, h, i) => {
-                            return arr.concat(
-                                <li key={`_li${i}`}>
-                                <span style={{fontWeight: "bold"}}>h{h.level} </span>
-                                {(h.id || i === 0) ? (
-                                <a
-                                href={(h.id || i === 0) ? "#" : undefined}
+                            // filter((h, i) => {
+                            //     return h.id || i === 0;
+                            // }).
+                            reduce<React.ReactElement[]>((arr, h, i) => {
+                                return arr.concat(
+                                    <li key={`_li${i}`}>
+                                        <span style={{ fontWeight: "bold" }}>h{h.level} </span>
+                                        {(h.id || i === 0) ? (
+                                            <a
+                                                href={(h.id || i === 0) ? "#" : undefined}
 
-                                data-id={h.id ? h.id : undefined}
-                                data-index={i}
+                                                data-id={h.id ? h.id : undefined}
+                                                data-index={i}
 
-                                onClick={
-                                    (e) => {
-                                        e.preventDefault();
+                                                onClick={
+                                                    (e) => {
+                                                        e.preventDefault();
 
-                                        const id = e.currentTarget?.getAttribute("data-id");
-                                        const idx = e.currentTarget?.getAttribute("data-index");
-                                        const index = idx ? parseInt(idx, 10) : -1;
-                                        if (id || index === 0) {
-                                            closeDialogCb();
-                                            const url = manifestUrlR2Protocol + "/../" + locatorExt.locator.href.replace(/#[^#]*$/, "") + `#${id ? id : ""}`;
-                                            handleLinkUrl(url);
-                                        }
-                                    }
-                                }>
-                                    <span style={{padding: "2px"}}>{h.txt ? `${h.txt}` : `${h.id ? `[${h.id}]` : "_"}`}</span>
-                                </a>
-                                ) : (
-                                    <span
-                                        data-id={h.id ? h.id : undefined}
-                                        data-index={i}
-                                        style={{padding: "2px"}}>{h.txt ? `${h.txt}` : `${h.id ? `[${h.id}]` : "_"}`}</span>
-                                )}
-                                </li>);
-                        }, []);
+                                                        const id = e.currentTarget?.getAttribute("data-id");
+                                                        const idx = e.currentTarget?.getAttribute("data-index");
+                                                        const index = idx ? parseInt(idx, 10) : -1;
+                                                        if (id || index === 0) {
+                                                            closeDialogCb();
+                                                            const url = manifestUrlR2Protocol + "/../" + locatorExt.locator.href.replace(/#[^#]*$/, "") + `#${id ? id : ""}`;
+                                                            handleLinkUrl(url);
+                                                        }
+                                                    }
+                                                }>
+                                                <span style={{ padding: "2px" }}>{h.txt ? `${h.txt}` : `${h.id ? `[${h.id}]` : "_"}`}</span>
+                                            </a>
+                                        ) : (
+                                            <span
+                                                data-id={h.id ? h.id : undefined}
+                                                data-index={i}
+                                                style={{ padding: "2px" }}>{h.txt ? `${h.txt}` : `${h.id ? `[${h.id}]` : "_"}`}</span>
+                                        )}
+                                    </li>);
+                            }, []);
 
-                        txtHeadings = <details><summary>{summary}</summary><ul style={{listStyleType: "none"}}>{details}</ul></details>;
+                        txtHeadings = <ProgressionDetails summary={summary} details={details} />;
                     }
                 }
             }
         }
 
         return (
-            <section>
-            <div className={stylesGlobal.heading}>
-                <h3 ref={focusRef} tabIndex={focusWhereAmI ? -1 : 0}>{`${__("publication.progression.title")}: `}</h3>
-            </div>
-            <>
-                {(txtProgression ? (<p><i className={stylesBookDetailsDialog.allowUserSelect}>
-                    {txtProgression}
-                </i></p>) : <></>)}
-                {(txtPagination ? (<p><i className={stylesBookDetailsDialog.allowUserSelect}>
-                    {txtPagination}
-                </i></p>) : <></>)}
-                {(txtHeadings ? (<><div style={{lineHeight: "2em"}} className={stylesBookDetailsDialog.allowUserSelect}>
-                    {txtHeadings}
-                </div></>) : <></>)}
-            </>
+            <section className="publicationInfo-progressionWrapper">
+                <div className={stylePublication.publicationInfo_heading}>
+                    <h4 ref={focusRef} tabIndex={focusWhereAmI ? -1 : 0}>{`${__("publication.progression.title")} `}</h4>
+                </div>
+                <div className={stylePublication.publicationInfo_progressionContainer}>
+                    <div style={{ display: "flex", gap: "10px" }}>
+                        {(txtProgression ? (<p className={stylesBookDetailsDialog.allowUserSelect}><SVG ariaHidden svg={OnGoingBookIcon} />
+                            {txtProgression}
+                        </p>) : <></>)}
+                        {(txtPagination ? (<p className={stylesBookDetailsDialog.allowUserSelect}>
+                            {txtPagination}
+                        </p>) : <></>)}
+                    </div>
+                    {(txtHeadings ? (<><div style={{ lineHeight: "2em" }} className={stylesBookDetailsDialog.allowUserSelect}>
+                        {txtHeadings}
+                    </div></>) : <></>)}
+                </div>
             </section>
         );
 
@@ -319,134 +341,178 @@ const Progression = (props: {
     return (<></>);
 };
 
-export const PublicationInfoContent: React.FC<IProps> = (props) => {
+const ProgressionDetails: React.FC<{summary: React.ReactElement[], details: React.ReactElement[]}> = (props) => {
+    const { summary, details } = props;
+    const [open, setOpen] = React.useState(false);
+    return (
+        <details open={open} onToggle={() => setOpen(!open)}>
+            <summary style={{display: "flex", maxWidth: "480px"}}>
+            {open ?
+                    <SVG ariaHidden svg={ChevronUp} /> :
+                    <SVG ariaHidden svg={ChevronDown} />
+                }
+                {summary}
+            </summary>
+            <ul>{details}</ul>
+        </details>
+    );
+};
+
+export const PublicationInfoContent: React.FC<React.PropsWithChildren<IProps>> = (props) => {
 
     // tslint:disable-next-line: max-line-length
-    const { closeDialogCb, readerReadingLocation, pdfPlayerNumberOfPages, divinaNumberOfPages, divinaContinousEqualTrue, r2Publication: r2Publication_, manifestUrlR2Protocol, handleLinkUrl, publication, toggleCoverZoomCb, ControlComponent, TagManagerComponent, coverZoom, translator, onClikLinkCb, focusWhereAmI } = props;
+    const { closeDialogCb, readerReadingLocation, pdfPlayerNumberOfPages, divinaNumberOfPages, divinaContinousEqualTrue, r2Publication: r2Publication_, manifestUrlR2Protocol, handleLinkUrl, publicationViewMaybeOpds, ControlComponent, TagManagerComponent, translator, onClikLinkCb, focusWhereAmI } = props;
     const __ = translator.translate;
 
     const r2Publication = React.useMemo(() => {
-        if (!r2Publication_ && publication.r2PublicationJson) {
+        if (!r2Publication_ && publicationViewMaybeOpds.r2PublicationJson) {
             // debug("!! r2Publication ".repeat(100));
-            return TaJsonDeserialize(publication.r2PublicationJson, R2Publication);
+            return TaJsonDeserialize(publicationViewMaybeOpds.r2PublicationJson, R2Publication);
         }
 
         // debug("__r2Publication".repeat(100));
         return r2Publication_;
 
-    }, [publication, r2Publication_]);
+    }, [publicationViewMaybeOpds, r2Publication_]);
 
-    // publication.documentTitle
-    const pubTitleLangStr = convertMultiLangStringToString(translator, publication.publicationTitle);
+    const pubTitleLangStr = convertMultiLangStringToString(translator, (publicationViewMaybeOpds as PublicationView).publicationTitle || publicationViewMaybeOpds.documentTitle);
     const pubTitleLang = pubTitleLangStr && pubTitleLangStr[0] ? pubTitleLangStr[0].toLowerCase() : "";
     const pubTitleIsRTL = langStringIsRTL(pubTitleLang);
     const pubTitleStr = pubTitleLangStr && pubTitleLangStr[1] ? pubTitleLangStr[1] : "";
 
+    const [openCoverDialog, setOpenCoverDialog] = React.useState(false);
+
     return (
         <>
-            <div className={stylesColumns.row}>
-                <div className={stylesColumns.col_book_img}>
-                    <div className={stylesPublications.publication_image_wrapper}>
-                        <Cover
-                            publicationViewMaybeOpds={publication}
-                            onClick={() => toggleCoverZoomCb(coverZoom)}
-                            onKeyPress={
-                                (e: React.KeyboardEvent<HTMLImageElement>) =>
-                                    e.key === "Enter" && toggleCoverZoomCb(coverZoom)
-                            }
-                        ></Cover>
+            <div className={stylePublication.publicationInfo_container}>
+                <div className={stylePublication.publicationInfo_leftSide}>
+                    <div className={stylePublication.publicationInfo_leftSide_coverWrapper}>
+                        <Dialog.Root open={openCoverDialog} onOpenChange={(open) => {
+                            setOpenCoverDialog(open);
+                        }}>
+                            <Dialog.Trigger asChild>
+                                <CoverWithForwardedRef
+                                    publicationViewMaybeOpds={props.publicationViewMaybeOpds}
+                                    coverType="cover"
+                                    onKeyPress={
+                                        (e) => {
+                                            if (e.key === "Enter") {
+                                                setOpenCoverDialog(true);
+                                            }
+                                        }
+                                    }
+                                />
+                            </Dialog.Trigger>
+                            <Dialog.Portal>
+                                {/* <div className={stylesModals.modal_dialog_overlay}></div> */}
+                                <Dialog.Content className={stylesModals.modal_dialog}>
+                                    <div className={stylesModals.modal_dialog_body_cover}>
+                                        <Cover
+                                            publicationViewMaybeOpds={props.publicationViewMaybeOpds}
+                                            coverType="cover"
+                                            onClick={() => setOpenCoverDialog(false)}
+                                            onKeyPress={
+                                                (e) => {
+                                                    if (e.key === "Enter") {
+                                                        setOpenCoverDialog(false);
+                                                    }
+                                                }
+                                            }
+                                        />
+                                    </div>
+                                </Dialog.Content>
+                            </Dialog.Portal>
+                        </Dialog.Root>
                     </div>
-                    { ControlComponent && <ControlComponent /> }
+                    <div className={stylePublication.publicationInfo_leftSide_buttonsWrapper}>
+                        {ControlComponent ? <ControlComponent /> : <></>}
+                    </div>
                 </div>
-                <div className={stylesColumns.col}>
+                <div className={stylePublication.publicationInfo_rightSide}>
                     <section>
-                        <h2 className={classNames(stylesBookDetailsDialog.allowUserSelect, stylesGlobal.my_10)}
+                        <h2 className={classNames(stylesBookDetailsDialog.allowUserSelect, stylesGlobal.my_10, stylePublication.book_title)}
                             dir={pubTitleIsRTL ? "rtl" : undefined}>
                             {pubTitleStr}
                         </h2>
                         <FormatContributorWithLink
-                            contributors={publication.authors}
+                            contributors={publicationViewMaybeOpds.authors}
                             translator={translator}
                             onClickLinkCb={onClikLinkCb}
+                            className={"authors"}
                         />
                     </section>
 
                     <section>
-                        <PublicationInfoDescription publication={publication} __={__} translator={props.translator} />
+                        <PublicationInfoDescription publicationViewMaybeOpds={publicationViewMaybeOpds} __={__} translator={props.translator} />
                     </section>
                     <section>
-                        <div className={stylesGlobal.heading}>
-                            <h3>{__("catalog.moreInfo")}</h3>
+                        <div className={stylePublication.publicationInfo_heading}>
+                            <h4>{__("catalog.moreInfo")}</h4>
                         </div>
-                        <div>
-                            <FormatPublisherDate publication={publication} __={__} />
+                        <div className={stylePublication.publicationInfo_moreInfo_content}>
+                            <FormatPublisherDate publicationViewMaybeOpds={publicationViewMaybeOpds} __={__} />
                             {
-                                publication.publishers?.length ?
-                                    <>
+                                publicationViewMaybeOpds.publishers?.length ?
+                                    <div>
                                         <strong>{`${__("catalog.publisher")}: `}</strong>
-                                        <i className={stylesBookDetailsDialog.allowUserSelect}>
+                                        <span className={stylesBookDetailsDialog.allowUserSelect}>
                                             <FormatContributorWithLink
-                                                contributors={publication.publishers}
+                                                contributors={publicationViewMaybeOpds.publishers}
                                                 translator={translator}
                                                 onClickLinkCb={onClikLinkCb}
                                             />
-                                        </i>
+                                        </span>
                                         <br />
-                                    </> : undefined
+                                    </div> : undefined
                             }
                             {
-                                publication.languages?.length ?
-                                    <>
+                                publicationViewMaybeOpds.languages?.length ?
+                                    <div>
                                         <strong>{`${__("catalog.lang")}: `}</strong>
-                                        <FormatPublicationLanguage publication={publication} __={__} />
+                                        <FormatPublicationLanguage publicationViewMaybeOpds={publicationViewMaybeOpds} />
                                         <br />
-                                    </> : undefined
+                                    </div> : undefined
                             }
                             {
-                                publication.numberOfPages ?
-                                    <>
+                                publicationViewMaybeOpds.numberOfPages ?
+                                    <div>
                                         <strong>{`${__("catalog.numberOfPages")}: `}</strong>
-                                        <i className={stylesBookDetailsDialog.allowUserSelect}>
-                                            {publication.numberOfPages}
-                                        </i>
+                                        <span className={stylesBookDetailsDialog.allowUserSelect}>
+                                            {publicationViewMaybeOpds.numberOfPages}
+                                        </span>
                                         <br />
 
-                                    </> : undefined
+                                    </div> : undefined
                             }
                             <Duration
                                 __={__}
-                                duration={publication.duration}
+                                duration={publicationViewMaybeOpds.duration}
                             />
                             {
-                                publication.nbOfTracks ?
-                                    <>
+                                publicationViewMaybeOpds.nbOfTracks ?
+                                    <div>
                                         <strong>{`${__("publication.audio.tracks")}: `}</strong>
                                         <i className={stylesBookDetailsDialog.allowUserSelect}>
-                                            {publication.nbOfTracks}
+                                            {publicationViewMaybeOpds.nbOfTracks}
                                         </i>
                                         <br />
 
-                                    </> : undefined
+                                    </div> : undefined
                             }
                         </div>
                     </section>
                     <section>
-                        <div className={stylesGlobal.heading}>
-                            <h3>{__("publication.accessibility.name")}</h3>
+                        <div className={stylePublication.publicationInfo_heading}>
+                            <h4>{__("publication.accessibility.name")}</h4>
                         </div>
-                        <div>
-                            <PublicationInfoA11y publication={publication}></PublicationInfoA11y>
+                        <div className={stylePublication.accessibility_infos}>
+                            <PublicationInfoA11y publicationViewMaybeOpds={publicationViewMaybeOpds}></PublicationInfoA11y>
                         </div>
                     </section>
-                    {(publication.lcp ? <section>
-                        <LcpInfo publicationLcp={publication} />
+                    {(publicationViewMaybeOpds.lcp ? <section className={stylePublication.publicationInfo_lcpInfo_content}>
+                        <LcpInfo publicationLcp={publicationViewMaybeOpds} />
                     </section> : <></>)}
-                    <section>
-                        <div className={stylesGlobal.heading}>
-                            <h3>{__("catalog.tags")}</h3>
-                        </div>
-                        <TagManagerComponent />
-                    </section>
+                    <TagManagerComponent />
                     <Progression
                         __={__}
                         closeDialogCb={closeDialogCb}
@@ -457,7 +523,7 @@ export const PublicationInfoContent: React.FC<IProps> = (props) => {
                         divinaNumberOfPages={divinaNumberOfPages}
                         divinaContinousEqualTrue={divinaContinousEqualTrue}
                         focusWhereAmI={focusWhereAmI}
-                        locatorExt={readerReadingLocation || publication.lastReadingLocation}
+                        locatorExt={readerReadingLocation || publicationViewMaybeOpds.lastReadingLocation}
                     />
                 </div>
             </div>
