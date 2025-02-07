@@ -5,13 +5,18 @@
 // that can be found in the LICENSE file exposed on Github (readium) in the project repository.
 // ==LICENSE-END==
 
-import { HoverEvent } from "@react-types/shared";
+import * as stylesPopoverDialog from "readium-desktop/renderer/assets/styles/components/popoverDialog.scss";
+import * as stylesReader from "readium-desktop/renderer/assets/styles/reader-app.scss";
+import * as stylesReaderHeader from "readium-desktop/renderer/assets/styles/components/readerHeader.scss";
+// import * as StylesCombobox from "readium-desktop/renderer/assets/styles/components/combobox.scss";
+
 import classNames from "classnames";
 import * as debug_ from "debug";
 import * as React from "react";
 import * as Popover from "@radix-ui/react-popover";
 import * as Dialog from "@radix-ui/react-dialog";
-import * as stylesPopoverDialog from "readium-desktop/renderer/assets/styles/components/popoverDialog.scss";
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
+
 // import * as ReactDOM from "react-dom";
 import { ReaderConfig, ReaderMode } from "readium-desktop/common/models/reader";
 import * as BackIcon from "readium-desktop/renderer/assets/icons/shelf-icon.svg";
@@ -29,6 +34,8 @@ import * as TOCIcon from "readium-desktop/renderer/assets/icons/open_book.svg";
 import * as MarkIcon from "readium-desktop/renderer/assets/icons/bookmarkSingle-icon.svg";
 import * as AnnotationsIcon from "readium-desktop/renderer/assets/icons/annotations-icon.svg";
 import * as RemoveBookMarkIcon from "readium-desktop/renderer/assets/icons/BookmarkRemove-icon.svg";
+import * as PlusIcon from "readium-desktop/renderer/assets/icons/add-alone.svg";
+// import * as BookmarkFullIcon from "readium-desktop/renderer/assets/icons/.unused-icons/outline-bookmark-24px.svg";
 // import * as DetachIcon from "readium-desktop/renderer/assets/icons/outline-flip_to_front-24px.svg";
 import * as InfosIcon from "readium-desktop/renderer/assets/icons/outline-info-24px.svg";
 import * as FullscreenIcon from "readium-desktop/renderer/assets/icons/fullscreen-icon.svg";
@@ -36,22 +43,22 @@ import * as ExitFullscreenIcon from "readium-desktop/renderer/assets/icons/fulls
 // import * as FloppyDiskIcon from "readium-desktop/renderer/assets/icons/floppydisk-icon.svg";
 // import * as ChevronUpIcon from "readium-desktop/renderer/assets/icons/chevron-up.svg";
 // import * as ChevronDownIcon from "readium-desktop/renderer/assets/icons/chevron-down.svg";
-import * as stylesReader from "readium-desktop/renderer/assets/styles/reader-app.scss";
-import * as stylesReaderHeader from "readium-desktop/renderer/assets/styles/components/readerHeader.scss";
 import {
     TranslatorProps, withTranslator,
 } from "readium-desktop/renderer/common/components/hoc/translator";
 import SVG from "readium-desktop/renderer/common/components/SVG";
 
-import { fixedLayoutZoomPercent, stealFocusDisable } from "@r2-navigator-js/electron/renderer/dom";
+import { fixedLayoutZoomPercent,
+    // stealFocusDisable
+} from "@r2-navigator-js/electron/renderer/dom";
 import {
-    LocatorExtended, MediaOverlaysStateEnum, TTSStateEnum,
+    MediaOverlaysStateEnum, TTSStateEnum,
 } from "@r2-navigator-js/electron/renderer/index";
-import { Publication as R2Publication } from "@r2-shared-js/models/publication";
+import { MiniLocatorExtended } from "readium-desktop/common/redux/states/locatorInitialState";
 
 import { IPdfPlayerScale } from "../pdf/common/pdfReader.type";
 import HeaderSearch from "./header/HeaderSearch";
-import { IPopoverDialogProps, IReaderMenuProps, IReaderSettingsProps } from "./options-values";
+import { IReaderMenuProps, IReaderSettingsProps } from "./options-values";
 import { ReaderMenu } from "./ReaderMenu";
 import {
     ensureKeyboardListenerIsInstalled, registerKeyboardListener, unregisterKeyboardListener,
@@ -65,15 +72,18 @@ import { ReaderSettings, ReadingAudio } from "./ReaderSettings";
 import { createOrGetPdfEventBus } from "readium-desktop/renderer/reader/pdf/driver";
 import { MySelectProps, Select } from "readium-desktop/renderer/common/components/Select";
 import { ComboBox, ComboBoxItem } from "readium-desktop/renderer/common/components/ComboBox";
-import { readerLocalActionAnnotations } from "../redux/actions";
+import { readerLocalActionAnnotations, readerLocalActionSetConfig } from "../redux/actions";
 import { IColor, TDrawType } from "readium-desktop/common/redux/states/renderer/annotation";
 import { AnnotationEdit } from "./AnnotationEdit";
-import { Collection, Header as ReactAriaHeader, Section } from "react-aria-components";
 import { isAudiobookFn } from "readium-desktop/common/isManifestType";
+import { VoiceSelection } from "./header/voiceSelection";
 // import * as ChevronDown from "readium-desktop/renderer/assets/icons/chevron-down.svg";
-// import * as StylesCombobox from "readium-desktop/renderer/assets/styles/components/combobox.scss";
+import { filterOnLanguage, getVoices, groupByRegions, IVoices } from "readium-speech";
+import { ttsVoice as r2navigatorSetTTSVoice } from "@r2-navigator-js/electron/renderer/index";
 
 const debug = debug_("readium-desktop:renderer:reader:components:ReaderHeader");
+
+type IVoicesWithIndex = IVoices & { id: number };
 
 // function throttle(callback: (...args: any) => void, limit: number) {
 //     let waiting = false;
@@ -105,15 +115,11 @@ interface IBaseProps extends TranslatorProps {
     handleTTSPause: () => void;
     handleTTSStop: () => void;
     handleTTSResume: () => void;
-    handleTTSPrevious: (skipSentences?: boolean) => void;
-    handleTTSNext: (skipSentences?: boolean) => void;
+    handleTTSPrevious: (skipSentences: boolean, escape: boolean) => void;
+    handleTTSNext: (skipSentences: boolean, escape: boolean) => void;
     handleTTSPlaybackRate: (speed: string) => void;
     handleTTSVoice: (voice: SpeechSynthesisVoice | null) => void;
-    ttsState: TTSStateEnum;
-    ttsPlaybackRate: string;
-    ttsVoice: SpeechSynthesisVoice | null;
 
-    publicationHasMediaOverlays: boolean;
     handleMediaOverlaysPlay: () => void;
     handleMediaOverlaysPause: () => void;
     handleMediaOverlaysStop: () => void;
@@ -121,23 +127,20 @@ interface IBaseProps extends TranslatorProps {
     handleMediaOverlaysPrevious: () => void;
     handleMediaOverlaysNext: () => void;
     handleMediaOverlaysPlaybackRate: (speed: string) => void;
-    mediaOverlaysState: MediaOverlaysStateEnum;
-    mediaOverlaysPlaybackRate: string;
 
     handleReaderClose: () => void;
     handleReaderDetach: () => void;
     toggleBookmark: () => void;
-    isOnBookmark: boolean;
+    // isOnBookmark: boolean;
+    numberOfVisibleBookmarks: number;
     isOnSearch: boolean;
     handlePublicationInfo: () => void;
     readerMenuProps: IReaderMenuProps;
     ReaderSettingsProps: IReaderSettingsProps;
-    currentLocation: LocatorExtended;
+    currentLocation: MiniLocatorExtended;
     isDivina: boolean;
     isPdf: boolean;
     divinaSoundPlay: (play: boolean) => void;
-
-    readerPopoverDialogContext: IPopoverDialogProps;
 
     showSearchResults: () => void;
     disableRTLFlip: boolean;
@@ -150,7 +153,6 @@ interface IBaseProps extends TranslatorProps {
 // ReturnType<typeof mapDispatchToProps>
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IProps extends IBaseProps, ReturnType<typeof mapStateToProps>, ReturnType<typeof mapDispatchToProps> {
-    r2Publication: R2Publication;
 }
 
 interface IState {
@@ -159,6 +161,8 @@ interface IState {
     fxlZoomPercent: number;
     forceTTS: boolean;
     ttsPopoverOpen: boolean;
+    tabValue: string;
+    voices: IVoicesWithIndex[];
 }
 
 export class ReaderHeader extends React.Component<IProps, IState> {
@@ -190,6 +194,8 @@ export class ReaderHeader extends React.Component<IProps, IState> {
             fxlZoomPercent: 0,
             forceTTS: false,
             ttsPopoverOpen: false,
+            tabValue: this.props.ReaderSettingsProps.isDivina ? "tab-divina" : this.props.ReaderSettingsProps.isPdf ? "tab-pdfzoom" : "tab-display",
+            voices: [],
         };
 
         this.timerFXLZoomDebounce = undefined;
@@ -215,12 +221,63 @@ export class ReaderHeader extends React.Component<IProps, IState> {
         // }, 200).bind(this);
     }
 
+    private handleTTSVoice = (voice: IVoices) => {
+        const v = voice ? {
+            default: false,
+            lang: voice.language,
+            localService: voice.offlineAvailability,
+            name: voice.name,
+            voiceURI: voice.voiceURI,
+        } : null;
+        r2navigatorSetTTSVoice(v);
+        this.props.setConfig({ ttsVoice: v });
+    };
+
     public componentDidMount() {
 
         ensureKeyboardListenerIsInstalled();
         this.registerAllKeyboardListeners();
 
         createOrGetPdfEventBus().subscribe("scale", this.setScaleMode);
+
+        getVoices().then((_voices) => {
+            if (Array.isArray(_voices)) {
+                this.setState({
+                    voices: _voices.map((v, i) => ({...v, id: i+1})),
+                });
+
+                const voicesFilteredOnLanguage = filterOnLanguage(_voices, this.props.r2Publication.Metadata?.Language || []) as IVoicesWithIndex[];
+                const voicesGroupedByRegions = groupByRegions(voicesFilteredOnLanguage, this.props.r2Publication.Metadata?.Language || [], this.props.locale) as Map<string, IVoicesWithIndex[]>;
+
+                // const firstVoice = ((Array.from(voicesGroupedByRegions)[0] || [])[1] || [])[0];
+                const firstVoiceArrayFromMap = Array.from(voicesGroupedByRegions);
+                const firstVoiceArrayFirst = firstVoiceArrayFromMap[0];
+                const firstVoiceArraySecondVoicesListItems = (firstVoiceArrayFirst || [])[1];
+                const firstVoiceFirstItemFromVoicesList = (firstVoiceArraySecondVoicesListItems || [])[0];
+                if (firstVoiceFirstItemFromVoicesList) {
+                    const firstVoice = firstVoiceFirstItemFromVoicesList;
+                    if (this.props.ttsVoice) {
+                        if (firstVoice.voiceURI && firstVoice.voiceURI === this.props.ttsVoice.voiceURI &&
+                            firstVoice.name && firstVoice.name === this.props.ttsVoice.name &&
+                            firstVoice.language && firstVoice.language === this.props.ttsVoice.lang
+                        ) {
+                            // nothing
+                        } else {
+                            if (firstVoice.language?.split("-")[0] === this.props.ttsVoice.lang?.split("-")[0]) {
+                                // nothing
+                            } else {
+                                // when language code switch, change the default ttsVoice
+                                this.handleTTSVoice(firstVoice);
+                            }
+                        }
+                    } else {
+                        // if there is no default TTSVoice, set the first voice returned par getVoices
+                        this.handleTTSVoice(firstVoice);
+                    }
+                }
+            }
+        });
+
     }
 
     public componentWillUnmount() {
@@ -237,6 +294,7 @@ export class ReaderHeader extends React.Component<IProps, IState> {
         }
 
         if (this.props.fullscreen !== oldProps.fullscreen) {
+            // TODO: why steal focus here? (for example if the fullscreen/zenmode feature is activated via keyboard shortcut instead of button click!)
             if (this.props.fullscreen && this.disableFullscreenRef?.current) {
                 this.disableFullscreenRef.current.focus();
             } else if (!this.props.fullscreen && this.enableFullscreenRef?.current) {
@@ -247,6 +305,7 @@ export class ReaderHeader extends React.Component<IProps, IState> {
         if (this.props.infoOpen !== oldProps.infoOpen &&
             this.props.infoOpen === false &&
             this.infoMenuButtonRef?.current) {
+            // TODO: why steal focus here? (for example if the dialog was activated via keyboard shortcut instead of button click!)
             this.infoMenuButtonRef.current.focus();
         }
 
@@ -346,57 +405,12 @@ export class ReaderHeader extends React.Component<IProps, IState> {
     public render(): React.ReactElement<{}> {
         const { __ } = this.props;
 
-        type VoiceWithIndex = SpeechSynthesisVoice & { id: number };
-        const voicesWithIndex = speechSynthesis.getVoices()
-        .reduce((acc, curr) => {
-            const found = acc.find((voice) => {
-                return voice.lang === curr.lang &&
-                    voice.name === curr.name &&
-                    voice.localService === curr.localService &&
-                    voice.voiceURI === curr.voiceURI
-                    // voice.default === curr.default
-                ;
-            });
-            if (!found) {
-                acc.push(curr);
-            }
-            return acc;
-        }, [] as SpeechSynthesisVoice[])
-        // WARNING: .sort() is in-place same-array mutation! (not a new array)
-        .sort((voice1, voice2) => {
-            if(voice1.lang < voice2.lang) { return -1; }
-            if(voice1.lang > voice2.lang) { return 1; }
-            // a.lang === b.lang ...
-            if(voice1.name < voice2.name) { return -1; }
-            if(voice1.name > voice2.name) { return 1; }
-            return 0;
-        }).map<VoiceWithIndex>((voice, i) => (
-            {id: i, name: voice.name, default: voice.default, lang: voice.lang, localService: voice.localService, voiceURI: voice.voiceURI}
-        ));
-        voicesWithIndex.unshift({
-            id: -1,
-            name: __("reader.tts.default"),
-            default: false,
-            lang: "",
-            localService: false,
-            voiceURI: "",
-        });
+        // TODO change this
+        const readerSettingsHeaderProps = {
 
-        interface ILangToVoicesMap {
-            [key: string]: VoiceWithIndex[];
-        }
-        const langToVoicesMap = voicesWithIndex.reduce((acc, voice) => {
-            if (!acc[voice.lang]) {
-                acc[voice.lang] = [] as Array<VoiceWithIndex>;
-            }
-            acc[voice.lang].push(voice);
-            return acc;
-        }, {} as ILangToVoicesMap);
-
-        const voiceComboBoxDefaultItems = Object.keys(langToVoicesMap).map(lang => ({
-            lang,
-            voices: langToVoicesMap[lang], // .map<VoiceWithIndex>((voice, i) => ({ id: i, name: voice.name, default: voice.default, lang: voice.lang, localService: voice.localService, voiceURI: voice.voiceURI })),
-        }));
+            tabValue: this.state.tabValue,
+            setTabValue: (value: string) => this.setState({ tabValue: value}),
+        };
 
         const playbackRate = [
             { id: 0, value: 0.5, name: "0.5x" },
@@ -448,10 +462,10 @@ export class ReaderHeader extends React.Component<IProps, IState> {
             },
         ];
 
-        const isDockedMode = this.props.readerPopoverDialogContext.dockedMode;
+        const isDockedMode = this.props.readerConfig.readerDockingMode !== "full";
         const isOnSearch = this.props.isOnSearch;
-        const isNightMode = this.props.ReaderSettingsProps.readerConfig.night || this.props.ReaderSettingsProps.readerConfig.theme === "night";
-        const isSepiaMode = this.props.ReaderSettingsProps.readerConfig.sepia || this.props.ReaderSettingsProps.readerConfig.theme === "sepia";
+        const isNightMode = this.props.readerConfig.night || this.props.readerConfig.theme === "night";
+        const isSepiaMode = this.props.readerConfig.sepia || this.props.readerConfig.theme === "sepia";
 
         const containerClassName = classNames(
             isDockedMode && isOnSearch && stylesReader.isOnSearch,
@@ -464,6 +478,8 @@ export class ReaderHeader extends React.Component<IProps, IState> {
           );
 
           const isAudioBook = isAudiobookFn(this.props.r2Publication);
+
+
 
         return (
             <nav
@@ -604,9 +620,9 @@ export class ReaderHeader extends React.Component<IProps, IState> {
                                                         }
                                                     } else {
                                                         if (isRTL) {
-                                                          this.props.handleTTSNext(e.shiftKey && e.altKey);
+                                                          this.props.handleTTSNext(e.shiftKey && e.altKey && e.metaKey, e.shiftKey && e.altKey);
                                                         } else {
-                                                          this.props.handleTTSPrevious(e.shiftKey && e.altKey);
+                                                          this.props.handleTTSPrevious(e.shiftKey && e.altKey && e.metaKey, e.shiftKey && e.altKey);
                                                         }
                                                     }
                                                 }}
@@ -676,13 +692,13 @@ export class ReaderHeader extends React.Component<IProps, IState> {
                                                     if (useMO) {
                                                         this.props.handleMediaOverlaysPrevious();
                                                     } else {
-                                                        this.props.handleTTSPrevious(e.shiftKey && e.altKey);
+                                                        this.props.handleTTSPrevious(e.shiftKey && e.altKey && e.metaKey, e.shiftKey && e.altKey);
                                                     }
                                                   } else {
                                                       if (useMO) {
                                                           this.props.handleMediaOverlaysNext();
                                                       } else {
-                                                          this.props.handleTTSNext(e.shiftKey && e.altKey);
+                                                          this.props.handleTTSNext(e.shiftKey && e.altKey && e.metaKey, e.shiftKey && e.altKey);
                                                       }
                                                   }
                                                 }}
@@ -708,13 +724,16 @@ export class ReaderHeader extends React.Component<IProps, IState> {
                                                     </button>
                                                 </Popover.Trigger>
                                                 <Popover.Portal>
-                                                    <Popover.Content>
+                                                    <Popover.Content style={{zIndex: 100}}>
                                                         <div className={stylesReaderHeader.Tts_popover_container}>
                                                             <div style={{paddingRight: "25px", borderRight: "1px solid var(--color-verylight-grey-alt)"}}>
                                                             <div className={stylesReader.ttsSelectRate}>
                                                                             <ComboBox label={useMO ?
                                                                                 __("reader.media-overlays.speed")
                                                                                 : __("reader.tts.speed")}
+                                                                                aria-label={useMO ?
+                                                                                    __("reader.media-overlays.speed")
+                                                                                    : __("reader.tts.speed")}
                                                                                 defaultItems={playbackRate}
                                                                                 // defaultSelectedKey={2}
                                                                                 selectedKey={
@@ -738,55 +757,10 @@ export class ReaderHeader extends React.Component<IProps, IState> {
                                                                             </ComboBox>
                                                                         </div>
                                                                         {!useMO && (
-                                                                            <div className={stylesReader.ttsSelectVoice}>
-                                                                                <ComboBox
-                                                                                    label={__("reader.tts.voice")}
-                                                                                    defaultItems={voiceComboBoxDefaultItems}
-                                                                                    defaultInputValue={
-                                                                                        this.props.ttsVoice ?
-                                                                                            this.props.ttsVoice.name : voicesWithIndex[0].name}
-                                                                                    selectedKey={
-                                                                                        this.props.ttsVoice ?
-                                                                                            `TTSID${(voicesWithIndex.find((voice) =>
-                                                                                                voice.name === this.props.ttsVoice.name
-                                                                                                && voice.lang === this.props.ttsVoice.lang
-                                                                                                && voice.voiceURI === this.props.ttsVoice.voiceURI,
-                                                                                            ) || { id: -1 }).id}` :
-                                                                                            "TTSID-1"
-                                                                                    }
-                                                                                    onSelectionChange={(key) => {
-                                                                                        if (!key) return;
-
-                                                                                        key = key.toString();
-                                                                                        const id = parseInt(key.replace("TTSID", ""), 10);
-                                                                                        const v = id === -1 ? null : (voicesWithIndex.find((voice) => voice.id === id)  || null);
-                                                                                        this.props.handleTTSVoice(v);
-                                                                                    }}
-                                                                                    style={{ paddingBottom: "0", margin: "0" }}
-                                                                                >
-                                                                                    {section => (
-                                                                                        <Section id={section.lang} key={`section-${section.lang}`}>
-                                                                                            <ReactAriaHeader style={{ paddingLeft: "5px", fontSize: "16px", color: "var(--color-blue)", borderBottom: "1px solid var(--color-light-blue)" }}>
-                                                                                                {section.lang}
-                                                                                            </ReactAriaHeader>
-                                                                                            <Collection items={section.voices} key={`collection-${section.lang}`}>
-                                                                                                {voice => <ComboBoxItem
-                                                                                                    onHoverStart={(e: HoverEvent) => {
-                                                                                                        if (!e.target.getAttribute("title")) {
-                                                                                                            e.target.setAttribute("title", voice.name);
-                                                                                                        }
-                                                                                                    }}
-                                                                                                    // aria-label={item.name}
-                                                                                                
-                                                                                                    id={`TTSID${voice.id}`} key={`TTSKEY${voice.id}`}>{`${voice.name}${voice.default ? " *" : ""}`}
-                                                                                                    </ComboBoxItem>}
-                                                                                            </Collection>
-                                                                                        </Section>)}
-                                                                                </ComboBox>
-                                                                            </div>
+                                                                            <VoiceSelection handleTTSVoice={this.handleTTSVoice} voices={this.state.voices}/>
                                                                         )}
                                                                     </div>
-                                                                    <ReadingAudio useMO={useMO} config={this.props.ReaderSettingsProps.readerConfig} set={(config: Partial<ReaderConfig>) => { this.props.ReaderSettingsProps.setSettings({ ...this.props.ReaderSettingsProps.readerConfig, ...config }); }} />
+                                                                    <ReadingAudio useMO={useMO}/>
                                                                 </div>
                                                                 <Popover.Arrow className={stylesReaderHeader.popover_arrow} />
                                                             </Popover.Content>
@@ -878,15 +852,15 @@ export class ReaderHeader extends React.Component<IProps, IState> {
                                <HeaderSearch shortcutEnable={this.props.shortcutEnable} isPdf={this.props.isPdf} showSearchResults={this.props.showSearchResults} isAudiobook={isAudioBook} isDivina={this.props.isDivina}></HeaderSearch>
                         </li>
                         <li
-                            {...(this.props.isOnBookmark &&
+                            {...(this.props.numberOfVisibleBookmarks > 0 &&
                                 { style: { backgroundColor: "var(--color-blue" } })}
                         >
                             <input
                                 id="bookmarkButton"
                                 className={stylesReader.bookmarkButton}
                                 type="checkbox"
-                                checked={this.props.isOnBookmark}
-                                onKeyDown={(e) => {
+                                checked={this.props.numberOfVisibleBookmarks > 0}
+                                onKeyUp={(e) => {
                                     if (e.key === "Enter") { this.props.toggleBookmark(); }
                                 }}
                                 onChange={this.props.toggleBookmark}
@@ -901,9 +875,23 @@ export class ReaderHeader extends React.Component<IProps, IState> {
                                 aria-hidden="true"
                                 className={stylesReader.menu_button}
                                 id="bookmarkLabel"
+
+                                aria-label={`${__("reader.navigation.bookmarkTitle")} (${
+                                    (this.props.numberOfVisibleBookmarks === 1 && !this.props.selectionIsNew) ? __("catalog.delete") : __("catalog.addTagsButton")
+                                })`}
+                                title={`${__("reader.navigation.bookmarkTitle")} (${
+                                    (this.props.numberOfVisibleBookmarks === 1 && !this.props.selectionIsNew) ? __("catalog.delete") : __("catalog.addTagsButton")
+                                })`}
                             >
-                                <SVG ariaHidden={true} svg={MarkIcon} className={classNames(stylesReaderHeader.bookmarkIcon, this.props.isOnBookmark ? stylesReaderHeader.active_svg : "")} />
-                                <SVG ariaHidden={true} svg={RemoveBookMarkIcon} className={classNames(stylesReaderHeader.bookmarkRemove, this.props.isOnBookmark ? stylesReaderHeader.active_svg : "")} />
+                                <SVG ariaHidden={true} svg={MarkIcon} className={classNames(stylesReaderHeader.bookmarkIcon,
+                                    this.props.numberOfVisibleBookmarks > 0
+                                    ? stylesReaderHeader.active_svg : "")} />
+                                <SVG ariaHidden={true} svg={RemoveBookMarkIcon} className={classNames(stylesReaderHeader.bookmarkRemove,
+                                    (this.props.numberOfVisibleBookmarks === 1 && !this.props.selectionIsNew)
+                                    ? stylesReaderHeader.active_svg : "")} />
+                                <SVG ariaHidden={true} svg={PlusIcon} className={classNames(stylesReaderHeader.bookmarkRemove,
+                                    this.props.numberOfVisibleBookmarks > 1 || (this.props.numberOfVisibleBookmarks === 1 && this.props.selectionIsNew)
+                                    ? stylesReaderHeader.active_svg : "")} />
                             </label>
                         </li>
 
@@ -920,10 +908,11 @@ export class ReaderHeader extends React.Component<IProps, IState> {
                                     <input
                                     disabled={this.props.isPdf || this.props.isDivina || isAudioBook}
                                         id="annotationButton"
+                                        aria-label={__("reader.navigation.annotationTitle")}
                                         className={stylesReader.bookmarkButton}
                                         type="checkbox"
                                         checked={this.props.isAnnotationModeEnabled}
-                                        onKeyDown={(e) => {
+                                        onKeyUp={(e) => {
                                             if (e.key === "Enter") {
                                                 this.props.triggerAnnotationBtn();
                                             }
@@ -942,6 +931,7 @@ export class ReaderHeader extends React.Component<IProps, IState> {
                                         aria-hidden="true"
                                         className={stylesReader.menu_button}
                                         id="annotationLabel"
+                                        title={__("reader.navigation.annotationTitle")}
                                     >
                                         <SVG ariaHidden svg={AnnotationsIcon} className={classNames(stylesReaderHeader.annotationsIcon, this.props.isAnnotationModeEnabled ? stylesReaderHeader.active_svg : "")} />
                                     </label>
@@ -972,10 +962,14 @@ export class ReaderHeader extends React.Component<IProps, IState> {
                                     console.log("MENU DialogOnOpenChange", open);
                                     this.props.handleMenuClick(open);
                                     if (open) {
-                                        stealFocusDisable(true);
+                                        // if (!this.props.isDivina  && !this.props.isPdf) {
+                                        //     stealFocusDisable(true);
+                                        // }
                                         this.__closeNavPanel = false;
                                     } else {
-                                        stealFocusDisable(false);
+                                        // if (!this.props.isDivina  && !this.props.isPdf) {
+                                        //     stealFocusDisable(false);
+                                        // }
                                     }
                                 }}
                                 modal={!isDockedMode}
@@ -998,28 +992,28 @@ export class ReaderHeader extends React.Component<IProps, IState> {
                                             <div
                                                 className={containerClassName}
                                                 style={{
-                                                    borderLeft: this.props.readerPopoverDialogContext.dockingMode === "right" ? "2px solid var(--color-extralight-grey-alt)" : "",
-                                                    borderRight: this.props.readerPopoverDialogContext.dockingMode === "left" ? "2px solid var(--color-extralight-grey-alt)" : "",
-                                                    right: this.props.readerPopoverDialogContext.dockingMode === "right" ? "0" : "unset",
-                                                    left: (this.props.readerPopoverDialogContext.dockedMode && this.props.readerPopoverDialogContext.dockingMode === "left") ? "0" : "",
-                                                    height: (isDockedMode && isOnSearch) ? "calc(100dvh - 139px)" : "",
-                                                    marginTop: (isDockedMode && !isOnSearch) ? "70px" : "0",
+                                                    borderLeft: this.props.readerConfig.readerDockingMode === "right" ? "2px solid var(--color-extralight-grey-alt)" : "",
+                                                    borderRight: this.props.readerConfig.readerDockingMode === "left" ? "2px solid var(--color-extralight-grey-alt)" : "",
+                                                    right: this.props.readerConfig.readerDockingMode === "right" ? "0" : "unset",
+                                                    left: (this.props.readerConfig.readerDockingMode === "left") ? "0" : "",
+                                                    height: (isOnSearch) ? "calc(100dvh - 159px)" : "",
+                                                    marginTop: (!isOnSearch) ? "70px" : "20px",
                                                 }}
                                             >
-                                                <ReaderMenu {...this.props.readerMenuProps}
-                                                    {...this.props.readerPopoverDialogContext}
+                                                <ReaderMenu
+                                                    {...this.props.readerMenuProps}
                                                     isDivina={this.props.isDivina}
                                                     isPdf={this.props.isPdf}
                                                     currentLocation={this.props.currentLocation}
                                                     // focusNaviguationMenu={this.focusNaviguationMenuButton}
                                                     handleMenuClick={this.props.handleMenuClick} />
                                             </div>
-                                            :
+                                        :
                                             <Dialog.Content
                                                 // onFocusOutside={(e) => {
                                                 // console.log(e);
                                                 // }}
-                                                // onPointerDownOutside={(e) => { 
+                                                // onPointerDownOutside={(e) => {
                                                 //     if (this.props.readerPopoverDialogContext.dockedMode) {
                                                 //         e.preventDefault();
                                                 //     }
@@ -1039,14 +1033,18 @@ export class ReaderHeader extends React.Component<IProps, IState> {
                                                 }}
                                                 className={containerClassName}
                                                 style={{
-                                                    borderLeft: this.props.readerPopoverDialogContext.dockingMode === "right" ? "2px solid var(--color-extralight-grey-alt)" : "",
-                                                    borderRight: this.props.readerPopoverDialogContext.dockingMode === "left" ? "2px solid var(--color-extralight-grey-alt)" : "",
-                                                    right: this.props.readerPopoverDialogContext.dockingMode === "right" ? "0" : "unset",
-                                                    left: (this.props.readerPopoverDialogContext.dockedMode && this.props.readerPopoverDialogContext.dockingMode === "left") ? "0" : "",
-                                                    height: (isDockedMode && isOnSearch) ? "calc(100dvh - 139px)" : "",
-                                                    marginTop: (isDockedMode && !isOnSearch) ? "70px" : "0",
+                                                    borderLeft: this.props.readerConfig.readerDockingMode === "right" ? "2px solid var(--color-extralight-grey-alt)" : "",
+                                                    borderRight: this.props.readerConfig.readerDockingMode === "left" ? "2px solid var(--color-extralight-grey-alt)" : "",
+                                                    right: this.props.readerConfig.readerDockingMode === "right" ? "0" : "unset",
+                                                    left: /*(isDockedMode && this.props.readerConfig.readerDockingMode === "left") ? "0" :*/ "",
+                                                    height: /*(isDockedMode && isOnSearch) ? "calc(100dvh - 159px)" :*/ "",
+                                                    marginTop: /*(isDockedMode && !isOnSearch) ? "70px" :*/ "20px",
                                                 }}
+                                                aria-describedby={undefined}
                                             >
+                                                <VisuallyHidden.Root>
+                                                    <Dialog.Title>{__("reader.navigation.openTableOfContentsTitle")}</Dialog.Title>
+                                                </VisuallyHidden.Root>
                                                 <ReaderMenu
                                                     {...this.props.readerMenuProps}
                                                     handleLinkClick={(event, url, closeNavPanel) => {
@@ -1055,7 +1053,6 @@ export class ReaderHeader extends React.Component<IProps, IState> {
                                                             this.__closeNavPanel = true;
                                                         }
                                                     }}
-                                                    {...this.props.readerPopoverDialogContext}
                                                     isDivina={this.props.isDivina}
                                                     isPdf={this.props.isPdf}
                                                     currentLocation={this.props.currentLocation}
@@ -1075,11 +1072,16 @@ export class ReaderHeader extends React.Component<IProps, IState> {
                                 onOpenChange={(open) => {
                                     console.log("SETTINGS DialogOnOpenChange", open);
                                     this.props.handleSettingsClick(open);
-                                    if (open) {
-                                        stealFocusDisable(true);
-                                    } else {
-                                        stealFocusDisable(false);
-                                    }
+                                    // if (open) {
+                                    //     if (!this.props.isDivina  && !this.props.isPdf) {
+                                    //         stealFocusDisable(true);
+                                    //     }
+                                    //     // this.__closeNavPanel = false;
+                                    // } else {
+                                    //     if (!this.props.isDivina  && !this.props.isPdf) {
+                                    //         stealFocusDisable(false);
+                                    //     }
+                                    // }
                                 }}
                                 modal={!isDockedMode}
                             >
@@ -1101,34 +1103,42 @@ export class ReaderHeader extends React.Component<IProps, IState> {
                                         <div
                                             className={containerClassName}
                                             style={{
-                                                borderLeft: this.props.readerPopoverDialogContext.dockingMode === "right" ? "2px solid var(--color-extralight-grey-alt)" : "",
-                                                borderRight: this.props.readerPopoverDialogContext.dockingMode === "left" ? "2px solid var(--color-extralight-grey-alt)" : "",
-                                                right: this.props.readerPopoverDialogContext.dockingMode === "right" ? "0" : "unset",
-                                                left: this.props.readerPopoverDialogContext.dockedMode && this.props.readerPopoverDialogContext.dockingMode === "left" ? "0" : "",
-                                                height: isDockedMode && isOnSearch && "calc(100dvh - 139px)",
-                                                marginTop: isDockedMode && !isOnSearch ? "70px" : "0",
+                                                borderLeft: this.props.readerConfig.readerDockingMode === "right" ? "2px solid var(--color-extralight-grey-alt)" : "",
+                                                borderRight: this.props.readerConfig.readerDockingMode === "left" ? "2px solid var(--color-extralight-grey-alt)" : "",
+                                                right: this.props.readerConfig.readerDockingMode === "right" ? "0" : "unset",
+                                                left: this.props.readerConfig.readerDockingMode === "left" ? "0" : "",
+                                                height: isOnSearch ? "calc(100dvh - 159px)" : "",
+                                                marginTop: !isOnSearch ? "70px" : "20px",
                                             }}
                                         >
-                                            <ReaderSettings {...this.props.ReaderSettingsProps}
-                                                {...this.props.readerPopoverDialogContext}
+                                            {/* TODO remove readerSettingsHeaderProps */}
+                                            <ReaderSettings
+                                                {...readerSettingsHeaderProps}
+                                                {...this.props.ReaderSettingsProps}
                                                 handleSettingsClick={this.props.handleSettingsClick} />
                                         </div>
-                                        :
+                                    :
                                         <Dialog.Content
                                             // onPointerDownOutside={(e) => { e.preventDefault(); console.log("settingsModal onPointerDownOutside"); }}
                                             // onInteractOutside={(e) => { e.preventDefault(); console.log("SettingsModal onInteractOutside"); }}
                                             className={containerClassName}
                                             style={{
-                                                borderLeft: this.props.readerPopoverDialogContext.dockingMode === "right" ? "2px solid var(--color-extralight-grey-alt)" : "",
-                                                borderRight: this.props.readerPopoverDialogContext.dockingMode === "left" ? "2px solid var(--color-extralight-grey-alt)" : "",
-                                                right: this.props.readerPopoverDialogContext.dockingMode === "right" ? "0" : "unset",
-                                                left: this.props.readerPopoverDialogContext.dockedMode && this.props.readerPopoverDialogContext.dockingMode === "left" ? "0" : "",
-                                                height: isDockedMode && isOnSearch && "calc(100dvh - 139px)",
-                                                marginTop: isDockedMode && !isOnSearch ? "70px" : "0",
+                                                borderLeft: this.props.readerConfig.readerDockingMode === "right" ? "2px solid var(--color-extralight-grey-alt)" : "",
+                                                borderRight: this.props.readerConfig.readerDockingMode === "left" ? "2px solid var(--color-extralight-grey-alt)" : "",
+                                                right: this.props.readerConfig.readerDockingMode === "right" ? "0" : "unset",
+                                                left: /*isDockedMode && this.props.readerConfig.readerDockingMode === "left" ? "0" :*/ "",
+                                                height: /*isDockedMode && isOnSearch ? "calc(100dvh - 159px)" :*/ "",
+                                                marginTop: /*isDockedMode && !isOnSearch ? "70px" :*/ "20px",
                                             }}
+                                            aria-describedby={undefined}
                                         >
-                                            <ReaderSettings {...this.props.ReaderSettingsProps}
-                                                {...this.props.readerPopoverDialogContext}
+                                            <VisuallyHidden.Root>
+                                                <Dialog.Title>{__("reader.navigation.settingsTitle")}</Dialog.Title>
+                                            </VisuallyHidden.Root>
+                                            {/* TODO remove readerSettingsHeaderProps */}
+                                            <ReaderSettings
+                                                {...readerSettingsHeaderProps}
+                                                {...this.props.ReaderSettingsProps}
                                                 handleSettingsClick={this.props.handleSettingsClick} />
                                         </Dialog.Content>
 
@@ -1209,8 +1219,8 @@ export class ReaderHeader extends React.Component<IProps, IState> {
                                         title={__("reader.navigation.pdfscalemode")}
                                         onChange={(e) => {
                                             debug("FXL this.state.fxlZoomPercent TOGGLE: " + this.state.fxlZoomPercent);
-                                            this.setState({ fxlZoomPercent: parseInt(e.target.value) });
-                                            fixedLayoutZoomPercent(parseInt(e.target.value))
+                                            this.setState({ fxlZoomPercent: parseInt(e.target.value, 10) });
+                                            fixedLayoutZoomPercent(parseInt(e.target.value, 10))
                                         }}>
                                         <option value="">Fit</option>
                                         <option value={0}>Auto</option>
@@ -1245,8 +1255,8 @@ export class ReaderHeader extends React.Component<IProps, IState> {
                                 onClick={() => this.props.ReaderSettingsProps.setZenMode(!this.props.ReaderSettingsProps.zenMode)}
                                 ref={this.enableFullscreenRef}
                                 aria-pressed={this.props.fullscreen}
-                                aria-label={__("reader.navigation.fullscreenTitle")}
-                                title={__("reader.navigation.fullscreenTitle")}
+                                aria-label={__("reader.navigation.ZenModeTitle")}
+                                title={__("reader.navigation.ZenModeTitle")}
                             >
                                 <SVG ariaHidden={true} svg={viewMode} />
                             </button>
@@ -1276,19 +1286,32 @@ const mapStateToProps = (state: IReaderRootState, _props: IBaseProps) => {
         keyboardShortcuts: state.keyboard.shortcuts,
         annotationsDataArray: state.reader.annotation,
         isAnnotationModeEnabled: state.annotation.enable,
+        publicationHasMediaOverlays: state.reader.info.navigator.r2PublicationHasMediaOverlays,
+        mediaOverlaysState: state.reader.mediaOverlay.state,
+        ttsState: state.reader.tts.state,
+        ttsVoice: state.reader.config.ttsVoice,
+        mediaOverlaysPlaybackRate: state.reader.config.mediaOverlaysPlaybackRate,
+        ttsPlaybackRate: state.reader.config.ttsPlaybackRate,
+        readerConfig: state.reader.config,
+        r2Publication: state.reader.info.r2Publication,
+        selectionIsNew: state.reader.locator.selectionIsNew,
+        locale: state.i18n.locale, // refresh
     };
 };
 
 const mapDispatchToProps = (dispatch: TDispatch, _props: IBaseProps) => {
     return {
+        setConfig: (state: Partial<ReaderConfig>) => {
+            dispatch(readerLocalActionSetConfig.build(state));
+        },
         triggerAnnotationBtn: () => {
             dispatch(readerLocalActionAnnotations.trigger.build());
         },
         closeAnnotationEditionMode: () => {
-            dispatch(readerLocalActionAnnotations.enableMode.build(false, ""));
+            dispatch(readerLocalActionAnnotations.enableMode.build(false, undefined));
         },
-        saveAnnotation: (color: IColor, comment: string, drawType: TDrawType) => {
-            dispatch(readerLocalActionAnnotations.createNote.build(color, comment, drawType));
+        saveAnnotation: (color: IColor, comment: string, drawType: TDrawType, tags: string[]) => {
+            dispatch(readerLocalActionAnnotations.createNote.build(color, comment, drawType, tags));
         },
     };
 };

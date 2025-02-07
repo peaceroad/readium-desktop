@@ -5,80 +5,100 @@
 // that can be found in the LICENSE file exposed on Github (readium) in the project repository.
 // ==LICENSE-END==
 
-import classNames from "classnames";
-import * as React from "react";
-import * as Dialog from "@radix-ui/react-dialog";
-import { isAudiobookFn } from "readium-desktop/common/isManifestType";
-// import {TextArea} from 'react-aria-components';
-
-
-import { IBookmarkState } from "readium-desktop/common/redux/states/bookmark";
-import { IReaderRootState } from "readium-desktop/common/redux/states/renderer/readerRootState";
-import * as SaveIcon from "readium-desktop/renderer/assets/icons/floppydisk-icon.svg";
-import * as DeleteIcon from "readium-desktop/renderer/assets/icons/trash-icon.svg";
-import * as EditIcon from "readium-desktop/renderer/assets/icons/pen-icon.svg";
-import * as BookmarkIcon from "readium-desktop/renderer/assets/icons/bookmarkMultiple-icon.svg";
-import * as BookOpenIcon from "readium-desktop/renderer/assets/icons/bookOpen-icon.svg";
 import * as stylesReader from "readium-desktop/renderer/assets/styles/reader-app.scss";
 import * as stylesPopoverDialog from "readium-desktop/renderer/assets/styles/components/popoverDialog.scss";
 import * as stylesButtons from "readium-desktop/renderer/assets/styles/components/buttons.scss";
 import * as stylesSettings from "readium-desktop/renderer/assets/styles/components/settings.scss";
 import * as stylesInputs from "readium-desktop/renderer/assets/styles/components/inputs.scss";
 import * as stylesAnnotations from "readium-desktop/renderer/assets/styles/components/annotations.scss";
+import * as stylesGlobal from "readium-desktop/renderer/assets/styles/global.scss";
+import * as stylesDropDown from "readium-desktop/renderer/assets/styles/components/dropdown.scss";
+import * as stylesTags from "readium-desktop/renderer/assets/styles/components/tags.scss";
+import * as stylesAlertModals from "readium-desktop/renderer/assets/styles/components/alert.modals.scss";
+import * as StylesCombobox from "readium-desktop/renderer/assets/styles/components/combobox.scss";
 
-import * as DockLeftIcon from "readium-desktop/renderer/assets/icons/dockleft-icon.svg";
-import * as DockRightIcon from "readium-desktop/renderer/assets/icons/dockright-icon.svg";
-import * as DockModalIcon from "readium-desktop/renderer/assets/icons/dockmodal-icon.svg";
-import * as ChevronIcon from "readium-desktop/renderer/assets/icons/chevron-down.svg";
-import * as QuitIcon from "readium-desktop/renderer/assets/icons/close-icon.svg";
-import * as InfoIcon from "readium-desktop/renderer/assets/icons/info-icon.svg";
-import * as ArrowRightIcon from "readium-desktop/renderer/assets/icons/baseline-arrow_forward_ios-24px.svg";
-import * as ArrowLeftIcon from "readium-desktop/renderer/assets/icons/baseline-arrow_left_ios-24px.svg";
-import * as ArrowLastIcon from "readium-desktop/renderer/assets/icons/arrowLast-icon.svg";
-import * as ArrowFirstIcon from "readium-desktop/renderer/assets/icons/arrowFirst-icon.svg";
-import * as Tabs from "@radix-ui/react-tabs";
+import classNames from "classnames";
+import * as React from "react";
+import FocusLock from "react-focus-lock";
+import { isAudiobookFn } from "readium-desktop/common/isManifestType";
 
+import SVG from "readium-desktop/renderer/common/components/SVG";
+
+import * as SaveIcon from "readium-desktop/renderer/assets/icons/export-icon.svg";
+import * as ImportIcon from "readium-desktop/renderer/assets/icons/import-icon.svg";
+import * as DeleteIcon from "readium-desktop/renderer/assets/icons/trash-icon.svg";
+import * as EditIcon from "readium-desktop/renderer/assets/icons/pen-icon.svg";
+import * as BookmarkIcon from "readium-desktop/renderer/assets/icons/bookmarkMultiple-icon.svg";
+import * as BookOpenIcon from "readium-desktop/renderer/assets/icons/bookOpen-icon.svg";
 import * as TocIcon from "readium-desktop/renderer/assets/icons/toc-icon.svg";
 import * as LandmarkIcon from "readium-desktop/renderer/assets/icons/landmark-icon.svg";
 import * as TargetIcon from "readium-desktop/renderer/assets/icons/target-icon.svg";
 import * as SearchIcon from "readium-desktop/renderer/assets/icons/search-icon.svg";
 import * as AnnotationIcon from "readium-desktop/renderer/assets/icons/annotations-icon.svg";
 import * as CalendarIcon from "readium-desktop/renderer/assets/icons/calendar-icon.svg";
+import * as DockLeftIcon from "readium-desktop/renderer/assets/icons/dockleft-icon.svg";
+import * as DockRightIcon from "readium-desktop/renderer/assets/icons/dockright-icon.svg";
+import * as DockModalIcon from "readium-desktop/renderer/assets/icons/dockmodal-icon.svg";
+import * as QuitIcon from "readium-desktop/renderer/assets/icons/close-icon.svg";
+import * as ArrowRightIcon from "readium-desktop/renderer/assets/icons/baseline-arrow_forward_ios-24px.svg";
+import * as ArrowLeftIcon from "readium-desktop/renderer/assets/icons/baseline-arrow_left_ios-24px.svg";
+import * as ArrowLastIcon from "readium-desktop/renderer/assets/icons/arrowLast-icon.svg";
+import * as ArrowFirstIcon from "readium-desktop/renderer/assets/icons/arrowFirst-icon.svg";
+import * as CheckIcon from "readium-desktop/renderer/assets/icons/singlecheck-icon.svg";
+import * as TrashIcon from "readium-desktop/renderer/assets/icons/trash-icon.svg";
+import * as MenuIcon from "readium-desktop/renderer/assets/icons/filter3-icon.svg";
+import * as OptionsIcon from "readium-desktop/renderer/assets/icons/filter2-icon.svg";
+import * as SortIcon from "readium-desktop/renderer/assets/icons/sort-icon.svg";
+import * as HighLightIcon from "readium-desktop/renderer/assets/icons/highlight-icon.svg";
+import * as UnderLineIcon from "readium-desktop/renderer/assets/icons/underline-icon.svg";
+import * as TextStrikeThroughtIcon from "readium-desktop/renderer/assets/icons/TextStrikethrough-icon.svg";
+import * as TextOutlineIcon from "readium-desktop/renderer/assets/icons/TextOutline-icon.svg";
+import * as AvatarIcon from "readium-desktop/renderer/assets/icons/avatar-icon.svg";
 // import * as DuplicateIcon from "readium-desktop/renderer/assets/icons/duplicate-icon.svg";
 
-import { LocatorExtended } from "@r2-navigator-js/electron/renderer/index";
+import * as Tabs from "@radix-ui/react-tabs";
+import * as Popover from "@radix-ui/react-popover";
+import * as AlertDialog from "@radix-ui/react-alert-dialog";
+import * as Dialog from "@radix-ui/react-dialog";
+import { ComboBox, ComboBoxItem } from "readium-desktop/renderer/common/components/ComboBox";
+import { MySelectProps, Select, SelectItem } from "readium-desktop/renderer/common/components/Select";
+import { ListBox, ListBoxItem, TextArea } from "react-aria-components";
+import type { Selection } from "react-aria-components";
+import { AnnotationEdit, annotationsColorsLight } from "./AnnotationEdit";
+import { TagGroup, TagList, Tag, Label } from "react-aria-components";
+// import {TextArea} from 'react-aria-components';
+// import { DialogTrigger as DialogTriggerReactAria, Popover as PopoverReactAria, Dialog as DialogReactAria } from "react-aria-components";
+
+import { MiniLocatorExtended } from "readium-desktop/common/redux/states/locatorInitialState";
 import { Link } from "@r2-shared-js/models/publication-link";
-
-import SVG from "readium-desktop/renderer/common/components/SVG";
-
 import { ILink, TToc } from "../pdf/common/pdfReader.type";
-import { IPopoverDialogProps, IReaderMenuProps } from "./options-values";
+import { IReaderMenuProps } from "./options-values";
 import ReaderMenuSearch from "./ReaderMenuSearch";
 // import SideMenu from "./sideMenu/SideMenu";
 // import { SectionData } from "./sideMenu/sideMenuData";
 // import UpdateBookmarkForm from "./UpdateBookmarkForm";
 
-import { ComboBox, ComboBoxItem } from "readium-desktop/renderer/common/components/ComboBox";
-import { MySelectProps, Select, SelectItem } from "readium-desktop/renderer/common/components/Select";
 import { useSelector } from "readium-desktop/renderer/common/hooks/useSelector";
 import { Publication as R2Publication } from "@r2-shared-js/models/publication";
 import { useTranslator } from "readium-desktop/renderer/common/hooks/useTranslator";
 import { useDispatch } from "readium-desktop/renderer/common/hooks/useDispatch";
-import { Locator } from "r2-shared-js/dist/es8-es2017/src/models/locator";
-import { TextArea } from "react-aria-components";
-import { AnnotationEdit } from "./AnnotationEdit";
-import { IAnnotationState, IColor, TDrawType } from "readium-desktop/common/redux/states/renderer/annotation";
+import { Locator } from "@r2-shared-js/models/locator";
+import { IAnnotationState, IColor, TAnnotationState, TDrawType } from "readium-desktop/common/redux/states/renderer/annotation";
 import { readerActions } from "readium-desktop/common/redux/actions";
-import { readerLocalActionAnnotations, readerLocalActionSetConfig } from "../redux/actions";
-import * as stylesGlobal from "readium-desktop/renderer/assets/styles/global.scss";
-import * as CheckIcon from "readium-desktop/renderer/assets/icons/singlecheck-icon.svg";
-
+import { readerLocalActionExportAnnotationSet, readerLocalActionLocatorHrefChanged, readerLocalActionSetConfig } from "../redux/actions";
+import { useReaderConfig, useSaveReaderConfig } from "readium-desktop/renderer/common/hooks/useReaderConfig";
+import { ReaderConfig } from "readium-desktop/common/models/reader";
+import { ObjectKeys } from "readium-desktop/utils/object-keys-values";
+import { rgbToHex } from "readium-desktop/common/rgb";
+import { ImportAnnotationsDialog } from "readium-desktop/renderer/common/components/ImportAnnotationsDialog";
+import { IBookmarkState } from "readium-desktop/common/redux/states/bookmark";
+import { IReaderRootState } from "readium-desktop/common/redux/states/renderer/readerRootState";
 
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface IBaseProps extends IReaderMenuProps, IPopoverDialogProps {
+interface IBaseProps extends IReaderMenuProps {
     // focusNaviguationMenu: () => void;
-    currentLocation: LocatorExtended;
+    currentLocation: MiniLocatorExtended;
     isDivina: boolean;
     isPdf: boolean;
     pdfNumberOfPages: number;
@@ -148,20 +168,21 @@ const renderLinkList = (isRTLfn: (_link: ILink) => boolean, handleLinkClick: IBa
                             }
                             onClick=
                             {link.Href ? (e) => {
-                                const closeNavPanel = dockedMode ? false : e.shiftKey && e.altKey ? false : true;
-                                handleLinkClick(e, link.Href, closeNavPanel);
+                                const closeNavTOCList = !dockedMode && !(e.shiftKey && e.altKey);
+                                handleLinkClick(e, link.Href, closeNavTOCList);
                             } : undefined}
                             onDoubleClick=
                             {link.Href ? (e) => handleLinkClick(e, link.Href, false) : undefined}
                             tabIndex={0}
-                            onKeyPress=
-                            {
+                            onKeyUp=
+                            {link.Href ?
                                 (e) => {
-                                    if (link.Href && e.key === "Enter") {
-                                        const closeNavPanel = dockedMode ? false : e.shiftKey && e.altKey ? false : true;
-                                        handleLinkClick(e, link.Href, closeNavPanel);
+                                    if (e.key === "Enter") {
+                                        const closeNavTOCList = !dockedMode && !(e.shiftKey && e.altKey);
+                                        handleLinkClick(e, link.Href, closeNavTOCList);
                                     }
                                 }
+                                : undefined
                             }
                             data-href={link.Href}
                         >
@@ -176,18 +197,23 @@ const renderLinkList = (isRTLfn: (_link: ILink) => boolean, handleLinkClick: IBa
     return T;
 };
 
-const renderLinkTree = (currentLocation: any, isRTLfn: (_link: ILink) => boolean, handleLinkClick: IBaseProps["handleLinkClick"], dockedMode: boolean) => {
-    const renderLinkTree = (label: string | undefined, links: TToc, level: number, headingTrailLink: ILink | undefined): JSX.Element => {
+const renderLinkTree = (currentLocation: MiniLocatorExtended, isRTLfn: (_link: ILink) => boolean, handleLinkClick: IBaseProps["handleLinkClick"], dockedMode: boolean) => {
+    const RenderLinkTree = (label: string | undefined, links: TToc, level: number, headingTrailLink: ILink | undefined): JSX.Element => {
         // VoiceOver support breaks when using the propoer tree[item] ARIA role :(
         const useTree = false;
 
         const linkRef = React.useRef<HTMLAnchorElement>();
 
         React.useEffect(() => {
-
             setTimeout(() => {
                 if (linkRef.current) {
-                    linkRef.current.focus();
+                    // no "structural" focus steal here, just visual scroll into view
+                    // linkRef.current.focus();
+                    linkRef.current.scrollIntoView({
+                        behavior: "instant",
+                        block: "nearest", // "center" | "end" | "nearest" | "start",
+                        inline: "nearest",
+                    });
                 }
             }, 1);
         });
@@ -272,10 +298,8 @@ const renderLinkTree = (currentLocation: any, isRTLfn: (_link: ILink) => boolean
                 const isRTL = isRTLfn(link);
 
                 let emphasis = undefined;
-                let flag = false;
                 if (link === headingTrailLink) {
                     emphasis = { backgroundColor: "var(--color-extralight-grey)", borderLeft: "2px solid var(--color-blue)" };
-                    flag = true;
                 } else if ((link as any).__inHeadingsTrail) {
                     emphasis = { border: "1px dashed silver" };
                 }
@@ -289,6 +313,7 @@ const renderLinkTree = (currentLocation: any, isRTLfn: (_link: ILink) => boolean
                             <>
                                 <div role={"heading"} aria-level={level}>
                                     <a
+                                        ref={link === headingTrailLink ? linkRef : undefined}
                                         id={link === headingTrailLink ? "headingFocus" : undefined}
                                         aria-label={link === headingTrailLink ? label + " (***)" : undefined}
                                         style={emphasis}
@@ -299,33 +324,34 @@ const renderLinkTree = (currentLocation: any, isRTLfn: (_link: ILink) => boolean
                                         }
                                         onClick=
                                         {link.Href ? (e) => {
-                                            const closeNavPanel = dockedMode ? false : e.shiftKey && e.altKey ? false : true;
-                                            handleLinkClick(e, link.Href, closeNavPanel);
+                                            const closeNavTOCTree = !dockedMode && !(e.shiftKey && e.altKey);
+                                            handleLinkClick(e, link.Href, closeNavTOCTree);
                                         } : undefined}
                                         onDoubleClick=
                                         {link.Href ? (e) => handleLinkClick(e, link.Href, false) : undefined}
                                         tabIndex={0}
-                                        onKeyPress=
-                                        {
+                                        onKeyUp=
+                                        {link.Href ?
                                             (e) => {
-                                                if (link.Href && e.key === "Enter") {
-                                                    const closeNavPanel = dockedMode ? false : e.shiftKey && e.altKey ? false : true;
-                                                    handleLinkClick(e, link.Href, closeNavPanel);
+                                                if (e.key === "Enter") {
+                                                    const closeNavTOCTree = !dockedMode && !(e.shiftKey && e.altKey);
+                                                    handleLinkClick(e, link.Href, closeNavTOCTree);
                                                 }
                                             }
+                                            : undefined
                                         }
                                         data-href={link.Href}
-                                        ref={flag ? linkRef : undefined}
                                     >
                                         <span dir={isRTL ? "rtl" : "ltr"}>{label}</span>
                                     </a>
                                 </div>
 
-                                {renderLinkTree(undefined, link.Children, level + 1, headingTrailLink)}
+                                {RenderLinkTree(undefined, link.Children, level + 1, headingTrailLink)}
                             </>
                         ) : (
                             <div role={"heading"} aria-level={level}>
                                 <a
+                                    ref={link === headingTrailLink ? linkRef : undefined}
                                     id={link === headingTrailLink ? "headingFocus" : undefined}
                                     aria-label={link === headingTrailLink ? label + " (***)" : undefined}
                                     style={emphasis}
@@ -337,23 +363,24 @@ const renderLinkTree = (currentLocation: any, isRTLfn: (_link: ILink) => boolean
                                     }
                                     onClick=
                                     {link.Href ? (e) => {
-                                        const closeNavPanel = dockedMode ? false : e.shiftKey && e.altKey ? false : true;
-                                        handleLinkClick(e, link.Href, closeNavPanel);
+                                        const closeNavTOCTree = !dockedMode && !(e.shiftKey && e.altKey);
+                                        handleLinkClick(e, link.Href, closeNavTOCTree);
                                     } : undefined}
                                     onDoubleClick=
                                     {link.Href ? (e) => handleLinkClick(e, link.Href, false) : undefined}
                                     tabIndex={0}
-                                    onKeyPress=
+                                    onKeyUp=
                                     {
-                                        (e) => {
-                                            if (link.Href && e.key === "Enter") {
-                                                const closeNavPanel = dockedMode ? false : e.shiftKey && e.altKey ? false : true;
-                                                handleLinkClick(e, link.Href, closeNavPanel);
+                                        link.Href ?
+                                            (e) => {
+                                                if (e.key === "Enter") {
+                                                    const closeNavTOCTree = !dockedMode && !(e.shiftKey && e.altKey);
+                                                    handleLinkClick(e, link.Href, closeNavTOCTree);
+                                                }
                                             }
-                                        }
+                                            : undefined
                                     }
                                     data-href={link.Href}
-                                    ref={flag ? linkRef : undefined}
                                 >
                                     <span dir={isRTL ? "rtl" : "ltr"}>{label}</span>
                                 </a>
@@ -364,20 +391,20 @@ const renderLinkTree = (currentLocation: any, isRTLfn: (_link: ILink) => boolean
             })}
         </ul>;
     };
-    return renderLinkTree;
+    return RenderLinkTree;
 };
 
-const HardWrapComment: React.FC<{comment: string}> = (props) => {
-    const {comment} = props;
+const HardWrapComment: React.FC<{ comment: string }> = (props) => {
+    const { comment } = props;
     const splittedComment = comment.split("\n");
 
     const strListComponent = [];
     let n = 0;
     for (const strline of splittedComment) {
         strListComponent.push(<span key={++n}>{strline}</span>);
-        strListComponent.push(<br key={++n}/>);
+        strListComponent.push(<br key={++n} />);
     }
-    
+
     return (
         <p>
             {
@@ -387,192 +414,996 @@ const HardWrapComment: React.FC<{comment: string}> = (props) => {
     );
 };
 
-const AnnotationCard: React.FC<Pick<IReaderMenuProps, "goToLocator"> & { timestamp: number, annotation: IAnnotationState, r2Publication: R2Publication, index: number, dockedMode: boolean }> = (props) => {
+export const computeProgression = (spineItemLinks: Link[], locator: Locator) => {
 
-    const { goToLocator, timestamp, annotation, r2Publication, index } = props;
-    const { uuid, locatorExtended, comment } = annotation;
+    let percent = 100;
+    if (spineItemLinks.length && locator.href) {
+        const index = spineItemLinks.findIndex((item) => item.Href === locator.href);
+        if (index >= 0) {
+            if (typeof locator.locations?.progression === "number") {
+                percent = 100 * ((index + locator.locations.progression) / spineItemLinks.length);
+            } else {
+                percent = 100 * (index / spineItemLinks.length);
+            }
+            percent = Math.round(percent * 100) / 100;
+        }
+    }
 
-    const [isEdited, setEdition] = React.useState(false);
+    return percent;
+};
+
+const getUuidFromUrn = (v: string | undefined): string => v?.startsWith("urn:uuid:") ? v.split("urn:uuid:")[1] : v || "";
+
+const AnnotationCard: React.FC<{ timestamp: number, annotation: IAnnotationState, isEdited: boolean, triggerEdition: (v: boolean) => void, setTagFilter: (v: string) => void, setCreatorFilter: (v: string) => void } & Pick<IReaderMenuProps, "goToLocator">> = (props) => {
+
+    const { goToLocator, setTagFilter, setCreatorFilter } = props;
+    const r2Publication = useSelector((state: IReaderRootState) => state.reader.info.r2Publication);
+    const dockingMode = useReaderConfig("readerDockingMode");
+    // const setReaderConfig = useSaveReaderConfig();
+    // const setDockingMode = React.useCallback((value: ReaderConfig["readerDockingMode"]) => {
+    //     setReaderConfig({readerDockingMode: value});
+    // }, [setReaderConfig]);
+    const dockedMode = dockingMode !== "full";
+    const { timestamp, annotation, isEdited, triggerEdition } = props;
+    const { uuid, comment, tags: tagsStringArrayMaybeUndefined } = annotation;
+    const tagsStringArray = tagsStringArrayMaybeUndefined || [];
+    const tagName = tagsStringArray[0] || "";
+    const dockedEditAnnotation = isEdited && dockedMode;
+    const annotationColor = rgbToHex(annotation.color);
+    const creatorMyself = useSelector((state: IReaderRootState) => state.creator);
+
     const dispatch = useDispatch();
     const [__] = useTranslator();
-    const save = (color: IColor, comment: string, drawType: TDrawType) => {
-        dispatch(readerActions.annotation.update.build({
-            uuid,
-            locatorExtended,
-            color,
-            comment,
-            drawType,
-        }));
-        setEdition(false);
-        console.log(JSON.stringify(comment));
-    };
+    const save = React.useCallback((color: IColor, comment: string, drawType: TDrawType, tags: string[]) => {
+        dispatch(readerActions.annotation.update.build(
+            {
+                ...annotation,
+            },
+            {
+                uuid: annotation.uuid,
+                locatorExtended: annotation.locatorExtended,
+                color,
+                comment,
+                drawType,
+                tags,
+                modified: (new Date()).getTime(),
+                created: annotation.created,
+            },
+        ));
+        triggerEdition(false);
+    }, [dispatch, annotation, triggerEdition]);
 
     const date = new Date(timestamp);
     const dateStr = `${(`${date.getDate()}`.padStart(2, "0"))}/${(`${date.getMonth() + 1}`.padStart(2, "0"))}/${date.getFullYear()}`;
-    let percent = 100;
-    let p = -1;
-    if (r2Publication.Spine?.length && annotation.locatorExtended.locator?.href) {
-        const index = r2Publication.Spine.findIndex((item) => item.Href === annotation.locatorExtended.locator.href);
-        if (index >= 0) {
-            if (typeof annotation.locatorExtended.locator?.locations?.progression === "number") {
-                percent = 100 * ((index + annotation.locatorExtended.locator.locations.progression) / r2Publication.Spine.length);
-            } else {
-                percent = 100 * (index / r2Publication.Spine.length);
-            }
-            percent = Math.round(percent * 100) / 100;
-            p = Math.round(percent);
+
+    const { percentRounded } = React.useMemo(() => {
+        if (r2Publication.Spine && annotation.locatorExtended.locator) {
+            const percent = computeProgression(r2Publication.Spine || [], annotation.locatorExtended.locator);
+            const percentRounded = Math.round(percent);
+            return { style: { width: `${percent}%` }, percentRounded };
         }
-    }
-    const style = { width: `${percent}%` };
+        return { style: { width: "100%" }, percentRounded: 100 };
+    }, [r2Publication, annotation]);
 
     // const bname = (annotation?.locatorExtended?.selectionInfo?.cleanText ? `${annotation.locatorExtended.selectionInfo.cleanText.slice(0, 20)}` : `${__("reader.navigation.annotationTitle")} ${index}`);
-    const btext = (annotation?.locatorExtended?.selectionInfo?.cleanText ? `${annotation.locatorExtended.selectionInfo.cleanText}` : `${__("reader.navigation.annotationTitle")} ${index}`);
+    const btext = (annotation?.locatorExtended?.selectionInfo?.cleanText ? `${annotation.locatorExtended.selectionInfo.cleanText}` : `${__("reader.navigation.annotationTitle")} ${uuid}`);
 
-    const bprogression = (p >= 0 ? `${p}% ` : "");
+    const bprogression = (percentRounded >= 0 ? `${percentRounded}% ` : "");
 
-    const dockedEditAnnotation = (isEdited && props.dockedMode);
+    if (!uuid) {
+        return <></>;
+    }
 
-    return (<div
+    const creatorName = (getUuidFromUrn(annotation.creator?.id) !== getUuidFromUrn(creatorMyself.id) ? (annotation.creator?.name || getUuidFromUrn(annotation.creator?.id)) : creatorMyself.name) || "";
+    const creatorId = (getUuidFromUrn(annotation.creator?.id) !== getUuidFromUrn(creatorMyself.id) ? getUuidFromUrn(annotation.creator?.id) : getUuidFromUrn(creatorMyself.id)) || "";
+
+    return (<li
         className={stylesAnnotations.annotations_line}
-        style={{ backgroundColor: dockedEditAnnotation ? "var(--color-light-grey)" : "", borderLeft: dockedEditAnnotation && "none" }}
+        style={{ backgroundColor: dockedEditAnnotation ? "var(--color-extralight-grey)" : "", borderLeft: dockedEditAnnotation ? "none" : `4px solid ${annotationColor}` }}
+        onKeyDown={isEdited ? (e) => {
+            if (e.key === "Escape") {
+                e.preventDefault();
+                e.stopPropagation();
+                triggerEdition(false);
+                setTimeout(() => {
+                    const el = document.getElementById(`annotation_card-${uuid}_edit_button`);
+                    el?.blur();
+                    el?.focus();
+                }, 100);
+            }
+        } : undefined}
+        aria-label={__("reader.annotations.note", {color: __(Object.entries(annotationsColorsLight).find(([colorHex]) => colorHex === annotationColor)?.[1])})}
     >
         {/* <SVG ariaHidden={true} svg={BookmarkIcon} /> */}
         <div className={stylesAnnotations.annnotation_container}>
-        {((!isEdited && props.dockedMode) || (!props.dockedMode && !isEdited)) &&
-            <button className={classNames(stylesAnnotations.annotation_name, "R2_CSS_CLASS__FORCE_NO_FOCUS_OUTLINE")}
-            // title={bname}
-            aria-label="goToLocator"
-                style={{ borderLeft: dockedEditAnnotation && "2px solid var(--color-blue)" }}
-                onClick={(e) => {
-                    const closeNavPanel = e.shiftKey && e.altKey ? false : true;
-                    goToLocator(annotation.locatorExtended.locator, closeNavPanel);
-                }}
-                onDoubleClick={(_e) => {
-                    goToLocator(annotation.locatorExtended.locator, false);
-                }}
-                onKeyPress=
-                {
-                    (e) => {
-                        if (e.key === "Enter" || e.key === "Space") {
-                            const closeNavPanel = e.shiftKey && e.altKey ? false : true;
-                            goToLocator(annotation.locatorExtended.locator, closeNavPanel);
-                            dispatch(readerLocalActionAnnotations.focus.build(annotation));
-                        }
-                    }
-                }
-                id={uuid}
-            >
-                <p>{btext}</p>
-            </button>
-        }
-        {
-            isEdited ? <AnnotationEdit uuid={uuid} save={save} cancel={() => setEdition(false)} dockedMode={props.dockedMode} btext={dockedEditAnnotation && btext}/> : 
-            // <p>{comment}</p>
-            <HardWrapComment comment={comment} />
-        }
+            {isEdited ?
+                <></>
+                : <button className={classNames(stylesAnnotations.annotation_name, "R2_CSS_CLASS__FORCE_NO_FOCUS_OUTLINE")}
+                    // title={bname}
+                    aria-label={__("reader.goToContent")}
+                    style={{ borderLeft: dockedEditAnnotation && "2px solid var(--color-blue)" }}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        const closeNavAnnotation = !dockedMode && !(e.shiftKey && e.altKey);
+                        goToLocator(annotation.locatorExtended.locator, closeNavAnnotation);
+                        // dispatch(readerLocalActionAnnotations.focus.build(annotation));
+                    }}
+
+                    // does not work on button (works on 'a' link)
+                    // onDoubleClick={(_e) => {
+                    //     e.preventDefault();
+                    //     goToLocator(annotation.locatorExtended.locator, false);
+                    //     dispatch(readerLocalActionAnnotations.focus.build(annotation));
+                    // }}
+
+                    // not necessary (onClick works)
+                    // onKeyUp=
+                    // {
+                    //     (e) => {
+                    //         // SPACE does not work (only without key mods on button)
+                    //         // || e.key === "Space"
+                    //         if (e.key === "Enter") {
+                    ///            e.preventDefault();
+                    //             const closeNavAnnotation = !dockedMode && !(e.shiftKey && e.altKey);
+                    //             goToLocator(annotation.locatorExtended.locator, closeNavAnnotation);
+                    //             dispatch(readerLocalActionAnnotations.focus.build(annotation));
+                    //         }
+                    //     }
+                    // }
+                    id={uuid}
+                >
+                    <p>{btext}</p>
+                </button>
+            }
+            {
+                isEdited
+                    ?
+                    <FocusLock disabled={false} autoFocus={true}>
+                        <AnnotationEdit uuid={uuid} save={save} cancel={() => triggerEdition(false)} dockedMode={dockedMode} btext={dockedEditAnnotation && btext} />
+                    </FocusLock>
+                    :
+                    <>
+                        <HardWrapComment comment={comment} />
+                        {tagName ? <div className={stylesTags.tags_wrapper} aria-label={__("catalog.tags")}>
+                            <div className={stylesTags.tag}>
+                                <a onClick={() => setTagFilter(tagName)}
+
+                                    onKeyDown={(e) => {
+                                        // if (e.code === "Space") {
+                                        if (e.key === " " || e.altKey || e.ctrlKey) {
+                                            e.preventDefault(); // prevent scroll
+                                        }
+                                    }}
+                                    onKeyUp={(e) => {
+                                        // Includes screen reader tests:
+                                        // if (e.code === "Space") { WORKS
+                                        // if (e.key === "Space") { DOES NOT WORK
+                                        // if (e.key === "Enter") { WORKS
+                                        if (e.key === " " || e.key === "Enter") { // WORKS
+                                            e.preventDefault();
+                                            e.currentTarget.click();
+                                        }
+                                    }}
+                                    className="R2_CSS_CLASS__FORCE_NO_FOCUS_OUTLINE"
+                                    tabIndex={0}>
+                                    {tagName}
+                                </a>
+                            </div>
+                        </div>
+                            : <></>}
+                    </>
+            }
         </div>
-        {((!isEdited && props.dockedMode) || !props.dockedMode) &&
         <div className={stylesAnnotations.annotation_edit}>
             <div>
-                <div>
+                <div aria-label={__("reader.annotations.date")}>
                     <SVG ariaHidden svg={CalendarIcon} />
                     <p>{dateStr}</p>
                 </div>
-                <div>
+                <div aria-label={__("publication.progression.title")}>
                     <SVG ariaHidden svg={BookOpenIcon} />
                     <p>{bprogression}</p>
                 </div>
+                {creatorName
+                    ?
+                    <div>
+                        <SVG ariaHidden svg={AvatarIcon} />
+                        <a onClick={() => setCreatorFilter(creatorId)}
+
+                            onKeyDown={(e) => {
+                                // if (e.code === "Space") {
+                                if (e.key === " " || e.altKey || e.ctrlKey) {
+                                    e.preventDefault(); // prevent scroll
+                                }
+                            }}
+                            onKeyUp={(e) => {
+                                // Includes screen reader tests:
+                                // if (e.code === "Space") { WORKS
+                                // if (e.key === "Space") { DOES NOT WORK
+                                // if (e.key === "Enter") { WORKS
+                                if (e.key === " " || e.key === "Enter") { // WORKS
+                                    e.preventDefault();
+                                    e.currentTarget.click();
+                                }
+                            }}
+                            tabIndex={0}>
+                            <p style={{ overflow: "hidden", textOverflow: "ellipsis", padding: "0" }} title={creatorName}>{creatorName}</p>
+                        </a>
+                    </div>
+                    : <></>
+                }
             </div>
             <div className={stylesAnnotations.annotation_actions_buttons}>
-                <button title={__("reader.marks.edit")}
+                <button
+                    id={`annotation_card-${annotation.uuid}_edit_button`}
+                    title={__("reader.marks.edit")}
                     disabled={isEdited}
-                    onClick={() => { setEdition(true); }
-                    }>
+                    onClick={() => triggerEdition(true)}
+                >
                     <SVG ariaHidden={true} svg={EditIcon} />
                 </button>
 
                 {/* <button>
                     <SVG ariaHidden={true} svg={DuplicateIcon} />
                 </button> */}
+                {/* <DialogTriggerReactAria>
+                    <button title={__("reader.marks.delete")}
+                    >
+                        <SVG ariaHidden={true} svg={DeleteIcon} />
+                    </button>
+                    <PopoverReactAria>
+                        <DialogReactAria>
+                            <button onClick={() => {
+                                // setItemToEdit(-1);
+                                dispatch(readerActions.annotation.pop.build(annotation));
+                            }}
+                                title={__("reader.marks.delete")}
+                            >
+                                <SVG ariaHidden={true} svg={DeleteIcon} />
+                                {__("reader.marks.delete")}
+                            </button>
+                        </DialogReactAria>
+                    </PopoverReactAria>
+                </DialogTriggerReactAria> */}
+                {isEdited ?
                 <button title={__("reader.marks.delete")}
-                    onClick={() => {
-                        dispatch(readerActions.annotation.pop.build(annotation));
-                    }}>
+                className={stylesPopoverDialog.delete_item_edition}
+                onClick={() => {
+                    triggerEdition(false);
+                    dispatch(readerActions.annotation.pop.build(annotation));
+                    // alert("deleted");
+                }}
+                >
                     <SVG ariaHidden={true} svg={DeleteIcon} />
-                </button>
+                    {__("reader.marks.delete")}
+                </button> :
+                <Popover.Root>
+                    <Popover.Trigger asChild>
+                        <button
+                        title={__("reader.marks.delete")}
+                        >
+                            <SVG ariaHidden={true} svg={DeleteIcon} />
+                        </button>
+                    </Popover.Trigger>
+                    <Popover.Portal>
+                        <Popover.Content collisionPadding={{ top: 180, bottom: 100 }} avoidCollisions alignOffset={-10} /* hideWhenDetached */ sideOffset={5} className={stylesPopoverDialog.delete_item}>
+                            <Popover.Close
+                                onClick={() => {
+                                    triggerEdition(false);
+                                    dispatch(readerActions.annotation.pop.build(annotation));
+                                }}
+                                title={__("reader.marks.delete")}
+                            >
+                                <SVG ariaHidden={true} svg={DeleteIcon} />
+                                {__("reader.marks.delete")}
+                            </Popover.Close>
+                            <Popover.Arrow className={stylesDropDown.PopoverArrow} aria-hidden />
+                        </Popover.Content>
+                    </Popover.Portal>
+
+                </Popover.Root>
+                }
             </div>
         </div>
-}
-        <div className={stylesPopoverDialog.gauge}>
+        {/* <div className={stylesPopoverDialog.gauge}>
             <div className={stylesPopoverDialog.fill} style={style}></div>
-        </div>
-    </div>);
+        </div> */}
+    </li>);
 };
 
-const AnnotationList: React.FC<{ r2Publication: R2Publication, dockedMode: boolean, annotationUUIDFocused: string, focus: number} & Pick<IReaderMenuProps, "goToLocator">> = (props) => {
+const selectionIsSet = (a: Selection): a is Set<string> => typeof a === "object";
+const MAX_MATCHES_PER_PAGE = 5;
 
-    const {r2Publication, goToLocator, annotationUUIDFocused, focus} = props;
+
+const AnnotationList: React.FC<{ annotationUUIDFocused: string, resetAnnotationUUID: () => void, doFocus: number, popoverBoundary: HTMLDivElement, advancedAnnotationsOnChange: () => void, quickAnnotationsOnChange: () => void, marginAnnotationsOnChange: () => void, hideAnnotationOnChange: () => void, serialAnnotator: boolean } & Pick<IReaderMenuProps, "goToLocator">> = (props) => {
+
+    const readerConfig = useSelector((state: IReaderRootState) => state.reader.config);
+
+    const { goToLocator, annotationUUIDFocused, resetAnnotationUUID, popoverBoundary, advancedAnnotationsOnChange, quickAnnotationsOnChange, marginAnnotationsOnChange, hideAnnotationOnChange, serialAnnotator } = props;
+
     const [__] = useTranslator();
-    // const [bookmarkToUpdate, setBookmarkToUpdate] = React.useState(undefined);
-    const annotationsQueue = useSelector((state: IReaderRootState) => state.reader.annotation);
-    // const previousFocusUuid = useSelector((state: IReaderRootState) => state.annotationControlMode.focus.previousFocusUuid);
+    const annotationsListAll = useSelector((state: IReaderRootState) => state.reader.annotation);
+    const publicationView = useSelector((state: IReaderRootState) => state.reader.info.publicationView);
+    const winId = useSelector((state: IReaderRootState) => state.win.identifier);
+    const r2Publication = useSelector((state: IReaderRootState) => state.reader.info.r2Publication);
 
-    if (!r2Publication || !annotationsQueue) {
-        <></>;
+    const [tagArrayFilter, setTagArrayFilter] = React.useState<Selection>(new Set([]));
+    const [colorArrayFilter, setColorArrayFilter] = React.useState<Selection>(new Set([]));
+    const [drawTypeArrayFilter, setDrawTypeArrayFilter] = React.useState<Selection>(new Set([]));
+    const [creatorArrayFilter, setCreatorArrayFilter] = React.useState<Selection>(new Set([]));
+
+    let annotationListFiltered: TAnnotationState = [];
+    let startPage = 1;
+    const [pageNumber, setPageNumber] = React.useState(startPage);
+
+    annotationListFiltered = (selectionIsSet(tagArrayFilter) && tagArrayFilter.size) ||
+        (selectionIsSet(colorArrayFilter) && colorArrayFilter.size) ||
+        (selectionIsSet(drawTypeArrayFilter) && drawTypeArrayFilter.size) ||
+        (selectionIsSet(creatorArrayFilter) && creatorArrayFilter.size)
+        ? annotationsListAll.filter(([, { tags, color, drawType, creator }]) => {
+
+            const colorHex = rgbToHex(color);
+
+            return (!selectionIsSet(tagArrayFilter) || !tagArrayFilter.size || tags.some((tagsValueName) => tagArrayFilter.has(tagsValueName))) &&
+                (!selectionIsSet(colorArrayFilter) || !colorArrayFilter.size || colorArrayFilter.has(colorHex)) &&
+                (!selectionIsSet(drawTypeArrayFilter) || !drawTypeArrayFilter.size || drawTypeArrayFilter.has(drawType)) &&
+                (!selectionIsSet(creatorArrayFilter) || !creatorArrayFilter.size || creatorArrayFilter.has(getUuidFromUrn(creator?.id)));
+
+        })
+        : annotationsListAll;
+
+    if (annotationUUIDFocused) {
+
+        const annotationFocusItemFindIndex = annotationListFiltered.findIndex(([, annotationItem]) => annotationItem.uuid === annotationUUIDFocused);
+        if (annotationFocusItemFindIndex > -1) {
+            const annotationFocusItemPageNumber = Math.ceil((annotationFocusItemFindIndex + 1 /* 0 based */) / MAX_MATCHES_PER_PAGE);
+            startPage = annotationFocusItemPageNumber;
+            if (startPage !== pageNumber)
+                setPageNumber(startPage);
+
+        } else if (annotationListFiltered !== annotationsListAll) {
+            annotationListFiltered = annotationsListAll;
+            const annotationFocusItemFindIndex = annotationListFiltered.findIndex(([, annotationItem]) => annotationItem.uuid === annotationUUIDFocused);
+            if (annotationFocusItemFindIndex > -1) {
+                const annotationFocusItemPageNumber = Math.ceil((annotationFocusItemFindIndex + 1 /* 0 based */) / MAX_MATCHES_PER_PAGE);
+                startPage = annotationFocusItemPageNumber;
+                if (startPage !== pageNumber)
+                    setPageNumber(startPage);
+
+                const [, annotationFound] = annotationListFiltered[annotationFocusItemFindIndex];
+
+                // reset filters
+                if (tagArrayFilter !== "all" && !tagArrayFilter.has((annotationFound.tags || [])[0]) && tagArrayFilter.size !== 0) {
+                    setTagArrayFilter(new Set([]));
+                }
+                if (colorArrayFilter !== "all" && !colorArrayFilter.has(rgbToHex(annotationFound.color)) && colorArrayFilter.size !== 0) {
+                    setColorArrayFilter(new Set([]));
+                }
+                if (drawTypeArrayFilter !== "all" && !drawTypeArrayFilter.has(annotationFound.drawType) && drawTypeArrayFilter.size !== 0) {
+                    setDrawTypeArrayFilter(new Set([]));
+                }
+                if (creatorArrayFilter !== "all" && !creatorArrayFilter.has(getUuidFromUrn(annotationFound.creator?.id)) && creatorArrayFilter.size !== 0) {
+                    setCreatorArrayFilter(new Set([]));
+                }
+            }
+        }
     }
-    const MAX_MATCHES_PER_PAGE = 10;
-
-    const pageTotal =  Math.floor(annotationsQueue.length / MAX_MATCHES_PER_PAGE) + ((annotationsQueue.length % MAX_MATCHES_PER_PAGE === 0) ? 0 : 1);
-
-    const getStartPage = () => {
-        const annotationFocusItemIndex = annotationUUIDFocused ? annotationsQueue.findIndex(([, annotationItem]) => annotationItem.uuid === annotationUUIDFocused) : 0;
-        const annotationFocusItemPageNumber = Math.floor(annotationFocusItemIndex / MAX_MATCHES_PER_PAGE) + 1;
-        const startPage = annotationUUIDFocused ? annotationFocusItemPageNumber : 1;
-        return startPage;
-    };
-
-    const [pageNumber, setPageNumber] = React.useState(getStartPage);
 
     React.useEffect(() => {
-        setPageNumber(getStartPage());
-    }, [annotationUUIDFocused, focus]);
+        if (annotationUUIDFocused) {
+            resetAnnotationUUID();
+        }
+    }, [annotationUUIDFocused, resetAnnotationUUID]);
+
+    const [sortType, setSortType] = React.useState<Selection>(new Set(["lastCreated"]));
+    if (sortType !== "all" && sortType.has("progression")) {
+
+        annotationListFiltered.sort((a, b) => {
+            const [, { locatorExtended: { locator: la } }] = a;
+            const [, { locatorExtended: { locator: lb } }] = b;
+            const pcta = computeProgression(r2Publication.Spine, la);
+            const pctb = computeProgression(r2Publication.Spine, lb);
+            return pcta - pctb;
+        });
+    } else if (sortType !== "all" && sortType.has("lastCreated")) {
+        annotationListFiltered.sort((a, b) => {
+            const [ta] = a;
+            const [tb] = b;
+            return tb - ta;
+        });
+    } else if (sortType !== "all" && sortType.has("lastModified")) {
+        annotationListFiltered.sort((a, b) => {
+            const [, { modified: ma }] = a;
+            const [, { modified: mb }] = b;
+            return ma && mb ? mb - ma : ma ? -1 : mb ? 1 : 0;
+        });
+    }
+
+    const pageTotal = Math.ceil(annotationListFiltered.length / MAX_MATCHES_PER_PAGE) || 1;
+
+    if (pageNumber <= 0) {
+        setPageNumber(startPage);
+    } else if (pageNumber > pageTotal) {
+        setPageNumber(pageTotal);
+    }
 
     const startIndex = (pageNumber - 1) * MAX_MATCHES_PER_PAGE;
-
-    const annotationsPagedArray = React.useMemo(() => {
-        return annotationsQueue.slice(startIndex, startIndex + 10); // catch the end of the array
-    }, [startIndex, annotationsQueue]);
+    const annotationsPagedArray = annotationListFiltered.slice(startIndex, startIndex + MAX_MATCHES_PER_PAGE);
 
     const isLastPage = pageTotal === pageNumber;
     const isFirstPage = pageNumber === 1;
     const isPaginated = pageTotal > 1;
+    const pageOptions = Array.from({ length: pageTotal }, (_k, v) => (v += 1, ({ id: v, name: `${v} / ${pageTotal}` })));
 
-    // const SelectRef = React.forwardRef<HTMLButtonElement, MySelectProps<{ id: number, value: number, name: string }>>((props, forwardedRef) => <Select refButEl={forwardedRef} {...props}></Select>);
-    // SelectRef.displayName = "ComboBox";
-    
-    const pageOptions = Array(pageTotal).fill(undefined).map((_,i) => i+1).map((v) => ({id: v, value: v, name: `${v} / ${pageTotal}`}));
-    
+
+    const begin = startIndex + 1;
+    const end = Math.min(startIndex + MAX_MATCHES_PER_PAGE, annotationListFiltered.length);
+
+    const [annotationItemEditedUUID, setannotationItemEditedUUID] = React.useState("");
+    const paginatorAnnotationsRef = React.useRef<HTMLSelectElement>();
+
+    const triggerEdition = (annotationItem: IAnnotationState) =>
+        (value: boolean) => value ? setannotationItemEditedUUID(annotationItem.uuid) : setannotationItemEditedUUID("");
+
+    const dispatch = useDispatch();
+
+    const tagsIndexList = useSelector((state: IReaderRootState) => state.annotationTagsIndex);
+    const selectTagOption = ObjectKeys(tagsIndexList).map((v, i) => ({ id: i, name: v }));
+
+    // if tagArrayFilter value not include in the selectTagOption then take only the intersection between tagArrayFilter and selectTagOption
+    const selectTagOptionFilteredNameArray = selectTagOption.map((v) => v.name);
+    const tagArrayFilterArray = selectionIsSet(tagArrayFilter) ? Array(...tagArrayFilter) : [];
+    if (tagArrayFilterArray.filter((tagValue) => !selectTagOptionFilteredNameArray.includes(tagValue)).length) {
+        const tagArrayFilterArrayDifference = tagArrayFilterArray.filter((tagValue) => selectTagOptionFilteredNameArray.includes(tagValue));
+        setTagArrayFilter(new Set(tagArrayFilterArrayDifference));
+    }
+
+    const creatorMyself = useSelector((state: IReaderRootState) => state.creator);
+    const creatorList = annotationsListAll.map(([, { creator }]) => creator).filter(v => v);
+    const creatorSet = creatorList.reduce<Record<string, string>>((acc, { id, name }) => {
+        if (!acc[id]) {
+            return { ...acc, [getUuidFromUrn(id)]: (getUuidFromUrn(id) !== getUuidFromUrn(creatorMyself.id) ? name : creatorMyself.name) || getUuidFromUrn(id) };
+        }
+        return acc;
+    }, {});
+
+    const selectCreatorOptions = Object.entries(creatorSet).map(([k, v]) => ({ id: k, name: v }));
+
+    const annotationsColors = React.useMemo(() => Object.entries(annotationsColorsLight).map(([k, v]) => ({ hex: k, name: __(v) })), [__]);
+
+    // I'm disable this feature for performance reason, push new Colors from incoming publicaiton annotation, not used for the moment. So let's commented it for the moment.
+    // Need to be optimised in the future.
+    // annotationsQueue.forEach(([, annotation]) => {
+    //     const colorHex = rgbToHex(annotation.color);
+    //     if (!annotationsColorsLight.find((annotationColor) => annotationColor.hex === colorHex)) {
+    //         annotationsColorsLight.push({ hex: colorHex, name: colorHex });
+    //     }
+    // });
+
+    const selectDrawtypesOptions = [
+        { name: "solid_background", svg: HighLightIcon, textValue: `${__("reader.annotations.type.solid")}` },
+        { name: "underline", svg: UnderLineIcon, textValue: `${__("reader.annotations.type.underline")}` },
+        { name: "strikethrough", svg: TextStrikeThroughtIcon, textValue: `${__("reader.annotations.type.strikethrough")}` },
+        { name: "outline", svg: TextOutlineIcon,  textValue: `${__("reader.annotations.type.outline")}` },
+    ];
+
+    const nbOfFilters = ((tagArrayFilter === "all") ?
+        selectTagOption.length : tagArrayFilter.size) + ((colorArrayFilter === "all") ?
+            annotationsColors.length : colorArrayFilter.size) + ((drawTypeArrayFilter === "all") ?
+                selectDrawtypesOptions.length : drawTypeArrayFilter.size) + ((creatorArrayFilter === "all") ?
+                    selectCreatorOptions.length : creatorArrayFilter.size);
+
+    const annotationTitleRef = React.useRef<HTMLInputElement>();
+
     return (
         <>
-            {annotationsPagedArray.map(([timestamp, annotationItem], i) =>
-                <AnnotationCard key={i} timestamp={timestamp} annotation={annotationItem} r2Publication={r2Publication} goToLocator={goToLocator} index={i} dockedMode={props.dockedMode} />)}
+            <div className={stylesAnnotations.annotations_filter_line}>
+                <div style={{ display: "flex", gap: "10px" }}>
+                    <Popover.Root>
+                        <Popover.Trigger asChild>
+                            <button aria-label={__("reader.annotations.sorting.sortingOptions")} className={stylesAnnotations.annotations_filter_trigger_button}
+                                title={__("reader.annotations.sorting.sortingOptions")}>
+                                <SVG svg={SortIcon} />
+                            </button>
+                        </Popover.Trigger>
+                        <Popover.Portal>
+                            <Popover.Content collisionBoundary={popoverBoundary} avoidCollisions alignOffset={-10} align="end" hideWhenDetached sideOffset={5} className={stylesAnnotations.annotations_sorting_container} style={{ maxHeight: Math.round(window.innerHeight / 2) }}>
+                                <Popover.Arrow className={stylesDropDown.PopoverArrow} aria-hidden style={{ fill: "var(--color-extralight-grey)" }} />
+                                <ListBox
+                                    selectedKeys={sortType}
+                                    onSelectionChange={setSortType}
+                                    selectionMode="multiple"
+                                    selectionBehavior="replace"
+                                    aria-label={__("reader.annotations.sorting.sortingOptions")}
+                                >
+                                    <ListBoxItem id="progression" key="progression" aria-label="progression" className={({ isFocused, isSelected }) =>
+                                        classNames(StylesCombobox.my_item, isFocused ? StylesCombobox.focused : "", isSelected ? StylesCombobox.selected : "")}
+                                        style={{ marginBottom: "5px" }}
+                                    >
+                                        {__("reader.annotations.sorting.progression")}
+                                    </ListBoxItem>
+                                    <ListBoxItem id="lastCreated" key="lastCreated" aria-label="lastCreated" className={({ isFocused, isSelected }) =>
+                                        classNames(StylesCombobox.my_item, isFocused ? StylesCombobox.focused : "", isSelected ? StylesCombobox.selected : "")}
+                                        style={{ marginBottom: "5px" }}
+                                    >
+                                        {__("reader.annotations.sorting.lastcreated")}
+                                    </ListBoxItem>
+                                    <ListBoxItem id="lastModified" key="lastModified" aria-label="lastModified" className={({ isFocused, isSelected }) =>
+                                        classNames(StylesCombobox.my_item, isFocused ? StylesCombobox.focused : "", isSelected ? StylesCombobox.selected : "")}
+                                    >
+                                        {__("reader.annotations.sorting.lastmodified")}
+                                    </ListBoxItem>
+                                </ListBox>
+                            </Popover.Content>
+                        </Popover.Portal>
+                    </Popover.Root>
+                    <Popover.Root>
+                        <Popover.Trigger asChild>
+                            <button aria-label={__("reader.annotations.filter.filterOptions")} className={stylesAnnotations.annotations_filter_trigger_button}
+                                title={__("reader.annotations.filter.filterOptions")}>
+                                <SVG svg={MenuIcon} />
+                                {nbOfFilters > 0 ?
+                                    <p className={stylesAnnotations.annotations_filter_nbOfFilters} style={{ fontSize: nbOfFilters > 9 ? "10px" : "12px", paddingLeft: nbOfFilters > 9 ? "3px" : "4px" }}>{nbOfFilters}</p>
+                                    : <></>
+                                }
+                            </button>
+                        </Popover.Trigger>
+                        <Popover.Portal>
+                            <Popover.Content collisionBoundary={popoverBoundary} avoidCollisions alignOffset={-10} align="end" hideWhenDetached sideOffset={5} className={stylesAnnotations.annotations_filter_container} style={{ maxHeight: Math.round(window.innerHeight / 2) }}>
+                                <Popover.Arrow className={stylesDropDown.PopoverArrow} aria-hidden style={{ fill: "var(--color-extralight-grey)" }} />
+                                <FocusLock>
+                                    <TagGroup
+                                        selectionMode="multiple"
+                                        selectedKeys={tagArrayFilter}
+                                        onSelectionChange={setTagArrayFilter}
+                                        aria-label={__("reader.annotations.filter.filterByTag")}
+                                        style={{ marginBottom: "20px" }}
+                                    >
+                                        <details open id="annotationListTagDetails">
+                                            <summary className={stylesAnnotations.annotations_filter_tagGroup} style={{ pointerEvents: !selectTagOption.length ? "none" : "auto", opacity: !selectTagOption.length ? "0.5" : "1" }}
+                                             tabIndex={!selectTagOption.length ? -1 : 0}
+                                            >
+                                                <Label style={{ fontSize: "13px" }}>{__("reader.annotations.filter.filterByTag")}</Label>
+                                                <div style={{ display: "flex", gap: "10px" }}>
+                                                    <button
+                                                        disabled={!selectTagOption.length}
+                                                        style={{ width: "fit-content", minWidth: "unset" }}
+                                                        className={tagArrayFilter === "all" ? stylesButtons.button_primary_blue : stylesButtons.button_secondary_blue}
+                                                        onClick={() => {
+                                                            setTagArrayFilter("all");
+                                                            const detailsElement = document.getElementById("annotationListTagDetails") as HTMLDetailsElement;
+                                                            if (detailsElement) {
+                                                                detailsElement.open = true;
+                                                            }
+
+                                                        }}>
+                                                        {__("reader.annotations.filter.all")}
+                                                    </button>
+                                                    <button
+                                                        disabled={!selectTagOption.length}
+                                                        style={{ width: "fit-content", minWidth: "unset" }}
+                                                        className={stylesButtons.button_secondary_blue}
+                                                        onClick={() => {
+                                                            setTagArrayFilter(new Set([]));
+
+                                                        }}>
+                                                        {__("reader.annotations.filter.none")}
+                                                    </button>
+                                                </div>
+                                            </summary>
+                                            {
+                                                selectTagOption.length ?
+                                            <TagList items={selectTagOption} className={stylesAnnotations.annotations_filter_taglist} style={{ margin: !selectTagOption.length ? "0" : "20px 0" }}>
+                                                {(item) => <Tag className={stylesAnnotations.annotations_filter_tag} id={item.name} textValue={item.name}>{item.name}</Tag>}
+                                            </TagList>
+                                            : <></>
+                                            }
+                                        </details>
+                                    </TagGroup>
+                                    <TagGroup
+                                        selectionMode="multiple"
+                                        selectedKeys={colorArrayFilter}
+                                        onSelectionChange={setColorArrayFilter}
+                                        aria-label={__("reader.annotations.filter.filterByColor")}
+                                        style={{ marginBottom: "20px" }}
+                                    >
+                                        <details open id="annotationListColorDetails">
+                                            <summary className={stylesAnnotations.annotations_filter_tagGroup}>
+                                                <Label style={{ fontSize: "13px" }}>{__("reader.annotations.filter.filterByColor")}</Label>
+                                                <div style={{ display: "flex", gap: "10px" }}>
+                                                    <button
+                                                        style={{ width: "fit-content", minWidth: "unset" }}
+                                                        className={colorArrayFilter === "all" ? stylesButtons.button_primary_blue : stylesButtons.button_secondary_blue}
+                                                        onClick={() => {
+                                                            setColorArrayFilter("all");
+                                                            const detailsElement = document.getElementById("annotationListColorDetails") as HTMLDetailsElement;
+                                                            if (detailsElement) {
+                                                                detailsElement.open = true;
+                                                            }
+
+                                                        }}>
+                                                        {__("reader.annotations.filter.all")}
+                                                    </button>
+                                                    <button
+                                                        style={{ width: "fit-content", minWidth: "unset" }}
+                                                        className={stylesButtons.button_secondary_blue}
+                                                        onClick={() => {
+                                                            setColorArrayFilter(new Set([]));
+
+                                                        }}>
+                                                        {__("reader.annotations.filter.none")}
+                                                    </button>
+                                                </div>
+                                            </summary>
+                                            <TagList items={annotationsColors} className={stylesAnnotations.annotations_filter_taglist}>
+                                                {(item) => <Tag className={stylesAnnotations.annotations_filter_color} style={{ backgroundColor: item.hex, outlineColor: item.hex }} id={item.hex} textValue={item.name}></Tag>}
+                                            </TagList>
+                                        </details>
+                                    </TagGroup>
+                                    <TagGroup
+                                        selectionMode="multiple"
+                                        selectedKeys={drawTypeArrayFilter}
+                                        onSelectionChange={setDrawTypeArrayFilter}
+                                        aria-label={__("reader.annotations.filter.filterByDrawtype")}
+                                        style={{ marginBottom: "20px" }}
+                                    >
+                                        <details open id="annotationListDrawDetails">
+                                            <summary className={stylesAnnotations.annotations_filter_tagGroup}>
+                                                <Label style={{ fontSize: "13px" }}>{__("reader.annotations.filter.filterByDrawtype")}</Label>
+                                                <div style={{ display: "flex", gap: "10px" }}>
+                                                    <button
+                                                        style={{ width: "fit-content", minWidth: "unset" }}
+                                                        className={drawTypeArrayFilter === "all" ? stylesButtons.button_primary_blue : stylesButtons.button_secondary_blue}
+                                                        onClick={() => {
+                                                            setDrawTypeArrayFilter("all");
+                                                            const detailsElement = document.getElementById("annotationListDrawDetails") as HTMLDetailsElement;
+                                                            if (detailsElement) {
+                                                                detailsElement.open = true;
+                                                            }
+
+                                                        }}>
+                                                        {__("reader.annotations.filter.all")}
+                                                    </button>
+                                                    <button
+                                                        style={{ width: "fit-content", minWidth: "unset" }}
+                                                        className={stylesButtons.button_secondary_blue}
+                                                        onClick={() => {
+                                                            setDrawTypeArrayFilter(new Set([]));
+
+                                                        }}>
+                                                        {__("reader.annotations.filter.none")}
+                                                    </button>
+                                                </div>
+                                            </summary>
+                                            <TagList items={selectDrawtypesOptions} className={stylesAnnotations.annotations_filter_taglist}>
+                                                {(item) => <Tag id={item.name} className={stylesAnnotations.annotations_filter_drawtype} textValue={item.textValue}><SVG svg={item.svg} /></Tag>}
+                                            </TagList>
+                                        </details>
+                                    </TagGroup>
+                                    <TagGroup
+                                        selectionMode="multiple"
+                                        selectedKeys={creatorArrayFilter}
+                                        onSelectionChange={setCreatorArrayFilter}
+                                        aria-label={__("reader.annotations.filter.filterByCreator")}
+                                        style={{ marginBottom: "20px" }}
+                                    >
+                                        <details id="annotationListCreator" open={!!selectCreatorOptions.length}>
+                                            <summary className={stylesAnnotations.annotations_filter_tagGroup} style={{ pointerEvents: !selectCreatorOptions.length ? "none" : "auto", opacity: !selectCreatorOptions.length ? "0.5" : "1" }}
+                                                tabIndex={!selectCreatorOptions.length ? -1 : 0}
+                                            >
+                                                <Label style={{ fontSize: "13px" }}>{__("reader.annotations.filter.filterByCreator")}</Label>
+                                                <div style={{ display: "flex", gap: "10px" }}>
+                                                    <button
+                                                        tabIndex={!selectCreatorOptions.length ? -1 : 0}
+                                                        style={{ width: "fit-content", minWidth: "unset" }}
+                                                        className={creatorArrayFilter === "all" ? stylesButtons.button_primary_blue : stylesButtons.button_secondary_blue}
+                                                        onClick={() => {
+                                                            setCreatorArrayFilter("all");
+                                                            const detailsElement = document.getElementById("annotationListCreator") as HTMLDetailsElement;
+                                                            if (detailsElement) {
+                                                                detailsElement.open = true;
+                                                            }
+
+                                                        }}>
+                                                        {__("reader.annotations.filter.all")}
+                                                    </button>
+                                                    <button
+                                                        tabIndex={!selectCreatorOptions.length ? -1 : 0}
+                                                        style={{ width: "fit-content", minWidth: "unset" }}
+                                                        className={stylesButtons.button_secondary_blue}
+                                                        onClick={() => {
+                                                            setCreatorArrayFilter(new Set([]));
+
+                                                        }}>
+                                                        {__("reader.annotations.filter.none")}
+                                                    </button>
+                                                </div>
+                                            </summary>
+                                            <TagList items={selectCreatorOptions} className={stylesAnnotations.annotations_filter_taglist} style={{ margin: !selectCreatorOptions.length ? "0" : "20px 0" }}>
+                                                {(item) => <Tag className={stylesAnnotations.annotations_filter_tag} id={item.id} textValue={item.name}>{item.name}</Tag>}
+                                            </TagList>
+                                        </details>
+                                    </TagGroup>
+                                </FocusLock>
+                            </Popover.Content>
+                        </Popover.Portal>
+                    </Popover.Root>
+                </div>
+                <div style={{ display: "flex", gap: "10px" }}>
+                    <ImportAnnotationsDialog winId={winId} publicationView={publicationView}>
+                        <button className={stylesAnnotations.annotations_filter_trigger_button}
+                            title={__("catalog.importAnnotation")}
+                            aria-label={__("catalog.importAnnotation")}>
+                            <SVG svg={ImportIcon} />
+                        </button>
+                    </ImportAnnotationsDialog>
+
+                    <Popover.Root>
+                        <Popover.Trigger asChild>
+                            <button className={stylesAnnotations.annotations_filter_trigger_button} disabled={!annotationListFiltered.length}
+                                title={__("catalog.exportAnnotation")}
+                                aria-label={__("catalog.exportAnnotation")}>
+                                <SVG svg={SaveIcon} />
+                            </button>
+                        </Popover.Trigger>
+                        <Popover.Portal>
+                            <Popover.Content collisionBoundary={popoverBoundary} avoidCollisions alignOffset={-10} align="end" hideWhenDetached sideOffset={5} className={stylesAnnotations.annotations_sorting_container} style={{ maxHeight: Math.round(window.innerHeight / 2), padding: "15px 0" }}>
+                                <Popover.Arrow className={stylesDropDown.PopoverArrow} aria-hidden style={{ fill: "var(--color-extralight-grey)" }} />
+                                <div
+                                    className={stylesAnnotations.annotationsTitle_form_container}
+                                >
+                                    <p>{__("reader.annotations.annotationsExport.description")}</p>
+                                    <div className={stylesInputs.form_group}>
+                                        <label htmlFor="annotationsTitle">{__("reader.annotations.annotationsExport.title")}</label>
+                                        <input
+                                            type="text"
+                                            name="annotationsTitle"
+                                            id="annotationsTitle"
+                                            ref={annotationTitleRef}
+                                            className="R2_CSS_CLASS__FORCE_NO_FOCUS_OUTLINE" />
+                                    </div>
+
+                                    <Popover.Close aria-label={__("reader.annotations.export")} asChild>
+                                        <button onClick={() => {
+                                            const annotations = annotationListFiltered.map(([, anno]) => {
+                                                const { creator } = anno;
+                                                if (getUuidFromUrn(creator?.id) === getUuidFromUrn(creatorMyself.id)) {
+                                                    if (!creatorMyself.name) {
+                                                        return { ...anno, creator: undefined };
+                                                    } else {
+                                                        return { ...anno, creator: { ...creatorMyself, id: "urn:uuid:" + creatorMyself.id } };
+                                                    }
+                                                }
+                                                return anno;
+                                            });
+                                            const title = annotationTitleRef?.current.value || "thorium-reader";
+                                            let label = title;
+                                            label = label.trim();
+                                            label = label.replace(/[^a-z0-9_-]/gi, "_");
+                                            label = label.replace(/^_+|_+$/g, ""); // leading and trailing underscore
+                                            label = label.replace(/^\./, ""); // remove dot start
+                                            label = label.toLowerCase();
+
+                                            dispatch(readerLocalActionExportAnnotationSet.build(annotations, publicationView, label));
+                                        }} className={stylesButtons.button_primary_blue}>
+                                            <SVG svg={SaveIcon} />
+                                            {__("reader.annotations.export")}
+                                        </button>
+                                    </Popover.Close>
+                                </div>
+                            </Popover.Content>
+                        </Popover.Portal>
+                    </Popover.Root>
+                    <AlertDialog.Root>
+                        <AlertDialog.Trigger className={stylesAnnotations.annotations_filter_trigger_button} disabled={!annotationListFiltered.length} title={__("dialog.deleteAnnotations")} aria-label={__("dialog.deleteAnnotations")}>
+                            <SVG svg={TrashIcon} ariaHidden />
+                        </AlertDialog.Trigger>
+                        <AlertDialog.Portal>
+                            <AlertDialog.Overlay className={stylesAlertModals.AlertDialogOverlay} />
+                            <AlertDialog.Content className={stylesAlertModals.AlertDialogContent}>
+                                <AlertDialog.Title className={stylesAlertModals.AlertDialogTitle}>{__("dialog.deleteAnnotations")}</AlertDialog.Title>
+                                <AlertDialog.Description className={stylesAlertModals.AlertDialogDescription}>
+                                    {__("dialog.deleteAnnotationsText", { annotationListLength: annotationListFiltered.length })}
+                                </AlertDialog.Description>
+                                <div className={stylesAlertModals.AlertDialogButtonContainer}>
+                                    <AlertDialog.Cancel asChild>
+                                        <button className={stylesButtons.button_secondary_blue}>{__("dialog.cancel")}</button>
+                                    </AlertDialog.Cancel>
+                                    <AlertDialog.Action asChild>
+                                        <button className={stylesButtons.button_primary_blue} onClick={() => {
+                                            for (const [, annotation] of annotationListFiltered) {
+
+                                                dispatch(readerActions.annotation.pop.build(annotation));
+                                                setannotationItemEditedUUID("");
+                                            }
+
+                                            // reset filters
+                                            setTagArrayFilter(new Set([]));
+                                            setColorArrayFilter(new Set([]));
+                                            setDrawTypeArrayFilter(new Set([]));
+                                            setCreatorArrayFilter(new Set([]));
+                                        }} type="button">
+                                            <SVG ariaHidden svg={TrashIcon} />
+                                            {__("dialog.yes")}</button>
+                                    </AlertDialog.Action>
+                                </div>
+                            </AlertDialog.Content>
+                        </AlertDialog.Portal>
+                    </AlertDialog.Root>
+                    <span style={{height: "30px", width: "2px", borderRight: "2px solid var(--color-extralight-grey)"}}></span>
+                    <Popover.Root>
+                        <Popover.Trigger className={stylesAnnotations.annotations_filter_trigger_button} title={__("reader.annotations.annotationsOptions")} aria-label={__("reader.annotations.annotationsOptions")}>
+                            <SVG ariaHidden svg={OptionsIcon} />
+                        </Popover.Trigger>
+                        <Popover.Portal>
+                            <Popover.Content collisionBoundary={popoverBoundary} avoidCollisions alignOffset={-10} /* hideWhenDetached */ sideOffset={5} className={stylesAnnotations.annotations_filter_container} hideWhenDetached>
+                                <div className={stylesAnnotations.annotations_checkbox}>
+                                    <input type="checkbox" id="advancedAnnotations" className={stylesGlobal.checkbox_custom_input} name="advancedAnnotations" checked={serialAnnotator} onChange={advancedAnnotationsOnChange} />
+                                    <label htmlFor="advancedAnnotations" className={stylesGlobal.checkbox_custom_label}>
+                                        <div
+                                            tabIndex={0}
+                                            role="checkbox"
+                                            aria-checked={serialAnnotator}
+                                            aria-label={__("reader.annotations.advancedMode")}
+                                            onKeyDown={(e) => {
+                                                // if (e.code === "Space") {
+                                                if (e.key === " ") {
+                                                    e.preventDefault(); // prevent scroll
+                                                }
+                                            }}
+                                            onKeyUp={(e) => {
+                                                // if (e.code === "Space") {
+                                                if (e.key === " ") {
+                                                    e.preventDefault();
+                                                    advancedAnnotationsOnChange();
+                                                }
+                                            }}
+                                            className={stylesGlobal.checkbox_custom}
+                                            style={{ border: serialAnnotator ? "2px solid transparent" : "2px solid var(--color-primary)", backgroundColor: serialAnnotator ? "var(--color-blue)" : "transparent" }}>
+                                            {serialAnnotator ?
+                                                <SVG ariaHidden svg={CheckIcon} />
+                                                :
+                                                <></>
+                                            }
+                                        </div>
+                                        <div aria-hidden>
+                                            <h4>{__("reader.annotations.advancedMode")}</h4>
+                                        </div>
+                                    </label>
+                                </div>
+                                {/* : <></>} */}
+                                <div className={stylesAnnotations.annotations_checkbox}>
+                                    <input type="checkbox" id="quickAnnotations" name="quickAnnotations" className={stylesGlobal.checkbox_custom_input} checked={readerConfig.annotation_popoverNotOpenOnNoteTaking}
+                                        onChange={quickAnnotationsOnChange}
+                                    />
+                                    <label htmlFor="quickAnnotations" className={stylesGlobal.checkbox_custom_label}>
+                                        <div
+                                            tabIndex={0}
+                                            role="checkbox"
+                                            aria-checked={readerConfig.annotation_popoverNotOpenOnNoteTaking}
+                                            aria-label={__("reader.annotations.quickAnnotations")}
+                                            onKeyDown={(e) => {
+                                                // if (e.code === "Space") {
+                                                if (e.key === " ") {
+                                                    e.preventDefault(); // prevent scroll
+                                                }
+                                            }}
+                                            onKeyUp={(e) => {
+                                                // if (e.code === "Space") {
+                                                if (e.key === " ") {
+                                                    e.preventDefault();
+                                                    quickAnnotationsOnChange();
+                                                }
+                                            }}
+                                            className={stylesGlobal.checkbox_custom}
+                                            style={{ border: readerConfig.annotation_popoverNotOpenOnNoteTaking ? "2px solid transparent" : "2px solid var(--color-primary)", backgroundColor: readerConfig.annotation_popoverNotOpenOnNoteTaking ? "var(--color-blue)" : "transparent" }}>
+                                            {readerConfig.annotation_popoverNotOpenOnNoteTaking ?
+                                                <SVG ariaHidden svg={CheckIcon} />
+                                                :
+                                                <></>
+                                            } </div>
+                                        <h4 aria-hidden>{__("reader.annotations.quickAnnotations")}</h4></label>
+                                </div>
+                                <div className={stylesAnnotations.annotations_checkbox}>
+                                    <input type="checkbox" id="marginAnnotations" name="marginAnnotations" className={stylesGlobal.checkbox_custom_input} checked={readerConfig.annotation_defaultDrawView === "margin"} onChange={marginAnnotationsOnChange} />
+                                    <label htmlFor="marginAnnotations" className={stylesGlobal.checkbox_custom_label}>
+                                        <div
+                                            tabIndex={0}
+                                            role="checkbox"
+                                            aria-checked={readerConfig.annotation_defaultDrawView === "margin"}
+                                            aria-label={__("reader.annotations.toggleMarginMarks")}
+                                            onKeyDown={(e) => {
+                                                // if (e.code === "Space") {
+                                                if (e.key === " ") {
+                                                    e.preventDefault(); // prevent scroll
+                                                }
+                                            }}
+                                            onKeyUp={(e) => {
+                                                // if (e.code === "Space") {
+                                                if (e.key === " ") {
+                                                    e.preventDefault();
+                                                    marginAnnotationsOnChange();
+                                                }
+                                            }}
+                                            className={stylesGlobal.checkbox_custom}
+                                            style={{ border: readerConfig.annotation_defaultDrawView === "margin" ? "2px solid transparent" : "2px solid var(--color-primary)", backgroundColor: readerConfig.annotation_defaultDrawView === "margin" ? "var(--color-blue)" : "transparent" }}>
+                                            {readerConfig.annotation_defaultDrawView === "margin" ?
+                                                <SVG ariaHidden svg={CheckIcon} />
+                                                :
+                                                <></>
+                                            }
+                                        </div>
+                                        <h4 aria-hidden>{__("reader.annotations.toggleMarginMarks")}</h4></label>
+                                </div>
+                                <div className={stylesAnnotations.annotations_checkbox}>
+                                    <input type="checkbox" id="hideAnnotation" name="hideAnnotation" className={stylesGlobal.checkbox_custom_input} checked={readerConfig.annotation_defaultDrawView === "hide"} onChange={hideAnnotationOnChange} />
+                                    <label htmlFor="hideAnnotation" className={stylesGlobal.checkbox_custom_label}>
+                                        <div
+                                            tabIndex={0}
+                                            role="checkbox"
+                                            aria-checked={readerConfig.annotation_defaultDrawView === "hide"}
+                                            aria-label={__("reader.annotations.hide")}
+                                            onKeyDown={(e) => {
+                                                // if (e.code === "Space") {
+                                                if (e.key === " ") {
+                                                    e.preventDefault(); // prevent scroll
+                                                }
+                                            }}
+                                            onKeyUp={(e) => {
+                                                // if (e.code === "Space") {
+                                                if (e.key === " ") {
+                                                    e.preventDefault();
+                                                    hideAnnotationOnChange();
+                                                }
+                                            }}
+                                            className={stylesGlobal.checkbox_custom}
+                                            style={{ border: readerConfig.annotation_defaultDrawView === "hide" ? "2px solid transparent" : "2px solid var(--color-primary)", backgroundColor: readerConfig.annotation_defaultDrawView === "hide" ? "var(--color-blue)" : "transparent" }}>
+                                            {readerConfig.annotation_defaultDrawView === "hide" ?
+                                                <SVG ariaHidden svg={CheckIcon} />
+                                                :
+                                                <></>
+                                            }
+                                        </div>
+                                        <h4 aria-hidden>{__("reader.annotations.hide")}</h4></label>
+                                </div>
+                                <Popover.Arrow className={stylesDropDown.PopoverArrow} aria-hidden style={{ fill: "var(--color-extralight-grey)" }} />
+                            </Popover.Content>
+                        </Popover.Portal>
+                    </Popover.Root>
+                </div>
+            </div>
+            <div className={stylesAnnotations.separator} />
+            <ol>
+                {annotationsPagedArray.map(([timestamp, annotationItem], _i) =>
+                    <AnnotationCard
+                        key={`annotation-card_${annotationItem.uuid}`}
+                        timestamp={timestamp}
+                        annotation={annotationItem}
+                        goToLocator={goToLocator}
+                        isEdited={annotationItem.uuid === annotationItemEditedUUID}
+                        triggerEdition={triggerEdition(annotationItem)}
+                        setTagFilter={(v) => setTagArrayFilter(new Set([v]))}
+                        setCreatorFilter={(v) => setCreatorArrayFilter(new Set([v]))}
+                    />,
+                )}
+            </ol>
             {
-                isPaginated ?
+                isPaginated ? <>
                     <div className={stylesPopoverDialog.navigation_container}>
                         <button title={__("opds.firstPage")}
-                            onClick={() => { setPageNumber(1); }}
+                            onClick={() => { setPageNumber(1); setTimeout(() => paginatorAnnotationsRef.current?.focus(), 100); }}
                             disabled={isFirstPage}>
                             <SVG ariaHidden={true} svg={ArrowFirstIcon} />
                         </button>
 
                         <button title={__("opds.previous")}
-                            onClick={() => { setPageNumber(pageNumber - 1); }}
+                            onClick={() => { setPageNumber(pageNumber - 1); setTimeout(() => paginatorAnnotationsRef.current?.focus(), 100); }}
                             disabled={isFirstPage}>
                             <SVG ariaHidden={true} svg={ArrowLeftIcon} />
                         </button>
                         <div className={stylesPopoverDialog.pages}>
                             {/* <SelectRef
-                                id="page"
+                                ref={paginatorAnnotationsRef}
                                 aria-label={__("reader.navigation.page")}
                                 items={pageOptions}
                                 selectedKey={pageNumber}
@@ -584,41 +1415,71 @@ const AnnotationList: React.FC<{ r2Publication: R2Publication, dockedMode: boole
                             >
                                 {item => <ComboBoxItem>{item.name}</ComboBoxItem>}
                             </SelectRef> */}
-                            <ComboBox
+                            <label htmlFor="paginatorAnnotations" style={{ margin: "0" }}>{__("reader.navigation.page")}</label>
+                            <select
+                             onChange={(e) => {
+                                setPageNumber(pageOptions.find((option) => option.id === parseInt(e.currentTarget.value, 10)).id);
+                                setTimeout(() => paginatorAnnotationsRef.current?.focus(), 100);
+                            }}
+                                ref={paginatorAnnotationsRef}
+                                id="paginatorAnnotations"
+                                aria-label={__("reader.navigation.page")}
+                                // defaultValue={1}
+                                value={pageNumber}
+                            >
+                                {pageOptions.map((item) => (
+                                    <option key={item.id} value={item.id}>{item.name}</option>
+                                ))}
+                            </select>
+                            {/* <ComboBox
                                 aria-label={__("reader.navigation.page")}
                                 items={pageOptions}
                                 selectedKey={pageNumber}
                                 defaultSelectedKey={1}
                                 onSelectionChange={(id) => {
-                                    setPageNumber(id as number);
+                                    setPageNumber(id as number); setItemToEdit(-1);
                                 }}
                             >
                                 {item => <ComboBoxItem>{item.name}</ComboBoxItem>}
-                            </ComboBox>
+                            </ComboBox> */}
                         </div>
                         <button title={__("opds.next")}
-                            onClick={() => { setPageNumber(pageNumber + 1); }}
+                            onClick={() => { setPageNumber(pageNumber + 1); setTimeout(() => paginatorAnnotationsRef.current?.focus(), 100); }}
                             disabled={isLastPage}>
                             <SVG ariaHidden={true} svg={ArrowRightIcon} />
                         </button>
 
                         <button title={__("opds.lastPage")}
-                            onClick={() => { setPageNumber(pageTotal); }}
+                            onClick={() => { setPageNumber(pageTotal); setTimeout(() => paginatorAnnotationsRef.current?.focus(), 100); }}
                             disabled={isLastPage}>
                             <SVG ariaHidden={true} svg={ArrowLastIcon} />
                         </button>
                     </div>
+                    {
+                        annotationListFiltered.length &&
+                        <p
+                            style={{
+                                textAlign: "center",
+                                padding: 0,
+                                margin: 0,
+                                marginTop: "-16px",
+                                marginBottom: "20px",
+                            }}>{`[ ${begin === end ? `${end}` : `${begin} ... ${end}`} ] / ${annotationListFiltered.length}`}</p>
+                    }
+                </>
                     : <></>
             }
         </>
-        );
+    );
 };
 
-const BookmarkItem: React.FC<{ bookmark: IBookmarkState; r2Publication: R2Publication; i: number} & Pick<IReaderMenuProps, "goToLocator">> = (props) => {
+const BookmarkItem: React.FC<{ bookmark: IBookmarkState; i: number }> = (props) => {
 
-    const { bookmark, r2Publication, i, goToLocator } = props;
+    const { r2Publication, goToLocator, dockedMode: _dockedMode, setItemToEdit, itemEdited, dockedMode } = React.useContext(bookmarkCardContext);
+    const { bookmark, i } = props;
+    const isEdited = itemEdited === i;
     const [__] = useTranslator();
-    const [isEdited, setEdition] = React.useState(false);
+
     const dispatch = useDispatch();
     const isAudioBook = isAudiobookFn(r2Publication);
     const deleteBookmark = (bookmark: IBookmarkState) => {
@@ -645,24 +1506,37 @@ const BookmarkItem: React.FC<{ bookmark: IBookmarkState; r2Publication: R2Public
 
     const submitBookmark = (textValue: string) => {
 
-        dispatch(readerActions.bookmark.update.build({...bookmark, name: textValue}));
-        setEdition(false);
+        dispatch(readerActions.bookmark.update.build({ ...bookmark, name: textValue }));
+        setItemToEdit(-1);
     };
 
     const bname = (bookmark.name ? `${bookmark.name}` : `${__("reader.navigation.bookmarkTitle")} ${i}`);
 
     React.useEffect(() => {
-        if (textearearef.current) {
+        if (isEdited && textearearef.current) {
             textearearef.current.style.height = "auto";
-            textearearef.current.style.height = textearearef.current.scrollHeight + 3 + "px";
+            textearearef.current.style.height = `${textearearef.current.scrollHeight + 3}px`;
             textearearef.current.focus();
         }
     }, [isEdited]);
 
     return (
-        <div
+        <li
             className={stylesPopoverDialog.bookmarks_line}
             key={i}
+            onKeyDown={isEdited ? (e) => {
+                if (e.key === "Escape") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setItemToEdit(-1);
+                    setTimeout(() => {
+                        const el = document.getElementById(`bookmark_item-${itemEdited}_edit_button`);
+                        el?.blur();
+                        el?.focus();
+                    }, 100);
+                }
+            } : undefined}
+            aria-label={__("reader.navigation.bookmarkTitle")}
         >
             <div
                 className={stylesPopoverDialog.bookmark_infos}
@@ -670,62 +1544,94 @@ const BookmarkItem: React.FC<{ bookmark: IBookmarkState; r2Publication: R2Public
 
                 <div className={stylesPopoverDialog.chapter_marker}>
                     {isEdited ?
-                        <form className={stylesPopoverDialog.update_form}>
-                            <TextArea id="editBookmark" name="editBookmark" wrap="hard" ref={textearearef}
-                                defaultValue={bname}
-                                className={stylesPopoverDialog.bookmark_textArea}
-                            />
-                            <div style={{display: "flex", gap: "5px"}}>
-                                <button className={stylesButtons.button_secondary_blue} aria-label="cancel" onClick={() => { setEdition(false); }}>{__("dialog.cancel")}</button>
-                                <button type="submit"
-                                    className={stylesButtons.button_primary_blue}
-                                    aria-label="save"
-                                    onClick={(e) => { e.preventDefault(); submitBookmark(textearearef?.current?.value || ""); }}
-                                >
-                                    <SVG ariaHidden svg={SaveIcon} />
-                                    {__("reader.marks.saveMark")}
-                                </button>
-                            </div>
-                        </form>
+                        // <FocusLock disabled={dockedMode} autoFocus={true}>
+                        // TODO fix issue with focusLock on modal not docked
+                        <FocusLock disabled={true} autoFocus={true}>
+                            <form className={stylesPopoverDialog.update_form}>
+                                <TextArea id="editBookmark" name="editBookmark" wrap="hard" ref={textearearef}
+                                    defaultValue={bname}
+                                    className={stylesPopoverDialog.bookmark_textArea}
+                                />
+                                <div style={{ display: "flex", gap: "5px" }}>
+                                    <button className={stylesButtons.button_secondary_blue} aria-label={__("dialog.cancel")} type="button" onClick={() => { setItemToEdit(-1); }}>{__("dialog.cancel")}</button>
+                                    <button type="submit"
+                                        className={stylesButtons.button_primary_blue}
+                                        aria-label={__("reader.marks.saveMark")}
+                                        onClick={(e) => { e.preventDefault(); submitBookmark(textearearef?.current?.value || ""); }}
+                                    >
+                                        <SVG ariaHidden svg={SaveIcon} />
+                                        {__("reader.marks.saveMark")}
+                                    </button>
+                                </div>
+                            </form>
+                        </FocusLock>
                         :
                         <button
                             className={stylesReader.bookmarkList_button}
                             onClick={(e) => {
-                                e.stopPropagation();
-                                const closeNavPanel = e.shiftKey && e.altKey ? false : true;
-                                goToLocator(bookmark.locator, closeNavPanel);
+                                // e.stopPropagation();
+                                e.preventDefault();
+                                const closeNavBookmark = !dockedMode && !(e.shiftKey && e.altKey);
+                                goToLocator(bookmark.locator, closeNavBookmark);
                             }}
-                            onDoubleClick={(_e) => goToLocator(bookmark.locator, false)}
-                            onKeyPress=
-                            {
-                                (e) => {
-                                    if (e.key === "Enter" || e.key === "Space") {
-                                        e.stopPropagation();
-                                        const closeNavPanel = e.shiftKey && e.altKey ? false : true;
-                                        goToLocator(bookmark.locator, closeNavPanel);
-                                    }
-                                }
-                            }
+                            aria-label={__("reader.goToContent")}
+
+                        // does not work on button (works on 'a' link)
+                        // onDoubleClick={(_e) => goToLocator(bookmark.locator, false)}
+
+                        // not necessary (onClick works)
+                        // onKeyUp=
+                        // {
+                        //     (e) => {
+                        //         // SPACE does not work (only without key mods on button)
+                        //         // || e.key === "Space"
+                        //         if (e.key === "Enter") {
+                        //             // e.stopPropagation();
+                        //             e.preventDefault();
+                        //             const closeNavBookmark = !dockedMode && !(e.shiftKey && e.altKey);
+                        //             goToLocator(bookmark.locator, closeNavBookmark);
+                        //         }
+                        //     }
+                        // }
                         >
-                            <HardWrapComment comment={bname}/>
+                            <HardWrapComment comment={bname} />
                         </button>
                     }
                     <div className={stylesPopoverDialog.bookmark_actions}>
-                        <div>
+                        <div aria-label={__("reader.marks.progression")}>
                             <SVG ariaHidden svg={BookOpenIcon} />
                             <p>{bprogression}</p>
                         </div>
                         <div className={stylesPopoverDialog.bookmark_actions_buttons}>
-                            <button title={__("reader.marks.edit")}
-                                onClick={() => { setEdition(true); }}
+                            <button
+                                id={`bookmark_item-${i}_edit_button`}
+                                title={__("reader.marks.edit")}
+                                onClick={() => { setItemToEdit(i); }}
                                 disabled={isEdited}
                             >
                                 <SVG ariaHidden={true} svg={EditIcon} />
                             </button>
-                            <button title={__("reader.marks.delete")}
-                                onClick={() => { setEdition(false); deleteBookmark(bookmark); }}>
-                                <SVG ariaHidden={true} svg={DeleteIcon} />
-                            </button>
+                            <Popover.Root>
+                                <Popover.Trigger asChild>
+                                    <button title={__("reader.marks.delete")}
+                                    >
+                                        <SVG ariaHidden={true} svg={DeleteIcon} />
+                                    </button>
+                                </Popover.Trigger>
+                                <Popover.Portal>
+                                    <Popover.Content collisionPadding={{ top: 180, bottom: 100 }} avoidCollisions alignOffset={-10} hideWhenDetached sideOffset={5} className={stylesPopoverDialog.delete_item}>
+                                        <Popover.Close
+                                            onClick={() => { setItemToEdit(-1); deleteBookmark(bookmark); }}
+                                            title={__("reader.marks.delete")}
+                                        >
+                                            <SVG ariaHidden={true} svg={DeleteIcon} />
+                                            {__("reader.marks.delete")}
+                                        </Popover.Close>
+                                        <Popover.Arrow className={stylesDropDown.PopoverArrow} aria-hidden />
+                                    </Popover.Content>
+                                </Popover.Portal>
+
+                            </Popover.Root>
                         </div>
                     </div>
                     <div className={stylesPopoverDialog.gauge}>
@@ -733,20 +1639,24 @@ const BookmarkItem: React.FC<{ bookmark: IBookmarkState; r2Publication: R2Public
                     </div>
                 </div>
             </div>
-        </div>
+        </li>
     );
 };
 
 
-const BookmarkList: React.FC<{ r2Publication: R2Publication} & Pick<IReaderMenuProps, "goToLocator">> = (props) => {
+const bookmarkCardContext = React.createContext<{
+    itemEdited: number;
+    setItemToEdit: (i: number) => void;
+    goToLocator: (locator: Locator, closeNavPanel?: boolean) => void;
+    dockedMode: boolean;
+    r2Publication: R2Publication;
+}>(undefined);
 
-    const {r2Publication, goToLocator} = props;
+const BookmarkList: React.FC<{ r2Publication: R2Publication, dockedMode: boolean } & Pick<IReaderMenuProps, "goToLocator">> = (props) => {
+
+    const { r2Publication, goToLocator, dockedMode } = props;
     const [__] = useTranslator();
     const bookmarks = useSelector((state: IReaderRootState) => state.reader.bookmark).map(([, v]) => v);
-
-    if (!r2Publication || !bookmarks) {
-        <></>;
-    }
 
     // const sortedBookmarks = bookmarks;
     // WARNING: .sort() is in-place same-array mutation! (not a new array)
@@ -774,57 +1684,73 @@ const BookmarkList: React.FC<{ r2Publication: R2Publication} & Pick<IReaderMenuP
             }
         }
         return 0;
-    }), [bookmarks]);
+    }), [bookmarks, r2Publication.Spine]);
 
-    const MAX_MATCHES_PER_PAGE = 10;
+    const MAX_MATCHES_PER_PAGE = 5;
 
-    const pageTotal =  Math.floor(sortedBookmarks.length / MAX_MATCHES_PER_PAGE) + ((sortedBookmarks.length % MAX_MATCHES_PER_PAGE === 0) ? 0 : 1);
+    const pageTotal = Math.ceil(sortedBookmarks.length / MAX_MATCHES_PER_PAGE) || 1;
 
     const [pageNumber, setPageNumber] = React.useState(1);
+    if (pageNumber <= 0) {
+        setPageNumber(1);
+    } else if (pageNumber > pageTotal) {
+        setPageNumber(pageTotal);
+    }
+
     const startIndex = (pageNumber - 1) * MAX_MATCHES_PER_PAGE;
 
-    const bookmarksPagedArray = React.useMemo(() => {
-        return sortedBookmarks.slice(startIndex, startIndex + 10); // catch the end of the array
-    }, [startIndex, sortedBookmarks]);
+    const bookmarksPagedArray = sortedBookmarks.slice(startIndex, startIndex + MAX_MATCHES_PER_PAGE); // catch the end of the array
 
     const isLastPage = pageTotal === pageNumber;
     const isFirstPage = pageNumber === 1;
     const isPaginated = pageTotal > 1;
+    const pageOptions = Array(pageTotal).fill(undefined).map((_, i) => i + 1).map((v) => ({ id: v, name: `${v} / ${pageTotal}` }));
 
-    // const SelectRef = React.forwardRef<HTMLButtonElement, MySelectProps<{ id: number, value: number, name: string }>>((props, forwardedRef) => <Select refButEl={forwardedRef} {...props}></Select>);
-    // SelectRef.displayName = "ComboBox";
-    
-    const pageOptions = Array(pageTotal).fill(undefined).map((_,i) => i+1).map((v) => ({id: v, value: v, name: `${v} / ${pageTotal}`}));
+    const begin = startIndex + 1;
+    const end = Math.min(startIndex + MAX_MATCHES_PER_PAGE, sortedBookmarks.length);
+
+    const [itemEdited, setItemToEdit] = React.useState(-1);
+
+    const paginatorBookmarksRef = React.useRef<HTMLSelectElement>();
 
     return (
         <>
+            <bookmarkCardContext.Provider value={{
+                goToLocator,
+                dockedMode,
+                r2Publication,
+                itemEdited,
+                setItemToEdit,
+            }}>
+                <ul style={{listStyleType: "none", padding: "0"}}>
+                {
+                    bookmarksPagedArray.map((bookmark, i) =>
+                        <BookmarkItem
+                            key={`bookmark_card-${i}`}
+                            bookmark={bookmark}
+                            i={i + 1 + ((pageNumber - 1) * MAX_MATCHES_PER_PAGE)}
+                        />,
+                    )
+                }
+                </ul>
+            </bookmarkCardContext.Provider>
             {
-                bookmarksPagedArray.map((bookmark, i) =>
-                    <BookmarkItem
-                        key={i}
-                        bookmark={bookmark}
-                        r2Publication={r2Publication}
-                        i={i + 1 + ((pageNumber - 1) * MAX_MATCHES_PER_PAGE)}
-                        goToLocator={goToLocator}
-                    />)
-            }
-            {
-                isPaginated ?
+                isPaginated ? <>
                     <div className={stylesPopoverDialog.navigation_container}>
                         <button title={__("opds.firstPage")}
-                            onClick={() => { setPageNumber(1); }}
+                            onClick={() => { setPageNumber(1); setItemToEdit(-1); setTimeout(() => paginatorBookmarksRef.current?.focus(), 100); }}
                             disabled={isFirstPage}>
                             <SVG ariaHidden={true} svg={ArrowFirstIcon} />
                         </button>
 
                         <button title={__("opds.previous")}
-                            onClick={() => { setPageNumber(pageNumber - 1); }}
+                            onClick={() => { setPageNumber(pageNumber - 1); setItemToEdit(-1); setTimeout(() => paginatorBookmarksRef.current?.focus(), 100); }}
                             disabled={isFirstPage}>
                             <SVG ariaHidden={true} svg={ArrowLeftIcon} />
                         </button>
                         <div className={stylesPopoverDialog.pages}>
                             {/* <SelectRef
-                                id="page"
+                                id="paginatorBookmarks"
                                 aria-label={__("reader.navigation.page")}
                                 items={pageOptions}
                                 selectedKey={pageNumber}
@@ -836,38 +1762,68 @@ const BookmarkList: React.FC<{ r2Publication: R2Publication} & Pick<IReaderMenuP
                             >
                                 {item => <ComboBoxItem>{item.name}</ComboBoxItem>}
                             </SelectRef> */}
-                            <ComboBox
+                            <label htmlFor="paginatorBookmarks" style={{ margin: "0" }}>{__("reader.navigation.page")}</label>
+                            <select onChange={(e) => {
+                                setPageNumber(pageOptions.find((option) => option.id === parseInt(e.currentTarget.value, 10)).id);
+                                setTimeout(() => paginatorBookmarksRef.current?.focus(), 100);
+                            }}
+                                id="paginatorBookmarks"
+                                ref={paginatorBookmarksRef}
+                                aria-label={__("reader.navigation.page")}
+                                // defaultValue={1}
+                                value={pageNumber}
+                            >
+                                {pageOptions.map((item) => (
+                                    <option key={item.id} value={item.id}>{item.name}</option>
+                                ))}
+                            </select>
+                            {/* <ComboBox
                                 aria-label={__("reader.navigation.page")}
                                 items={pageOptions}
                                 selectedKey={pageNumber}
                                 defaultSelectedKey={1}
                                 onSelectionChange={(id) => {
-                                    setPageNumber(id as number);
+                                    setPageNumber(id as number); setItemToEdit(-1);
                                 }}
                             >
                                 {item => <ComboBoxItem>{item.name}</ComboBoxItem>}
-                            </ComboBox>
+                            </ComboBox> */}
                         </div>
                         <button title={__("opds.next")}
-                            onClick={() => { setPageNumber(pageNumber + 1); }}
+                            onClick={() => { setPageNumber(pageNumber + 1); setItemToEdit(-1); setTimeout(() => paginatorBookmarksRef.current?.focus(), 100); }}
                             disabled={isLastPage}>
                             <SVG ariaHidden={true} svg={ArrowRightIcon} />
                         </button>
 
                         <button title={__("opds.lastPage")}
-                            onClick={() => { setPageNumber(pageTotal); }}
+                            onClick={() => { setPageNumber(pageTotal); setItemToEdit(-1); setTimeout(() => paginatorBookmarksRef.current?.focus(), 100); }}
                             disabled={isLastPage}>
                             <SVG ariaHidden={true} svg={ArrowLastIcon} />
                         </button>
                     </div>
+                    {
+                        sortedBookmarks.length &&
+                        <p
+                            style={{
+                                textAlign: "center",
+                                padding: 0,
+                                margin: 0,
+                                marginTop: "-16px",
+                                marginBottom: "20px",
+                            }}>{`[ ${begin === end ? `${end}` : `${begin} ... ${end}`} ] / ${sortedBookmarks.length}`}</p>
+                    }
+                </>
                     : <></>
             }
         </>);
 };
 
-const GoToPageSection: React.FC<IBaseProps & {totalPages?: number}> = (props) => {
+const GoToPageSection: React.FC<IBaseProps & { totalPages?: number }> = (props) => {
 
-    const { r2Publication, handleLinkClick, isDivina, isPdf, currentLocation, totalPages: totalPagesFromProps, goToLocator } = props;
+    const { handleLinkClick, isDivina, isPdf, currentLocation, totalPages: totalPagesFromProps, goToLocator } = props;
+    const r2Publication = useSelector((state: IReaderRootState) => state.reader.info.r2Publication);
+    const dockingMode = useReaderConfig("readerDockingMode");
+    const dockedMode = dockingMode !== "full";
     let totalPages = `${totalPagesFromProps}`;
     const goToRef = React.useRef<HTMLInputElement>();
 
@@ -921,24 +1877,44 @@ const GoToPageSection: React.FC<IBaseProps & {totalPages?: number}> = (props) =>
                 // } catch (_e) {
                 //     // ignore error
                 // }
+
+                if (typeof page !== "undefined" && page >= 0 &&
+                    r2Publication.Spine && r2Publication.Spine[page]) {
+
+                    setPageError(false);
+
+                    // handleLinkClick(undefined, pageNbr);
+                    const loc = {
+                        href: (page || pageNbr).toString(),
+                        // progression generate in divina pagechange event
+                    };
+                    goToLocator(loc as any, closeNavPanel);
+
+                    return;
+                }
             } else if (isPdf) {
-                //
-            }
-            if (isPdf ||
-                (typeof page !== "undefined" && page >= 0 &&
-                    r2Publication.Spine && r2Publication.Spine[page])
-            ) {
+                const nPages = r2Publication.Metadata?.NumberOfPages || 1;
+                let pageStr = "";
+                try {
+                    const n = parseInt(pageNbr, 10);
+                    if (Number.isInteger(n)) { // NaN
+                        if (n >= 1 && n <= nPages) {
+                            pageStr = String(n);
+                        }
+                    }
+                } catch (_e) {
+                }
+                if (pageStr) {
+                    setPageError(false);
 
-                setPageError(false);
+                    const loc = {
+                        href: pageStr,
+                        locations: { progression: 1 },
+                    };
+                    goToLocator(loc, closeNavPanel);
 
-                // handleLinkClick(undefined, pageNbr);
-                const loc = {
-                    href: (page || pageNbr).toString(),
-                    // progression generate in divina pagechange event
-                };
-                goToLocator(loc as any, closeNavPanel);
-
-                return;
+                    return;
+                }
             }
 
             setRefreshError(true);
@@ -957,6 +1933,7 @@ const GoToPageSection: React.FC<IBaseProps & {totalPages?: number}> = (props) =>
         }
     };
 
+    // TODO enable Divina??
     if (!r2Publication || isDivina) {
         return <></>;
     }
@@ -1026,14 +2003,14 @@ const GoToPageSection: React.FC<IBaseProps & {totalPages?: number}> = (props) =>
         }
     }
 
-    let options:{ id: number; name: string; value: string; }[];
+    let options: { id: number; name: string; value: string; }[];
 
     if (isFixedLayoutNoPageList) {
         options = r2Publication.Spine.map((_spineLink, idx) => {
             const indexStr = (idx + 1).toString();
             return (
                 {
-                    id: idx +1,
+                    id: idx + 1,
                     name: indexStr,
                     value: indexStr,
                 }
@@ -1043,12 +2020,23 @@ const GoToPageSection: React.FC<IBaseProps & {totalPages?: number}> = (props) =>
         options = r2Publication.PageList.map((pageLink, idx) => {
             return (
                 pageLink.Title ?
+                    {
+                        id: idx + 1,
+                        name: pageLink.Title,
+                        value: pageLink.Title,
+                    }
+                    : null
+            );
+        });
+    } else if (isPdf) {
+        options = Array.from({ length: r2Publication.Metadata?.NumberOfPages || 1 }, (_v, idx) => {
+            const indexStr = (idx + 1).toString();
+            return (
                 {
-                    id: idx +1,
-                    name: pageLink.Title,
-                    value: pageLink.Title,
+                    id: idx + 1,
+                    name: indexStr,
+                    value: indexStr,
                 }
-                : null
             );
         });
     }
@@ -1056,7 +2044,7 @@ const GoToPageSection: React.FC<IBaseProps & {totalPages?: number}> = (props) =>
     let defaultKey;
 
     if (isFixedLayoutNoPageList || r2Publication?.PageList) {
-        defaultKey = options.findIndex((value) => value.name === currentPage) +1;
+        defaultKey = options.findIndex((value) => value.name === currentPage) + 1;
     }
 
 
@@ -1065,37 +2053,39 @@ const GoToPageSection: React.FC<IBaseProps & {totalPages?: number}> = (props) =>
 
         {
             currentPage ? <label className={stylesPopoverDialog.currentPage}
-            id="gotoPageLabel"
-            htmlFor="gotoPageInput">
+                id="gotoPageLabel"
+                htmlFor="gotoPageInput">
                 <SVG ariaHidden svg={BookOpenIcon} />
-            {
-                currentPage ?
-                    (parseInt(totalPages, 10)
-                        // tslint:disable-next-line: max-line-length
-                        ? __("reader.navigation.currentPageTotal", { current: `${currentPage}`, total: `${totalPages}` })
-                        : __("reader.navigation.currentPage", { current: `${currentPage}` })) :
-                    ""
-            }
-        </label> : <></>}
+                {
+                    currentPage ?
+                        (parseInt(totalPages, 10)
+                            // tslint:disable-next-line: max-line-length
+                            ? __("reader.navigation.currentPageTotal", { current: `${currentPage}`, total: `${totalPages}` })
+                            : __("reader.navigation.currentPage", { current: `${currentPage}` })) :
+                        ""
+                }
+            </label> : <></>}
         <form
             id="gotoPageForm"
             onSubmit={(e) => {
                 e.preventDefault();
             }
             }
-            onKeyPress=
-                {
-                    (e) => {
-                        if (e.key === "Enter" || e.key === "Space") {
-                            const closeNavPanel = e.shiftKey && e.altKey ? false : true;
-                            e.preventDefault();
-                            handleSubmitPage(closeNavPanel);
-                        }
-                }
-            }
+        // onKeyUp=
+        //     {
+        //         (e) => {
+        //             // SPACE does not work (only without key mods on button)
+        //             //  || e.key === "Space"
+        //             if (e.key === "Enter") {
+        //                 const closeNavGotoPage = !dockedMode && !(e.shiftKey && e.altKey);
+        //                 e.preventDefault();
+        //                 handleSubmitPage(closeNavGotoPage);
+        //             }
+        //     }
+        // }
         >
 
-            <div className={classNames(stylesInputs.form_group, stylesPopoverDialog.gotopage_combobox)} style={{width: "80%"}}>
+            <div className={classNames(stylesInputs.form_group, stylesPopoverDialog.gotopage_combobox)} style={{ width: "80%" }}>
                 {/* <label style={{position: "absolute"}}> {__("reader.navigation.goToPlaceHolder")}</label> */}
                 <ComboBox
                     label={__("reader.navigation.goToPlaceHolder")}
@@ -1112,22 +2102,39 @@ const GoToPageSection: React.FC<IBaseProps & {totalPages?: number}> = (props) =>
                         goToRef.current.value = val;
                         setPageError(false);
                     }}
-                    >
+                >
                     {item => <ComboBoxItem>{item.name}</ComboBoxItem>}
                 </ComboBox>
             </div>
             <button
                 type="button"
+                className={stylesButtons.button_primary_blue}
 
                 onClick=
                 {(e) => {
-                    const closeNavPanel = e.shiftKey && e.altKey ? false : true;
+                    const closeNavGotoPage = !dockedMode && !(e.shiftKey && e.altKey);
                     e.preventDefault();
-                    console.log(goToRef?.current?.value);
-                    handleSubmitPage(closeNavPanel);
+                    // console.log(goToRef?.current?.value);
+                    handleSubmitPage(closeNavGotoPage);
                 }}
-                onDoubleClick=
-                {(e) => {e.preventDefault(); handleSubmitPage(false);}}
+
+                // does not work on button (works on 'a' link)
+                // onDoubleClick=
+                // {(e) => {e.preventDefault(); handleSubmitPage(false);}}
+
+                // not necessary (onClick works)
+                // onKeyUp=
+                //     {
+                //         (e) => {
+                //             // SPACE does not work (only without key mods on button)
+                //             //  || e.key === "Space"
+                //             if (e.key === "Enter") {
+                //                 const closeNavGotoPage = !dockedMode && !(e.shiftKey && e.altKey);
+                //                 e.preventDefault();
+                //                 handleSubmitPage(closeNavGotoPage);
+                //             }
+                //         }
+                //     }
                 disabled={
                     !(isFixedLayoutNoPageList || r2Publication.PageList || isDivina || isPdf)
                 }
@@ -1153,30 +2160,30 @@ const GoToPageSection: React.FC<IBaseProps & {totalPages?: number}> = (props) =>
 
 
 
-const TabTitle = ({value}: {value: string}) => {
+const TabTitle = ({ value }: { value: string }) => {
     let title: string;
-    const [__, translator] = useTranslator();
+    const [__] = useTranslator();
     const searchText = useSelector((state: IReaderRootState) => state.search.textSearch);
 
     switch (value) {
         case "tab-toc":
-        title=__("reader.marks.toc");
-        break;
+            title = __("reader.marks.toc");
+            break;
         case "tab-landmark":
-            title=__("reader.marks.landmarks");
+            title = __("reader.marks.landmarks");
             break;
         case "tab-bookmark":
-            title=__("reader.marks.bookmarks");
+            title = __("reader.marks.bookmarks");
             break;
         case "tab-search":
-            title=  searchText ? translator.translate("reader.marks.searchResult", { searchText: searchText.slice(0, 20) }) 
-            : (__("reader.marks.search"));;
+            title = searchText ? __("reader.marks.searchResult", { searchText: searchText.slice(0, 20) })
+                : (__("reader.marks.search"));;
             break;
         case "tab-gotopage":
-            title=(__("reader.navigation.goToTitle"));
+            title = (__("reader.navigation.goToTitle"));
             break;
         case "tab-annotation":
-            title=__("reader.marks.annotations");
+            title = __("reader.marks.annotations");
             break;
     }
     return (
@@ -1187,16 +2194,19 @@ const TabTitle = ({value}: {value: string}) => {
 };
 
 export const ReaderMenu: React.FC<IBaseProps> = (props) => {
-    const { r2Publication, /* toggleMenu */ pdfToc, isPdf, focusMainAreaLandmarkAndCloseMenu,
+    const { /* toggleMenu */ pdfToc, isPdf, focusMainAreaLandmarkAndCloseMenu,
         pdfNumberOfPages, currentLocation, goToLocator, openedSection: tabValue, setOpenedSection: setTabValue } = props;
-    const { setDockingMode, dockedMode, dockingMode } = props;
-    const { focus, annotationUUID, handleLinkClick } = props;
-
+    const { doFocus, annotationUUID, handleLinkClick, resetAnnotationUUID } = props;
+    const r2Publication = useSelector((state: IReaderRootState) => state.reader.info.r2Publication);
+    const dockingMode = useReaderConfig("readerDockingMode");
+    const dockedMode = dockingMode !== "full";
     const [__] = useTranslator();
+
+    const popoverBoundary = React.useRef<HTMLDivElement>();
 
     // const pubId = useSelector((state: IReaderRootState) => state.reader.info.publicationIdentifier);
     const searchEnable = useSelector((state: IReaderRootState) => state.search.enable);
-    const bookmarks = useSelector((state: IReaderRootState) => state.reader.bookmark).map(([, v]) => v);
+    // const bookmarks = useSelector((state: IReaderRootState) => state.reader.bookmark).map(([, v]) => v);
     // const annotations = useSelector((state: IReaderRootState) => state.reader.annotation).map(([, v]) => v);
     const readerConfig = useSelector((state: IReaderRootState) => state.reader.config);
 
@@ -1221,7 +2231,7 @@ export const ReaderMenu: React.FC<IBaseProps> = (props) => {
     React.useEffect(() => {
 
         console.log("##########");
-        console.log(`USE EFFECT [annotationUUID=${annotationUUID}] [focus=${focus}] [tabValue=${tabValue}] [dockedMode=${dockingMode}]`);
+        console.log(`USE EFFECT [annotationUUID=${annotationUUID}] [doFocus=${doFocus}] [tabValue=${tabValue}] [dockedMode=${dockingMode}]`);
         console.log("##########");
 
         if (annotationUUID) {
@@ -1232,6 +2242,8 @@ export const ReaderMenu: React.FC<IBaseProps> = (props) => {
                     console.log(`annotationDiv found "(${elem.tagName})" and Focus on [${annotationUUID}]`);
 
                     // annotationDivRef.current = elem;
+
+                    // TODO: what is the logic for stealing focus here? The result of keyboard or mouse interaction?
                     elem.focus();
 
                 } else {
@@ -1243,31 +2255,45 @@ export const ReaderMenu: React.FC<IBaseProps> = (props) => {
 
             setTimeout(() => {
                 if (dockedModeRef.current) {
-    
+
                     console.log("Focus on docked mode combobox");
+
+                    // TODO: what is the logic for stealing focus here? The result of keyboard or mouse interaction?
                     dockedModeRef.current.focus();
                 } else {
                     console.error("!no dockedModeRef on combobox");
                 }
             }, 1);
 
+        } else {
+
         }
 
-    }, [annotationUUID, focus]);
+    }, [tabValue, annotationUUID, doFocus, dockingMode]);
+
+    const setReaderConfig = useSaveReaderConfig();
+    // memoization not needed here, onCick not passed as child component props (only event re-bind in local HTML element)
+    // ... plus, see setDockingModeFull() and setDockingModeLeftSide() and setDockingModeRightSide() below which are the ones used in onClick!
+    // const setDockingMode = React.useCallback((value: ReaderConfig["readerDockingMode"]) => {
+    //     setReaderConfig({readerDockingMode: value});
+    // }, [setReaderConfig]);
+    const setDockingMode = (value: ReaderConfig["readerDockingMode"]) => {
+        setReaderConfig({ readerDockingMode: value });
+    };
+    const setDockingModeFull = () => setDockingMode("full");
+    const setDockingModeLeftSide = () => setDockingMode("left");
+    const setDockingModeRightSide = () => setDockingMode("right");
 
     if (!r2Publication) {
         return <>Critical Error no R2Publication available</>;
     }
-    const setDockingModeFull = () => setDockingMode("full");
-    const setDockingModeLeftSide = () => setDockingMode("left");
-    const setDockingModeRightSide = () => setDockingMode("right");
 
     const sectionsArray: Array<React.JSX.Element> = [];
     const options: Array<{ id: number, value: string, name: string, disabled: boolean, svg: {} }> = [];
 
     const TocTrigger =
         <Tabs.Trigger value="tab-toc" key={"tab-toc"} data-value={"tab-toc"}
-        title={__("reader.marks.toc")}
+            title={__("reader.marks.toc")}
             disabled={
                 (!r2Publication.TOC || r2Publication.TOC.length === 0) &&
                 (!r2Publication.Spine || r2Publication.Spine.length === 0)
@@ -1294,12 +2320,13 @@ export const ReaderMenu: React.FC<IBaseProps> = (props) => {
     };
 
     const BookmarksTrigger =
-        <Tabs.Trigger value="tab-bookmark" key={"tab-bookmark"} data-value={"tab-bookmark"} title={__("reader.marks.bookmarks")} disabled={!bookmarks || bookmarks.length === 0}>
+        // <Tabs.Trigger value="tab-bookmark" key={"tab-bookmark"} data-value={"tab-bookmark"} title={__("reader.marks.bookmarks")} disabled={!bookmarks || bookmarks.length === 0}>
+        <Tabs.Trigger value="tab-bookmark" key={"tab-bookmark"} data-value={"tab-bookmark"} title={__("reader.marks.bookmarks")}>
             <SVG ariaHidden svg={BookmarkIcon} />
             <h3>{__("reader.marks.bookmarks")}</h3>
         </Tabs.Trigger>;
     const optionBookmarkItem = {
-        id: 2, value: "tab-bookmark", name: __("reader.marks.bookmarks"), disabled: !bookmarks || bookmarks.length === 0,
+        id: 2, value: "tab-bookmark", name: __("reader.marks.bookmarks"), disabled: false, // !bookmarks || bookmarks.length === 0,
         svg: BookmarkIcon,
     };
 
@@ -1319,7 +2346,7 @@ export const ReaderMenu: React.FC<IBaseProps> = (props) => {
             <h3>{__("reader.marks.goTo")}</h3>
         </Tabs.Trigger>;
     const optionGoToPageItem = {
-        id: 4, value: "tab-gotopage", name: "Go To Page", disabled: false,
+        id: 4, value: "tab-gotopage", name: __("reader.marks.goTo"), disabled: false,
         svg: TargetIcon,
     };
 
@@ -1330,7 +2357,7 @@ export const ReaderMenu: React.FC<IBaseProps> = (props) => {
             <h3>{__("reader.marks.annotations")}</h3>
         </Tabs.Trigger>;
     const optionAnnotationItem = {
-        id: 5, value: "tab-annotation", name: __("reader.marks.annotations"), disabled: !bookmarks || bookmarks.length === 0,
+        id: 5, value: "tab-annotation", name: __("reader.marks.annotations"), disabled: false,// !bookmarks || bookmarks.length === 0,
         svg: AnnotationIcon,
     };
 
@@ -1364,84 +2391,119 @@ export const ReaderMenu: React.FC<IBaseProps> = (props) => {
         return (
             dockedMode ? <></> :
                 <div key="modal-header" className={stylesSettings.close_button_div}>
-                    <TabTitle value={tabValue}/>
+                    <TabTitle value={tabValue} />
                     <div>
-                    <button className={stylesButtons.button_transparency_icon} aria-label="left" onClick={setDockingModeLeftSide}>
-                        <SVG ariaHidden={true} svg={DockLeftIcon} />
-                    </button>
-                    <button className={stylesButtons.button_transparency_icon} aria-label="right" onClick={setDockingModeRightSide}>
-                        <SVG ariaHidden={true} svg={DockRightIcon} />
-                    </button>
-                    <button className={stylesButtons.button_transparency_icon} disabled aria-label="full" onClick={setDockingModeFull}>
-                        <SVG ariaHidden={true} svg={DockModalIcon} />
-                    </button>
-                    <Dialog.Close asChild>
-                        <button className={stylesButtons.button_transparency_icon} aria-label="Close">
-                            <SVG ariaHidden={true} svg={QuitIcon} />
+                        <button className={stylesButtons.button_transparency_icon} aria-label={__("reader.svg.left")} onClick={setDockingModeLeftSide}>
+                            <SVG ariaHidden={true} svg={DockLeftIcon} />
                         </button>
-                    </Dialog.Close>
+                        <button className={stylesButtons.button_transparency_icon} aria-label={__("reader.svg.right")} onClick={setDockingModeRightSide}>
+                            <SVG ariaHidden={true} svg={DockRightIcon} />
+                        </button>
+                        <button className={stylesButtons.button_transparency_icon} disabled aria-label={__("reader.settings.column.auto")} onClick={setDockingModeFull}>
+                            <SVG ariaHidden={true} svg={DockModalIcon} />
+                        </button>
+                        <Dialog.Close asChild>
+                            <button data-css-override="" className={stylesButtons.button_transparency_icon} aria-label={__("accessibility.closeDialog")}>
+                                <SVG ariaHidden={true} svg={QuitIcon} />
+                            </button>
+                        </Dialog.Close>
                     </div>
                 </div>
         );
+    };
+
+    const advancedAnnotationsOnChange = () => {
+        setSerialAnnotatorMode(!serialAnnotator);
+    };
+    const quickAnnotationsOnChange = () => {
+        dispatch(readerLocalActionSetConfig.build({ annotation_popoverNotOpenOnNoteTaking: !readerConfig.annotation_popoverNotOpenOnNoteTaking }));
+    };
+    const marginAnnotationsOnChange = () => {
+        const annotation_defaultDrawView = readerConfig.annotation_defaultDrawView === "margin" ? "annotation" : "margin";
+
+        console.log(`marginAnnotationsToggleSwitch : highlight=${annotation_defaultDrawView}`);
+        dispatch(readerLocalActionSetConfig.build({ annotation_defaultDrawView }));
+
+        const href1 = currentLocation?.locator?.href;
+        const href2 = currentLocation?.secondWebViewHref;
+        dispatch(readerLocalActionLocatorHrefChanged.build(href1, href1, href2, href2));
+    };
+    const hideAnnotationOnChange = () => {
+        const annotation_defaultDrawView = readerConfig.annotation_defaultDrawView === "hide" ? "annotation" : "hide";
+
+        console.log(`hideAnnotationsToggleSwitch : highlight=${annotation_defaultDrawView}`);
+        dispatch(readerLocalActionSetConfig.build({ annotation_defaultDrawView }));
+
+        const href1 = currentLocation?.locator?.href;
+        const href2 = currentLocation?.secondWebViewHref;
+        dispatch(readerLocalActionLocatorHrefChanged.build(href1, href1, href2, href2));
     };
 
     return (
         <div>
             {
                 dockedMode ?
-                    <><div key="docked-header" className={stylesPopoverDialog.docked_header} style={{borderBottom: "unset"}}>
-                        <div key="docked-header-btn" className={stylesPopoverDialog.docked_header_controls} style={{justifyContent: "space-between", width: "100%", padding: "0 10px"}}>
-                            <div style={{display: "flex", gap: "5px"}}>
-                            <button className={stylesButtons.button_transparency_icon} disabled={dockingMode === "left" ? true : false} aria-label="left" onClick={setDockingModeLeftSide}>
-                                <SVG ariaHidden={true} svg={DockLeftIcon} />
-                            </button>
-                            <button className={stylesButtons.button_transparency_icon} disabled={dockingMode === "right" ? true : false} aria-label="right" onClick={setDockingModeRightSide}>
-                                <SVG ariaHidden={true} svg={DockRightIcon} />
-                            </button>
-                            <button className={stylesButtons.button_transparency_icon} disabled={dockingMode === "full" ? true : false} aria-label="full" onClick={setDockingModeFull}>
-                                <SVG ariaHidden={true} svg={DockModalIcon} />
-                            </button>
+                    <>
+                        <div key="docked-header" className={stylesPopoverDialog.docked_header}>
+                            <div key="docked-header-btn" className={stylesPopoverDialog.docked_header_controls} style={{ justifyContent: "space-between", width: "100%" }}>
+                                <div style={{ display: "flex", gap: "5px" }}>
+                                    <button className={stylesButtons.button_transparency_icon} disabled={dockingMode === "left" ? true : false} aria-label={__("reader.svg.left")} onClick={setDockingModeLeftSide}>
+                                        <SVG ariaHidden={true} svg={DockLeftIcon} />
+                                    </button>
+                                    <button className={stylesButtons.button_transparency_icon} disabled={dockingMode === "right" ? true : false} aria-label={__("reader.svg.right")} onClick={setDockingModeRightSide}>
+                                        <SVG ariaHidden={true} svg={DockRightIcon} />
+                                    </button>
+                                    <button className={stylesButtons.button_transparency_icon} disabled={false} aria-label={__("reader.settings.column.auto")} onClick={setDockingModeFull}>
+                                        <SVG ariaHidden={true} svg={DockModalIcon} />
+                                    </button>
+                                </div>
+                                <Dialog.Close asChild>
+                                    <button data-css-override="" className={stylesButtons.button_transparency_icon} aria-label={__("accessibility.closeDialog")}>
+                                        <SVG ariaHidden={true} svg={QuitIcon} />
+                                    </button>
+                                </Dialog.Close>
                             </div>
-                            <Dialog.Close asChild>
-                                <button className={stylesButtons.button_transparency_icon} aria-label="Close">
-                                    <SVG ariaHidden={true} svg={QuitIcon} />
-                                </button>
-                            </Dialog.Close>
                         </div>
-                    </div>
-                    <SelectRef
-                        items={options}
-                        selectedKey={optionSelected}
-                        svg={options.find(({ value }) => value === tabValue)?.svg}
-                        onSelectionChange={(id) => {
-                            console.log("selectionchange: ", id);
-                            const value = options.find(({ id: _id }) => _id === id)?.value;
-                            if (value) {
-                                setTabValue(value);
-                                console.log("set Tab Value = ", value);
+                        <SelectRef
+                            items={options}
+                            selectedKey={optionSelected}
+                            svg={options.find(({ value }) => value === tabValue)?.svg}
+                            onSelectionChange={(id) => {
+                                console.log("selectionchange: ", id);
+                                const value = options.find(({ id: _id }) => _id === id)?.value;
+                                if (value) {
+                                    setTabValue(value);
+                                    setTimeout(() => {
+                                        // TODO: is stealing focus here necessary? Should this vary depending on keyboard or mouse interaction?
+                                        const elem = document.getElementById(`readerMenu_tabs-${value}`);
+                                        elem?.blur();
+                                        elem?.focus();
+                                    }, 1);
+                                    console.log("set Tab Value = ", value);
 
-                            } else {
-                                console.error("Combobox No value !!!");
-                            }
-                        }}
-                        style={{margin: "0", padding: "0", flexDirection: "row"}}
-                        // onInputChange={(v) => {
-                        //     console.log("inputchange: ", v);
+                                } else {
+                                    console.error("Combobox No value !!!");
+                                }
+                            }}
+                            disabledKeys={options.filter(option => option.disabled === true).map(option => option.id)}
+                            style={{ margin: "0", padding: "0", flexDirection: "row" }}
+                            // onInputChange={(v) => {
+                            //     console.log("inputchange: ", v);
 
-                        //     const value = options.find(({ name }) => name === v)?.value;
-                        //     if (value === tabValue) return;
-                        //     if (value) {
-                        //         setTabValue(value);
-                        //         console.log("set Tab Value = ", value);
+                            //     const value = options.find(({ name }) => name === v)?.value;
+                            //     if (value === tabValue) return;
+                            //     if (value) {
+                            //         setTabValue(value);
+                            //         console.log("set Tab Value = ", value);
 
-                        //     } else {
-                        //         console.error("Combobox No value !!!");
-                        //     }
-                        // }}
-                        ref={dockedModeRef}
-                    >
-                        {item => <SelectItem>{item.name}</SelectItem>}
-                    </SelectRef>
+                            //     } else {
+                            //         console.error("Combobox No value !!!");
+                            //     }
+                            // }}
+                            ref={dockedModeRef}
+                        >
+                            {item => <SelectItem>{item.name}</SelectItem>}
+                        </SelectRef>
                     </>
                     : <></>
             }
@@ -1453,9 +2515,10 @@ export const ReaderMenu: React.FC<IBaseProps> = (props) => {
                         </Tabs.List>
                 }
                 <div className={stylesSettings.settings_content}
-                style={{marginTop: dockedMode && "0"}}>
-                    <Tabs.Content value="tab-toc" tabIndex={-1}>
-                    <TabHeader />
+                    ref={popoverBoundary}
+                    style={{ marginTop: dockedMode && "0" }}>
+                    <Tabs.Content value="tab-toc" tabIndex={-1} id={"readerMenu_tabs-tab-toc"} className="R2_CSS_CLASS__FORCE_NO_FOCUS_OUTLINE">
+                        <TabHeader />
                         <div className={stylesSettings.settings_tab}>
                             {(isPdf && pdfToc?.length && renderLinkTree_(__("reader.marks.toc"), pdfToc, 1, undefined)) ||
                                 (isPdf && !pdfToc?.length && <p>{__("reader.toc.publicationNoToc")}</p>) ||
@@ -1465,7 +2528,7 @@ export const ReaderMenu: React.FC<IBaseProps> = (props) => {
                         </div>
                     </Tabs.Content>
 
-                    <Tabs.Content value="tab-landmark" tabIndex={-1}>
+                    <Tabs.Content value="tab-landmark" tabIndex={-1} id={"readerMenu_tabs-tab-landmark"} className="R2_CSS_CLASS__FORCE_NO_FOCUS_OUTLINE">
                         <TabHeader />
                         <div className={stylesSettings.settings_tab}>
                             {r2Publication.Landmarks &&
@@ -1473,80 +2536,32 @@ export const ReaderMenu: React.FC<IBaseProps> = (props) => {
                         </div>
                     </Tabs.Content>
 
-                    <Tabs.Content value="tab-bookmark" tabIndex={-1}>
+                    <Tabs.Content value="tab-bookmark" tabIndex={-1} id={"readerMenu_tabs-tab-bookmark"} className="R2_CSS_CLASS__FORCE_NO_FOCUS_OUTLINE">
                         <TabHeader />
                         <div className={stylesSettings.settings_tab}>
-                            <BookmarkList r2Publication={r2Publication} goToLocator={(locator: Locator) => goToLocator(locator, !dockedMode)} />
+                            <BookmarkList r2Publication={r2Publication} goToLocator={goToLocator} dockedMode={dockedMode} />
                         </div>
                     </Tabs.Content>
 
-                    <Tabs.Content value="tab-annotation" tabIndex={-1}>
+                    <Tabs.Content value="tab-annotation" tabIndex={-1} id={"readerMenu_tabs-tab-annotation"} className="R2_CSS_CLASS__FORCE_NO_FOCUS_OUTLINE">
                         <TabHeader />
                         <div className={classNames(stylesSettings.settings_tab, stylesAnnotations.annotations_tab)}>
-
-
-                            <details className={stylesAnnotations.annotations_options}>
-                                <summary>
-                                    <SVG ariaHidden svg={InfoIcon} />
-                                    {__("reader.annotations.annotationsOptions")}
-                                    <span>
-                                        <SVG ariaHidden svg={ChevronIcon} />
-                                    </span>
-                                </summary>
-                                {/* {dockedMode ? */}
-                                <div className={stylesAnnotations.annotations_checkbox}>
-                                    <input type="checkbox" id="advancedAnnotations" className={stylesGlobal.checkbox_custom_input} name="advancedAnnotations" checked={serialAnnotator} onChange={() => { setSerialAnnotatorMode(!serialAnnotator); }} />
-                                    <label htmlFor="advancedAnnotations" className={stylesGlobal.checkbox_custom_label}>
-                                        <div className={stylesGlobal.checkbox_custom} style={{ border: serialAnnotator ? "2px solid transparent" : "2px solid var(--color-primary)", backgroundColor: serialAnnotator ? "var(--color-blue)" : "transparent" }}>
-                                            {serialAnnotator ?
-                                                <SVG ariaHidden svg={CheckIcon} />
-                                                :
-                                                <></>
-                                            }
-                                        </div>
-                                        <div>
-                                            <h4>{__("reader.annotations.advancedMode")}</h4>
-                                        </div>
-                                    </label>
-                                </div>
-                                {/* : <></>} */}
-                                <div className={stylesAnnotations.annotations_checkbox}>
-                                    <input type="checkbox" id="quickAnnotations" name="quickAnnotations" className={stylesGlobal.checkbox_custom_input} checked={readerConfig.annotation_popoverNotOpenOnNoteTaking}
-                                        onChange={() => { dispatch(readerLocalActionSetConfig.build({ ...readerConfig, annotation_popoverNotOpenOnNoteTaking: !readerConfig.annotation_popoverNotOpenOnNoteTaking })); }}
-                                    />
-                                    <label htmlFor="quickAnnotations" className={stylesGlobal.checkbox_custom_label}>
-                                        <div className={stylesGlobal.checkbox_custom} style={{ border: readerConfig.annotation_popoverNotOpenOnNoteTaking ? "2px solid transparent" : "2px solid var(--color-primary)", backgroundColor: readerConfig.annotation_popoverNotOpenOnNoteTaking ? "var(--color-blue)" : "transparent" }}>
-                                            {readerConfig.annotation_popoverNotOpenOnNoteTaking ?
-                                                <SVG ariaHidden svg={CheckIcon} />
-                                                :
-                                                <></>
-                                            } </div>
-                                        <h4>{__("reader.annotations.quickAnnotations")}</h4></label>
-                                </div>
-                                <div className={stylesAnnotations.annotations_checkbox}>
-                                    <input type="checkbox" id="marginAnnotations" name="marginAnnotations" className={stylesGlobal.checkbox_custom_input} checked={readerConfig.annotation_defaultDrawView === "margin"} onChange={() => {
-                                        const newReaderConfig = { ...readerConfig };
-                                        newReaderConfig.annotation_defaultDrawView = newReaderConfig.annotation_defaultDrawView === "annotation" ? "margin" : "annotation";
-
-                                        console.log(`marginAnnotationsToggleSwitch : highlight=${newReaderConfig.annotation_defaultDrawView}`);
-                                        dispatch(readerLocalActionSetConfig.build(newReaderConfig));
-                                    }} />
-                                    <label htmlFor="marginAnnotations" className={stylesGlobal.checkbox_custom_label}>
-                                        <div className={stylesGlobal.checkbox_custom} style={{ border: readerConfig.annotation_defaultDrawView === "margin" ? "2px solid transparent" : "2px solid var(--color-primary)", backgroundColor: readerConfig.annotation_defaultDrawView === "margin" ? "var(--color-blue)" : "transparent" }}>
-                                            {readerConfig.annotation_defaultDrawView === "margin" ?
-                                                <SVG ariaHidden svg={CheckIcon} />
-                                                :
-                                                <></>
-                                            }
-                                        </div>
-                                        <h4>{__("reader.annotations.toggleMarginMarks")}</h4></label>
-                                </div>
-                            </details>
-                            <AnnotationList r2Publication={r2Publication} goToLocator={(locator: Locator) => goToLocator(locator, !dockedMode)} dockedMode={dockedMode} annotationUUIDFocused={annotationUUID} focus={focus}/>
+                            <AnnotationList
+                            goToLocator={goToLocator}
+                            annotationUUIDFocused={annotationUUID}
+                            resetAnnotationUUID={resetAnnotationUUID}
+                            doFocus={doFocus}
+                            popoverBoundary={popoverBoundary.current}
+                            advancedAnnotationsOnChange={advancedAnnotationsOnChange}
+                            quickAnnotationsOnChange={quickAnnotationsOnChange}
+                            marginAnnotationsOnChange={marginAnnotationsOnChange}
+                            hideAnnotationOnChange={hideAnnotationOnChange}
+                            serialAnnotator={serialAnnotator}
+                             />
                         </div>
                     </Tabs.Content>
 
-                    <Tabs.Content value="tab-search" tabIndex={-1}>
+                    <Tabs.Content value="tab-search" tabIndex={-1} id={"readerMenu_tabs-tab-search"} className="R2_CSS_CLASS__FORCE_NO_FOCUS_OUTLINE">
                         <TabHeader />
                         <div className={classNames(stylesSettings.settings_tab, stylesPopoverDialog.search_container)}>
                             {searchEnable
@@ -1558,13 +2573,13 @@ export const ReaderMenu: React.FC<IBaseProps> = (props) => {
                         </div>
                     </Tabs.Content>
 
-                    <Tabs.Content value="tab-gotopage" tabIndex={-1}>
+                    <Tabs.Content value="tab-gotopage" tabIndex={-1} id={"readerMenu_tabs-tab-gotopage"} className="R2_CSS_CLASS__FORCE_NO_FOCUS_OUTLINE">
                         <TabHeader />
                         <div className={stylesSettings.settings_tab}>
                             <GoToPageSection totalPages={
                                 isPdf && pdfNumberOfPages
                                     ? pdfNumberOfPages
-                                    : 0} {...props}/>
+                                    : 0} {...props} />
                         </div>
                     </Tabs.Content>
                 </div>

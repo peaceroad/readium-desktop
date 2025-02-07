@@ -1,6 +1,6 @@
-/*
-=-=-= bookDetailsDialog.scss
-*/
+.CSS_START_bookDetailsDialog {
+  display: none;
+}
 
 .c_dialog {
   position: fixed;
@@ -309,18 +309,22 @@
   user-select: text;
 }
 
-.___DEBUG___BOOK_DETAILS_DIALOG_CSS {
-  display: none;
-}
-
-
 .opds_book{
   &_infos {
     margin-left: 25%;
     display: flex;
     align-items: center;
     justify-content: start;
-    gap: 5px;
+    flex-wrap: wrap;
+    margin-bottom: 5px;
+
+    .allowUserSelect {
+      font-size: smaller;
+    }
+
+    strong {
+      padding-right: 5px;
+    }
   }
 
   &_state {
@@ -337,4 +341,8 @@
   &_unavailable {
     color: var(--color-error-dark);
   }
+}
+
+.CSS_END_bookDetailsDialog {
+  display: none;
 }

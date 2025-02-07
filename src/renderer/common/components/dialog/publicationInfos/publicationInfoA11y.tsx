@@ -5,24 +5,28 @@
 // that can be found in the LICENSE file exposed on Github (readium) in the project repository.
 // ==LICENSE-END==
 
-import classNames from "classnames";
 import * as stylesBlocks from "readium-desktop/renderer/assets/styles/components/blocks.scss";
 import * as stylesBookDetailsDialog from "readium-desktop/renderer/assets/styles/bookDetailsDialog.scss";
+import * as stylePublication from "readium-desktop/renderer/assets/styles/publicationInfos.scss";
+
+import { shell } from "electron";
+import classNames from "classnames";
 import * as debug_ from "debug";
 import DOMPurify from "dompurify";
 import * as React from "react";
 import { TPublication } from "readium-desktop/common/type/publication.type";
 import { convertMultiLangStringToString } from "readium-desktop/renderer/common/language-string";
-import { TranslatorProps, withTranslator } from "../../hoc/translator";
 import isURL from "validator/lib/isURL";
-import * as stylePublication from "readium-desktop/renderer/assets/styles/publicationInfos.scss";
+import { IRendererCommonRootState } from "readium-desktop/common/redux/states/rendererCommonRootState";
+import { connect } from "react-redux";
+import { TranslatorProps, withTranslator } from "../../hoc/translator";
 
 // Logger
 const debug = debug_("readium-desktop:renderer:publicationA11y");
 debug("_");
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface IProps extends TranslatorProps {
+interface IProps extends TranslatorProps, ReturnType<typeof mapStateToProps> {
     publicationViewMaybeOpds: TPublication;
 }
 
@@ -63,8 +67,8 @@ export class PublicationInfoA11y extends React.Component<IProps, IState> {
 
         debug(a11y_certifiedBy);
 
-        const findStrInArrayArray = (array: string[][], str: string): boolean => array?.findIndex((a) => a.findIndex((b) => b === str) > -1) > -1;
-        const findStrInArray = (array: string[], str: string): boolean => array?.findIndex((a) => a === str) > -1;
+        const findStrInArrayArray = (array: string[][] | string[] | undefined, str: string): boolean => Array.isArray(array) && array.findIndex((a) => (Array.isArray(a) ? a : [a]).findIndex((b) => b === str) > -1) > -1;
+        const findStrInArray = (array: string[] | undefined, str: string): boolean => Array.isArray(array) && array.findIndex((a) => a === str) > -1;
 
         const AccessModeSufficient = (() => {
 
@@ -106,7 +110,7 @@ export class PublicationInfoA11y extends React.Component<IProps, IState> {
             if (!a11y_accessibilitySummary) return undefined;
 
             let textSanitize_a11y = "";
-            const [, text] = convertMultiLangStringToString(this.props.translator, a11y_accessibilitySummary);
+            const [, text] = convertMultiLangStringToString(a11y_accessibilitySummary, this.props.locale);
             if (text) {
                 textSanitize_a11y = DOMPurify.sanitize(text).replace(/font-size:/g, "font-sizexx:");
             }
@@ -133,10 +137,11 @@ export class PublicationInfoA11y extends React.Component<IProps, IState> {
 
         const AccessibilityFeatureIsprintPageNumber = (() => {
 
-            const isPrintPageNumbers = findStrInArray(a11y_accessibilityFeature, "printPageNumbers");
+            const isPrintPageNumbers = findStrInArray(a11y_accessibilityFeature, "printPageNumbers") || findStrInArray(a11y_accessibilityFeature, "pageBreakMarkers") || findStrInArray(a11y_accessibilityFeature, "pageNavigation"); // TODO separate printPageNumbers/pageBreakMarkers from pageNavigation (updated a11y metadata presentation guidelines?)
             return isPrintPageNumbers ? <li>{__("publication.accessibility.accessibilityFeature.printPageNumbers")}</li> : undefined;
-
         })();
+
+        // TODO
         const AccessibilityFeatureIsDisplayTransformability = (() => {
 
             const isDisplayTransformability = findStrInArray(a11y_accessibilityFeature, "displayTransformability");
@@ -186,7 +191,7 @@ export class PublicationInfoA11y extends React.Component<IProps, IState> {
                                         : value;
                             return <li key={i}>{__("publication.accessibility.conformsTo")} {label}</li>;
                         }
-                        return <li key={i}>{__("publication.accessibility.conformsTo")} {value}</li>;
+                        return <li key={`conf-to${i}`}>{__("publication.accessibility.conformsTo")} {value}</li>;
                     })
                 }
             </>;
@@ -200,9 +205,16 @@ export class PublicationInfoA11y extends React.Component<IProps, IState> {
                     a11y_certifierReport.map((value, i) => {
                         if (!value) return <></>;
                         if (isURL(value)) {
-                            return <li key={i}><a href={value} title={value} aria-label={__("publication.accessibility.certifierReport")}>{__("publication.accessibility.certifierReport")}</a></li>;
+                            // file:// and data: are automatically excluded by isURL(), as well as http://localhost but not http://127.0.0.1 (or http://IP:PORT more generally, which is ok)
+                            // onClick (which includes ENTER key) is not strictly necessary but it allows us to prevent SHIFT for new window, OPT/ALT for download hyperlink target
+                            return <li key={i}><a
+                            onClick={async (ev) => {
+                                ev.preventDefault(); // necessary because href, see comment above
+                                await shell.openExternal(value);
+                            }}
+                            href={value} title={value} aria-label={__("publication.accessibility.certifierReport")}>{__("publication.accessibility.certifierReport")}</a></li>;
                         }
-                        return <li key={i}>{__("publication.accessibility.certifierReport")} {value}</li>;
+                        return <li key={`certi-report${i}`}>{__("publication.accessibility.certifierReport")} {value}</li>;
                     })
                 }
             </>;
@@ -240,4 +252,8 @@ export class PublicationInfoA11y extends React.Component<IProps, IState> {
 
 }
 
-export default withTranslator(PublicationInfoA11y);
+const mapStateToProps = (state: IRendererCommonRootState) => ({
+    locale: state.i18n.locale, // refresh
+});
+
+export default connect(mapStateToProps)(withTranslator(PublicationInfoA11y));

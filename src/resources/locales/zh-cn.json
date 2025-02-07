@@ -6,13 +6,12 @@
         "leftSlideButton": "将列表划至左侧",
         "mainContent": "主要内容",
         "rightSlideButton": "将列表划至右侧",
-        "searchBook": "按书名搜索",
         "skipLink": "跳转至内容",
         "toolbar": "工具栏"
     },
     "apiapp": {
-        "documentation": "",
-        "howItWorks": "",
+        "documentation": "Thorium 文档",
+        "howItWorks": "如何工作的？",
         "informations": "",
         "noLibraryFound": "未发现图书馆 ({{- name}})"
     },
@@ -35,14 +34,15 @@
                         "no": "否",
                         "yes": "是"
                     },
+                    "help": "",
                     "message": "是否保存当前会话？",
                     "title": "保存会话"
                 }
             }
         },
         "update": {
-            "message": "",
-            "title": ""
+            "message": "有新版本可用，点击了解更多信息。",
+            "title": "{{- appName}} 软件更新"
         },
         "window": {
             "showLibrary": "显示 书库/书架"
@@ -69,13 +69,12 @@
         "emptyTagList": "尚无带标签电子书",
         "entry": {
             "continueReading": "继续阅读",
-            "continueReadingAudioBooks": "继续听读",
-            "continueReadingDivina": "继续阅读 divina",
-            "continueReadingPdf": "继续阅读 PDF",
             "lastAdditions": "最近添加"
         },
         "export": "导出",
+        "exportAnnotation": "",
         "format": "格式",
+        "importAnnotation": "",
         "lang": "语言",
         "lastRead": "上次阅读",
         "moreInfo": "更多信息",
@@ -89,9 +88,9 @@
             "auth": {
                 "cancel": "取消",
                 "login": "登录",
-                "password": "",
-                "register": "",
-                "username": ""
+                "password": "密码",
+                "register": "注册",
+                "username": "用户名/电子邮件地址"
             },
             "info": {
                 "availableSince": "开始时间",
@@ -116,13 +115,26 @@
         "readBook": "阅读",
         "released": "出版日期",
         "sort": "排序方式",
-        "tag": "",
-        "tagCount": "标签数",
+        "tag": "标签",
         "tags": "标签",
         "update": "编辑"
     },
     "dialog": {
+        "annotations": {
+            "descAuthor": "",
+            "descCreator": "",
+            "descList": "",
+            "descNewer": "",
+            "descOlder": "",
+            "descTitle": "",
+            "importAll": "",
+            "importWithoutConflict": "",
+            "origin": "",
+            "title": ""
+        },
         "cancel": "取消",
+        "deleteAnnotations": "",
+        "deleteAnnotationsText": "",
         "deleteFeed": "你真的要删除此出版目录吗？",
         "deletePublication": "你真的要删除此出版物吗?",
         "import": "你真的要导入这些文件吗:",
@@ -142,31 +154,40 @@
         "allBooks": "全部图书",
         "catalogs": "出版目录",
         "downloads": "下载",
-        "fitlerTagTitle": "",
+        "fitlerTagTitle": "按标签过滤",
         "gridTitle": "网格视图",
         "home": "书架菜单",
         "homeTitle": "主页",
         "importTitle": "导入出版物",
         "listTitle": "列表视图",
-        "myCatalogs": "",
+        "myCatalogs": "我的目录",
         "refreshTitle": "重载",
         "searchPlaceholder": "搜索",
         "searchTitle": "开始搜索",
         "settings": "设置",
-        "viewMode": ""
+        "viewMode": "查看模式"
     },
     "library": {
         "lcp": {
-            "hint": "(提示: {{- hint}})",
+            "hint": "提示: ",
+            "open": "",
             "password": "密码",
             "sentence": "打开此出版物需要 LCP 密码: ",
             "urlHint": "忘记密码？在此获取帮助",
-            "whatIsLcp?": "",
-            "whatIsLcpInfoDetails": "",
-            "whatIsLcpInfoDetailsLink": ""
+            "whatIsLcp?": "什么是LCP？",
+            "whatIsLcpInfoDetails": "LCP 表示“许可内容保护”。",
+            "whatIsLcpInfoDetailsLink": "要了解更多信息，请单击此链接前往 EDRLab 网站。"
         }
     },
     "message": {
+        "annotations": {
+            "alreadyImported": "",
+            "emptyFile": "",
+            "errorParsing": "",
+            "noBelongTo": "",
+            "nothing": "",
+            "success": ""
+        },
         "download": {
             "error": "下载{{- title}}失败: [{{- err}}]"
         },
@@ -192,7 +213,7 @@
         },
         "addMenu": "添加 OPDS 订阅源",
         "breadcrumbRoot": "出版目录",
-        "documentation": "",
+        "documentation": "OPDS 官方网站",
         "empty": "未找到出版物",
         "firstPage": "首页",
         "informations": "",
@@ -221,7 +242,7 @@
             "updateButton": "编辑",
             "url": "链接"
         },
-        "whatIsOpds": ""
+        "whatIsOpds": "什么是 OPDS？"
     },
     "publication": {
         "accessibility": {
@@ -248,13 +269,13 @@
                 "sound": "声音",
                 "unknown": "未知"
             },
-            "certifierReport": "",
-            "conformsTo": "",
+            "certifierReport": "认证报告",
+            "conformsTo": "符合",
             "moreInformation": "更多信息",
             "name": "可访问性",
             "noA11y": "无可用的可访问性信息"
         },
-        "actions": "",
+        "actions": "动作",
         "audio": {
             "tracks": "音轨"
         },
@@ -265,51 +286,92 @@
         "cover": {
             "img": "封面图像"
         },
-        "day": "",
-        "days": "",
+        "day": "天",
+        "days": "天",
         "duration": {
             "title": "播放时长"
         },
-        "expired": "",
+        "encryptedNoLicense": "",
+        "expired": "借阅已到期",
         "expiredLcp": "此书无法阅读，因为LCP许可证已到期。",
+        "incorrectPassphrase": "",
         "lcpEnd": "结束",
         "lcpRightsCopy": "许可证拷贝",
         "lcpRightsPrint": "许可证打印",
         "lcpStart": "开始",
-        "licenceLCP": "",
+        "licenceLCP": "许可证（LCP）",
+        "licenseCertificateDateInvalid": "许可证签名日期无效",
         "licenseOutOfDate": "许可证过期",
-        "licenseSignatureDateInvalid": "许可证签名日期无效",
         "licenseSignatureInvalid": "许可证签名无效",
-        "licensed": "",
-        "markAsRead": "",
-        "notStarted": "",
-        "onGoing": "",
+        "licensed": "已授权",
+        "markAsRead": "标记为已读",
+        "notStarted": "尚未开始",
+        "onGoing": "进行中",
         "progression": {
-            "title": "进展"
+            "title": "进度"
         },
-        "read": "",
-        "remainingTime": "",
+        "read": "完成",
+        "remainingTime": "借阅（剩余时间）",
         "renewButton": "更新",
         "returnButton": "归还",
         "returnedLcp": "此书无法阅读，因为LCP许可证已被归还。",
         "revokedLcp": "此书无法阅读，因为LCP许可证已被撤销。",
         "seeLess": "察看更少",
         "seeMore": "查看更多",
-        "timeLeft": "",
+        "timeLeft": "剩余时间",
         "title": "标题",
         "userKeyCheckInvalid": "密码不正确"
     },
     "reader": {
         "annotations": {
-            "Color": "",
-            "addNote": "",
-            "advancedMode": "",
-            "annotationsOptions": "",
-            "highlight": "",
-            "noSelectionToast": "",
-            "quickAnnotations": "",
-            "saveNote": "",
-            "toggleMarginMarks": ""
+            "Color": "颜色",
+            "addNote": "注解",
+            "advancedMode": "即时模式（选择后自动创建）",
+            "annotationsExport": {
+                "description": "",
+                "title": ""
+            },
+            "annotationsOptions": "选项",
+            "colors": {
+                "bluegreen": "",
+                "cyan": "",
+                "green": "",
+                "lightblue": "",
+                "orange": "",
+                "purple": "",
+                "red": "",
+                "yellow": ""
+            },
+            "date": "",
+            "export": "",
+            "filter": {
+                "all": "",
+                "filterByColor": "",
+                "filterByCreator": "",
+                "filterByDrawtype": "",
+                "filterByTag": "",
+                "filterOptions": "",
+                "none": ""
+            },
+            "hide": "不显示",
+            "highlight": "高亮",
+            "noSelectionToast": "未选择",
+            "note": "",
+            "quickAnnotations": "快速创建（跳过编辑器）",
+            "saveNote": "保存",
+            "sorting": {
+                "lastcreated": "",
+                "lastmodified": "",
+                "progression": "",
+                "sortingOptions": ""
+            },
+            "toggleMarginMarks": "在页边距中显示",
+            "type": {
+                "outline": "大纲",
+                "solid": "纯色背景",
+                "strikethrough": "删除线",
+                "underline": "强调"
+            }
         },
         "divina": {
             "mute": "静音",
@@ -318,40 +380,43 @@
         "fxl": {
             "fit": ""
         },
+        "goToContent": "",
         "marks": {
-            "annotations": "笔记",
+            "annotations": "注解",
             "bookmarks": "书签",
             "delete": "删除",
             "edit": "编辑",
-            "goTo": "",
+            "goTo": "转到页码",
             "landmarks": "结构",
-            "saveMark": "",
+            "progression": "",
+            "saveMark": "保存书签",
             "search": "检索",
-            "searchResult": "",
+            "searchResult": "检索 [{{- searchText}}]",
             "toc": "目录"
         },
         "media-overlays": {
             "activate": "激活语音朗读",
             "captions": "字幕 / 简明视图",
-            "captionsDescription": "",
+            "captionsDescription": "具有最少字幕样式的简化文本视图。",
             "next": "朗读下一段",
             "pause": "暂停朗读",
             "play": "开始朗读",
             "previous": "朗读上一段",
             "skip": "自动跳过功能",
-            "skipDescription": "",
+            "skipDescription": "跳过/忽略附加内容，例如分页符、脚注/尾注等。",
             "speed": "语音朗读速度",
             "stop": "停止朗读",
             "title": "语音朗读"
         },
         "navigation": {
-            "annotationTitle": "",
+            "ZenModeExit": "",
+            "ZenModeTitle": "",
+            "annotationTitle": "注解",
             "backHomeTitle": "返回书架",
             "bookmarkTitle": "书签",
             "currentPage": "当前页面: {{- current}}",
             "currentPageTotal": "当前页面: {{- current}}/{{- total}}",
             "detachWindowTitle": "显示 书库/书架 窗口",
-            "fullscreenTitle": "开启全屏模式",
             "goTo": "转到",
             "goToError": "此页不存在",
             "goToPlaceHolder": "输入页码",
@@ -361,7 +426,7 @@
             "infoTitle": "信息",
             "magnifyingGlassButton": "在出版物中搜索",
             "openTableOfContentsTitle": "导航",
-            "page": "",
+            "page": "页",
             "pdfscalemode": "适合页面宽度",
             "settingsTitle": "设置"
         },
@@ -372,7 +437,7 @@
                 "next": "后一个",
                 "notFound": "无匹配",
                 "previous": "前一个",
-                "results": "",
+                "results": "结果",
                 "submit": "查找"
             },
             "searchTitle": "搜索："
@@ -384,23 +449,25 @@
                 "title": "栏",
                 "two": "2栏"
             },
-            "customizeReader": "",
-            "disabled": "",
+            "customFontSelected": "",
+            "customizeReader": "自定义文本格式",
+            "disabled": "已禁用",
             "display": "显示",
             "disposition": {
                 "title": "布局"
             },
             "font": "字体",
             "fontSize": "字体大小",
-            "infoCustomFont": "",
+            "infoCustomFont": "通过输入名称从操作系统中选择自定义字体",
             "justification": "排版",
             "justify": "两端对齐",
             "letterSpacing": "字符间距",
             "lineSpacing": "行间距",
             "margin": "页边距",
             "noFootnotes": "禁用脚注",
-            "noRTLFlip": "",
-            "noRuby": "",
+            "noRTLFlip": "禁用从右到左的 UI",
+            "noRuby": "隐藏日文Ruby标注",
+            "noTemporaryNavTargetOutline": "",
             "paginated": "已分页",
             "paraSpacing": "段落间距",
             "pdfZoom": {
@@ -416,20 +483,30 @@
                 },
                 "title": "放大"
             },
-            "preview": "",
+            "preset": {
+                "apply": "",
+                "applyDetails": "",
+                "detail": "",
+                "reset": "",
+                "resetDetails": "",
+                "save": "",
+                "saveDetails": "",
+                "title": ""
+            },
+            "preview": "预览",
             "reduceMotion": "减少动态效果",
             "scrolled": "滚屏",
             "spacing": "间距",
             "text": "文字",
             "theme": {
                 "name": {
-                    "Contrast1": "",
-                    "Contrast2": "",
-                    "Contrast3": "",
-                    "Contrast4": "",
+                    "Contrast1": "对比度1",
+                    "Contrast2": "对比度2",
+                    "Contrast3": "对比度3",
+                    "Contrast4": "对比度4",
                     "Neutral": "无色",
                     "Night": "夜间",
-                    "Paper": "",
+                    "Paper": "纸张",
                     "Sepia": "茶色"
                 },
                 "title": "主题"
@@ -445,26 +522,36 @@
         },
         "tts": {
             "activate": "激活文本语音转换",
-            "default": "声音: 系统默认",
+            "language": "",
             "next": "下一段",
             "pause": "暂停",
             "play": "播放",
             "previous": "上一段",
             "sentenceDetect": "句子检测",
-            "sentenceDetectDescription": "",
+            "sentenceDetectDescription": "将长段落分成句子。",
             "speed": "语速",
             "stop": "停止",
             "voice": "声音"
         }
     },
     "settings": {
+        "annotationCreator": {
+            "creator": "",
+            "help": "",
+            "name": "",
+            "organization": "",
+            "person": "",
+            "type": ""
+        },
         "auth": {
+            "help": "",
+            "title": "",
             "wipeData": "清除登录数据"
         },
         "keyboard": {
             "advancedMenu": "菜单",
             "cancel": "取消",
-            "disclaimer": "",
+            "disclaimer": "快捷键是根据 QWERTY 键盘布局定义的。",
             "editUserJson": "编辑用户文件...",
             "keyboardShortcuts": "键盘快捷键",
             "loadUserJson": "从用户文件加载",
@@ -474,50 +561,52 @@
         "language": {
             "languageChoice": "选择语言"
         },
+        "library": {
+            "enableAPIAPP": "",
+            "title": ""
+        },
         "session": {
-            "no": "禁用",
-            "title": "保存登录状态",
-            "yes": "启用"
+            "title": "保存登录状态"
         },
         "tabs": {
-            "appearance": "",
-            "general": "",
-            "keyboardShortcuts": ""
+            "appearance": "外观",
+            "general": "常规",
+            "keyboardShortcuts": "键盘快捷键"
         },
         "theme": {
-            "auto": "",
-            "dark": "",
-            "description": "",
-            "light": "",
-            "title": ""
+            "auto": "自动",
+            "dark": "深色",
+            "description": "跟随操作系统主题。",
+            "light": "浅色",
+            "title": "应用主题"
         }
     },
     "wizard": {
         "buttons": {
-            "discover": "",
-            "goToBooks": "",
-            "next": ""
+            "discover": "探索新变化",
+            "goToBooks": "查看我的出版物",
+            "next": "下一个"
         },
         "description": {
-            "annotations": "",
-            "catalogs": "",
-            "home": "",
+            "annotations": "突出显示文档中的文本，选择样式和颜色，并添加个人注释。在‘快速’模式下创建注解，无需经过编辑器（您可以稍后输入文本并自定义样式）。为了提高速度，您还可以使用‘即时’模式，该模式允许您在高亮文本后立即生成注解！",
+            "catalogs": "从您的当地图书馆借阅出版物或通过 OPDS 源添加出版物。得益于在线目录，您可以从多个来源访问各种出版物。",
+            "home": "Thorium 看起来不同了！让我们探索一下有什么新变化。",
             "readingView1": "",
-            "readingView2": "",
-            "yourBooks": ""
+            "readingView2": "Thorium 改进的用户界面使得在出版物中查找文本、探索搜索结果、跳转到特定页面、浏览目录、创建书签等流程变得更加容易，这得益于新的‘固定’面板。在全屏阅读模式下继续提供无干扰的阅读体验。",
+            "yourBooks": "欢迎来到重新设计的个人书架！在'网格'视图中，您可以轻松地通过标签筛选或通过关键词找到出版物。在高级的'表格'视图中，可以按特定作者、标题、日期、格式等选择并排序出版物。"
         },
-        "dontShow": "",
+        "dontShow": "不再显示",
         "tab": {
-            "annotations": "",
-            "catalogs": "",
-            "home": "",
-            "readingView": "",
-            "yourBooks": ""
+            "annotations": "注解",
+            "catalogs": "目录",
+            "home": "主页",
+            "readingView": "阅读视图",
+            "yourBooks": "您的出版物"
         },
         "title": {
-            "allBooks": "",
-            "newFeature": "",
-            "welcome": ""
+            "allBooks": "我的所有出版物",
+            "newFeature": "新功能：注解",
+            "welcome": "欢迎使用 Thorium 3.0"
         }
     }
 }

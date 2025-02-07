@@ -1,6 +1,8 @@
-/*
-=-=-= combobox.scss
-*/
+@use '../partials/mixin' as mx;
+
+.CSS_START_components_combobox {
+  display: none;
+}
 
 .react_aria_ComboBox {
   color: var(--text-color);
@@ -16,7 +18,7 @@
     border-radius: 6px;
     display: flex;
     align-items: center;
-    width: 320px;
+    width: 360px;
     padding-right: 10px;
     position: relative;
 
@@ -87,26 +89,15 @@
   height: fit-content;
   max-height: 350px!important;
   overflow: hidden auto;
+
+  @include mx.scrollbar_styling;
   
   &::-webkit-scrollbar {
     width: 10px;
-    transition: 200ms;
 
     &-thumb {
-        background-color: var(--scrollbar-thumb);
         border-radius: 5px;
-        border-left: 2px solid transparent;
-        background-clip: padding-box;
-        cursor: pointer;
-
-        &:hover {
-          border: 0;
-        }
     }
-
-    &-track {
-      background-color: var(--color-secondary);
-      }
   }
 
   .react_aria_ListBox {
@@ -127,11 +118,14 @@
     cursor: pointer;
     color: var(--color-primary);
     position: relative;
-    transition: 100ms;
     text-wrap: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     font-size: 14px;
+
+    &[data-disabled] {
+      color: var(--color-light-grey);
+    }
   
     &.selected {
       font-weight: 600;
@@ -165,3 +159,7 @@
       color: HighlightText;
     }
   }
+
+.CSS_END_components_combobox {
+  display: none;
+}

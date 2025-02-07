@@ -35,9 +35,20 @@ import { sessionReducer } from "readium-desktop/common/redux/reducers/session";
 import { readerDefaultConfigReducer } from "readium-desktop/common/redux/reducers/reader/defaultConfig";
 import { themeReducer } from "readium-desktop/common/redux/reducers/theme";
 import { versionUpdateReducer } from "readium-desktop/common/redux/reducers/version-update";
-import { IAnnotationState } from "readium-desktop/common/redux/states/renderer/annotation";
+import { IAnnotationPreParsingState, IAnnotationState } from "readium-desktop/common/redux/states/renderer/annotation";
 import { annotationModeEnableReducer } from "./annotationModeEnable";
-import { readerActions } from "readium-desktop/common/redux/actions";
+import { annotationActions, readerActions } from "readium-desktop/common/redux/actions";
+import { readerMediaOverlayReducer } from "./mediaOverlay";
+import { readerTTSReducer } from "./tts";
+import { readerTransientConfigReducer } from "./readerTransientConfig";
+import { readerAllowCustomConfigReducer } from "readium-desktop/common/redux/reducers/reader/allowCustom";
+import { annotationTagsIndexReducer } from "./annotationTagsIndex";
+import { creatorReducer } from "readium-desktop/common/redux/reducers/creator";
+import { importAnnotationReducer } from "readium-desktop/renderer/common/redux/reducers/importAnnotation";
+import { tagReducer } from "readium-desktop/common/redux/reducers/tag";
+import { fifoReducer } from "readium-desktop/utils/redux-reducers/fifo.reducer";
+import { readerResourceCacheReducer } from "./resourceCache";
+import { readerLockReducer } from "./lock";
 
 export const rootReducer = () => {
 
@@ -50,6 +61,8 @@ export const rootReducer = () => {
         reader: combineReducers({ // IReaderStateReader, dehydrated from main process registry (preloaded state)
             defaultConfig: readerDefaultConfigReducer,
             config: readerConfigReducer,
+            allowCustomConfig: readerAllowCustomConfigReducer,
+            transientConfig: readerTransientConfigReducer,// ReaderConfigPublisher
             info: readerInfoReducer,
             locator: readerLocatorReducer,
             bookmark: priorityQueueReducer
@@ -105,11 +118,13 @@ export const rootReducer = () => {
                         sortFct: (a, b) => b[0] - a[0],
                         update: {
                             type: readerActions.annotation.update.ID,
-                            selector: (action, queue) =>
-                                [
-                                    queue.reduce<number>((pv, [k, v]) => v.uuid === action.payload.uuid ? k : pv, undefined),
-                                    action.payload,
-                                ],
+                            selector: (action, queue) => {
+                                const [_, newAnnot] = action.payload;
+                                return [
+                                    queue.reduce<number>((pv, [k, v]) => v.uuid === newAnnot.uuid ? k : pv, undefined),
+                                    newAnnot,
+                                ];
+                            },
                         },
                     },
                 ),
@@ -133,7 +148,7 @@ export const rootReducer = () => {
                                 type: readerLocalActionHighlights.handler.pop.ID,
                                 selector: (action) =>
                                     action.payload?.map(
-                                        (highlightBaseState) => [highlightBaseState.uuid, undefined],
+                                        (highlightBaseState) => [highlightBaseState.uuid, undefined as IHighlightHandlerState | undefined],
                                     ),
                             },
                         },
@@ -157,7 +172,7 @@ export const rootReducer = () => {
                                 type: readerLocalActionHighlights.mounter.unmount.ID,
                                 selector: (action) =>
                                     action.payload?.map(
-                                        (highlightBaseState) => [highlightBaseState.uuid, undefined],
+                                        (highlightBaseState) => [highlightBaseState.uuid, undefined as IHighlightMounterState | undefined],
                                     ),
                             },
                         },
@@ -165,14 +180,39 @@ export const rootReducer = () => {
             }),
             divina: readerDivinaReducer,
             disableRTLFlip: readerRTLFlipReducer,
+            mediaOverlay: readerMediaOverlayReducer,
+            tts: readerTTSReducer,
+            lock: readerLockReducer,
         }),
         search: searchReducer,
+        resourceCache: readerResourceCacheReducer,
         annotation: annotationModeEnableReducer,
+        annotationTagsIndex: annotationTagsIndexReducer,
         picker: pickerReducer,
         win: winReducer,
         dialog: dialogReducer,
         toast: toastReducer,
         keyboard: keyboardReducer,
         mode: winModeReducer,
+        creator: creatorReducer,
+        importAnnotations: importAnnotationReducer,
+        publication: combineReducers({
+            tag: tagReducer,
+        }),
+        annotationImportQueue: fifoReducer
+        <
+            annotationActions.pushToAnnotationImportQueue.TAction,
+            IAnnotationPreParsingState
+        >(
+            {
+                push: {
+                    type: annotationActions.pushToAnnotationImportQueue.ID,
+                    selector: (action) => action.payload.annotations,
+                },
+                shift: {
+                    type: annotationActions.shiftFromAnnotationImportQueue.ID,
+                },
+            },
+        ),
     });
 };

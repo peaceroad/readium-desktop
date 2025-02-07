@@ -15,6 +15,17 @@ export enum ReaderMode {
     Detached = "detached",
 }
 
+export interface ReaderTTSMediaOverlay {
+    ttsPlaybackRate: string;
+    ttsVoice: SpeechSynthesisVoice | null,
+
+    mediaOverlaysPlaybackRate: string,
+}
+
+export interface ReaderInfoNavigator {
+    r2PublicationHasMediaOverlays: boolean;
+}
+
 /**
  *  A reader
  */
@@ -25,11 +36,15 @@ export interface ReaderInfo {
     publicationIdentifier: string;
     r2Publication: R2Publication;
     publicationView: PublicationView;
+    navigator: ReaderInfoNavigator;
 }
 
 /**
  * A reader configuration
  */
+
+export interface ReaderConfigPublisher extends Pick<ReaderConfigStrings, "font" | "fontSize" | "pageMargins" | "wordSpacing" | "letterSpacing" | "paraSpacing" | "lineHeight"> {
+}
 
 export interface ReaderConfigStringsAdjustables {
     fontSize: string;
@@ -65,6 +80,7 @@ export interface ReaderConfigBooleans {
     enableMathJax: boolean;
     reduceMotion: boolean;
     noFootnotes: boolean;
+    noTemporaryNavTargetOutline: boolean;
     noRuby: boolean;
     darken: boolean;
     mediaOverlaysEnableSkippability: boolean;
@@ -73,7 +89,11 @@ export interface ReaderConfigBooleans {
     ttsEnableOverlayMode: boolean;
 }
 
-export interface ReaderConfig extends ReaderConfigStrings, ReaderConfigBooleans, IAnnotationReaderConfigState {
+export interface IReaderSettingsMenuState {
+    readerDockingMode: "full" | "left" | "right";
+}
+
+export interface ReaderConfig extends ReaderConfigStrings, ReaderConfigBooleans, IAnnotationReaderConfigState, IReaderSettingsMenuState, ReaderTTSMediaOverlay {
 }
 
 // export interface BookmarkCollection {

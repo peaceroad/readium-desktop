@@ -23,7 +23,8 @@ import { applyPatch } from "rfc6902";
 
 import { reduxPersistMiddleware } from "../middleware/persistence";
 import { readerConfigInitialState } from "readium-desktop/common/redux/states/reader";
-import { defaultDisableRTLFLip } from "readium-desktop/common/redux/states/renderer/rtlFlip";
+import { LocatorExtended } from "@r2-navigator-js/electron/renderer";
+import { minimizeLocatorExtended } from "readium-desktop/common/redux/states/locatorInitialState";
 
 // import { composeWithDevTools } from "remote-redux-devtools";
 const REDUX_REMOTE_DEVTOOLS_PORT = 7770;
@@ -114,6 +115,13 @@ export async function initStore()
     }
 
     try {
+
+        debug("BE CAREFUL");
+        debug("State initialisation on the first and second launch of Thorium");
+        debug("On the first launch runtimeStatePath failed it's an empty file (not created)");
+        debug("On the second launch runtimeStatePath is equal to an empty object {}");
+        debug("and failed on checkReduxState, reduxState has not be preloaded in runtimeStateFilePath");
+        debug("So the Third launch is good!, Thorium State is stabilize");
         const state = await recoveryReduxState(await runtimeState());
         reduxState = await checkReduxState(state, reduxState);
 
@@ -185,7 +193,7 @@ export async function initStore()
         await tryCatch(() =>
             fsp.writeFile(
                 runtimeStateFilePath,
-                reduxState ? JSON.stringify(reduxState) : "",
+                reduxState ? JSON.stringify(reduxState) : "{}",
                 { encoding: "utf8" },
             )
             , "");
@@ -205,21 +213,72 @@ export async function initStore()
     debug("REDUX STATE VALUE :: ", typeof reduxState, reduxState ? Object.keys(reduxState) : "nil");
     // debug(reduxState);
 
-    const forceDisableReaderDefaultConfigAndSessionForTheNewUI: Partial<PersistRootState> = {
-        reader: {
-            defaultConfig: readerConfigInitialState,
-            disableRTLFlip: reduxState?.reader?.disableRTLFlip || { disabled: defaultDisableRTLFLip },
-        },
-        session: {
-            state: true,
-        },
-    };
-    const preloadedState = reduxState ? {
+    // const forceDisableReaderDefaultConfigAndSessionForTheNewUI: Partial<PersistRootState> = {
+        // reader: {
+
+        //     // reader default config could be removed
+        //     // defaultConfig: readerConfigInitialState,
+
+        //     // just disableRTLFlip use yet
+        //     disableRTLFlip: reduxState?.reader?.disableRTLFlip || { disabled: defaultDisableRTLFLip },
+        // },
+        // session: {
+
+        //     // not used anymore, just force to true in main and lib, but not declared in reader (false by default)
+        //     // state: true,
+
+        //     // save is used to know if the session must be saved at the end
+        //     // save: reduxState?.session?.save || false,
+        // },
+    // };
+    // const preloadedState = reduxState ? {
+    //     ...reduxState,
+    //     ...forceDisableReaderDefaultConfigAndSessionForTheNewUI,
+    // } : {
+    //     ...forceDisableReaderDefaultConfigAndSessionForTheNewUI,
+    // };
+    const preloadedState: Partial<PersistRootState> = reduxState ? {
         ...reduxState,
-        ...forceDisableReaderDefaultConfigAndSessionForTheNewUI,
-    } : {
-        ...forceDisableReaderDefaultConfigAndSessionForTheNewUI,
-    };
+    } : {};
+
+    if (preloadedState.win?.registry?.reader) {
+        for (const id in preloadedState.win.registry.reader) {
+            const state = preloadedState.win.registry.reader[id];
+
+            if (state?.reduxState?.locator) {
+                const locatorExtended = state.reduxState.locator as LocatorExtended;
+                if (locatorExtended.followingElementIDs) {
+                    debug("REMOVE preloadedState.win.registry.reader[id].reduxState.locator.followingElementIDs (LocatorExtended): ", locatorExtended.followingElementIDs.length);
+                }
+                // REMOVE locatorExtended.followingElementIDs, no-op if property does not exist (same object returned)
+                state.reduxState.locator = minimizeLocatorExtended(locatorExtended);
+
+                // SEE isDivinaLocation duck typing hack with totalProgression injection!!
+                const locations = state.reduxState.locator.locator?.locations as any;
+                if (locations?.totalProgression) {
+                    debug("INFO DIVINA preloadedState.win.registry.reader[id].reduxState.locator.locations.totalProgression: ", locations.totalProgression);
+                }
+            }
+
+            if (state?.reduxState?.annotation) {
+                for (const annotation of state.reduxState.annotation) {
+                    if (annotation[1]?.locatorExtended) {
+                        const locatorExtended = annotation[1].locatorExtended as LocatorExtended;
+                        if (locatorExtended.followingElementIDs) {
+                            debug("REMOVE preloadedState.win.registry.reader[id].reduxState.annotation[i].locatorExtended.followingElementIDs (LocatorExtended): ", locatorExtended.followingElementIDs.length);
+                        }
+                        // REMOVE locatorExtended.followingElementIDs, no-op if property does not exist (same object returned)
+                        annotation[1].locatorExtended = minimizeLocatorExtended(annotation[1].locatorExtended);
+                    }
+                }
+            }
+        }
+    }
+
+    // defaultConfig state initialization from older database thorium version 2.x, 3.0
+    if (preloadedState?.reader?.defaultConfig) {
+        preloadedState.reader.defaultConfig = { ...readerConfigInitialState, ...preloadedState.reader.defaultConfig };
+    }
 
     const sagaMiddleware = createSagaMiddleware();
 
@@ -229,7 +288,7 @@ export async function initStore()
         reduxPersistMiddleware,
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-var-requires,@typescript-eslint/no-require-imports
     const middleware = IS_DEV ? require("remote-redux-devtools").composeWithDevTools(
         {
             port: REDUX_REMOTE_DEVTOOLS_PORT,

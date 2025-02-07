@@ -14,7 +14,9 @@ module.exports = {
         "src/typings/*",
         "src/resources/*",
         "src/renderer/assets/*",
-        "src/renderer/reader/pdf/*"
+        "src/renderer/reader/pdf/*",
+        ".zed/*",
+        ".flox/*"
     ],
     // ignorePatterns: [ "*.*" ],
     parser: "@typescript-eslint/parser",
@@ -48,12 +50,22 @@ module.exports = {
         // "unused-imports",
         "prettier",
         "eslint-plugin-local-rules",
+        "react-hooks",
     ],
     rules: {
+        "react-hooks/rules-of-hooks": "error",
+        "react-hooks/exhaustive-deps": "error",
+
         quotes: ["error", "double"],
         "comma-dangle": ["error", "always-multiline"],
         "eol-last": ["error", "always"],
         semi: ["error", "always"],
+
+        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+        "@typescript-eslint/no-empty-object-type": 0,
+
+        "@typescript-eslint/prefer-promise-reject-errors": 0,
+        "@typescript-eslint/only-throw-error": 0,
 
         "@typescript-eslint/no-unsafe-member-access": 0,
         "@typescript-eslint/no-unsafe-return": 0,

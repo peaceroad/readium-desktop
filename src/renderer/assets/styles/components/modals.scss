@@ -1,6 +1,8 @@
-/*
-=-=-= modals.scss
-*/
+@use '../partials/mixin' as mx;
+
+.CSS_START_components_modals {
+  display: none;
+}
 
 .modal_dialog_overlay {
   position: fixed;
@@ -40,6 +42,7 @@
   align-content: flex-start;
   position: fixed;
   box-sizing: border-box;
+  border: 1px solid var(--color-verylight-grey-alt);
 
   &.modal_dialog_full {
     position: relative;
@@ -67,7 +70,8 @@
 
     .react_aria_ComboBox {
       .react_aria_Button {
-        background-color: var(--color-secondary);
+        // background-color: var(--color-secondary);
+        background-color: inherit;
       }
 
       .react_aria_Input {
@@ -80,7 +84,7 @@
 
 .modal_dialog_body {
   flex: 1;
-  padding: 0 20px 0 30px;
+  padding: 0 20px;
   overflow: hidden auto;
   display: flex;
   flex-direction: column;
@@ -91,6 +95,8 @@
     align-items: center;
     justify-content: center;
   }
+
+  @include mx.scrollbar_styling;
 }
 
 .modal_dialog_body_cover > img {
@@ -127,15 +133,15 @@
 
 .modal_dialog_footer {
   justify-content: end;
-  border-top: 1px solid var(--color-medium-grey);
+  border-top: 1px solid var(--color-light-grey);
   position: sticky;
   bottom: 0;
   right: 0;
   background-color: var(--color-secondary);
   gap: 10px;
 
-  & [type="submit"] {
-    min-width: 100px;
+  & [type="submit"], .button_secondary_blue {
+    min-width: 70px;
   }
 }
 
@@ -198,6 +204,7 @@
   align-items: center;
   gap: 5px;
   width: fit-content;
+  font-size: 14px;
 
   svg {
     height: 14px;
@@ -213,17 +220,19 @@
   margin-top: 30px!important;
 
   .guidedTour_tab {
-    margin-top: 0;
+    margin-top: 0!important;
 
     h3 {
       font-size: 25px;
       margin-top: 0;
+      margin-bottom: 10px;
     }
 
     p {
       font-size: 14px;
       font-weight: 400;
       margin-bottom: 10px;
+      margin-top: 5px;
     }
 
     img {
@@ -243,9 +252,14 @@
       align-items: center;
       justify-content: flex-end;
       gap: 20px;
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
+      // position: absolute;
+      // bottom: 20px;
+      // right: 20px;
+      margin: 20px 0;
     }
   }
+}
+
+.CSS_END_components_modals {
+  display: none;
 }

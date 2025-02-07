@@ -6,15 +6,14 @@
         "leftSlideButton": "Mugitu zerrenda ezkerrera",
         "mainContent": "Eduki nagusia",
         "rightSlideButton": "Mugitu zerrenda eskuinera",
-        "searchBook": "Bilatu izenburuaren arabera",
         "skipLink": "Pasatu edukira",
         "toolbar": "Tresna-barra"
     },
     "apiapp": {
-        "documentation": "",
-        "howItWorks": "",
-        "informations": "",
-        "noLibraryFound": ""
+        "documentation": "Torioaren Dokumentazioa",
+        "howItWorks": "Nola dabil?",
+        "informations": "Frantzian, liburutegi publiko askok irakurketa mekanikoko katalogo bat eskaintzen dute (OPDSren antzekoa, baina ez berdina), eta horrek argitalpen digitalak apaletik deskargatzen uzten die ugazabei. Teknologia hau Thorium Reader-en txertatzeak ebook edo audioliburu bat zuzenean Thorium Reader-era deskargatzeko aukera ematen du.\nNola konektatzen duzu Frantziako liburutegi publikoaren kontua Thorium Readerrekin? Erraza da. Sartu Frantziako hiri batean (\"Paris\") edo liburutegiaren izenaren zati batean Bilaketa eremuan eta sakatu Bilatu botoia. Zure bilaketari dagozkion liburutegi publikoen zerrenda agertuko da. Liburutegi bat aukeratu eta Add sakatu. Katalogoen zerrenda eguneratuan, aukeratu liburutegi hau: autentifikazio-formulario bat agertzen da. Sartu zure erabiltzaile izena/helbide elektronikoa eta pasahitza, eta sakatu Login. Orain zure apalategi pertsonalaren edukia ikus dezakezu, eta bertatik deskargatu eta irakurri ahal izango dituzu lehen maileguan utzitako liburu elektronikoak eta audioliburuak.",
+        "noLibraryFound": "Ez da liburutegirik aurkitu ({{- izena}})"
     },
     "app": {
         "edit": {
@@ -35,14 +34,15 @@
                         "no": "Ez",
                         "yes": "Bai"
                     },
+                    "help": "",
                     "message": "Saioa gorde nahi duzu?",
                     "title": "Gorde saioa"
                 }
             }
         },
         "update": {
-            "message": "",
-            "title": ""
+            "message": "Bertsio berria eskuragarri, klik egin gehiago jakiteko.",
+            "title": "{{- appName}} software-eguneratzea."
         },
         "window": {
             "showLibrary": "Erakutsi liburutegia"
@@ -69,15 +69,14 @@
         "emptyTagList": "Ez duzu libururik etiketatuta.",
         "entry": {
             "continueReading": "Berrabiarazi irakurketa",
-            "continueReadingAudioBooks": "Berrabiarazi erreprodukzioa",
-            "continueReadingDivina": "Berriabiazi Divina",
-            "continueReadingPdf": "PDF berrabiarazi",
             "lastAdditions": "Berriki gehitutakoak"
         },
         "export": "Esportatu",
-        "format": "",
+        "exportAnnotation": "",
+        "format": "Formatua",
+        "importAnnotation": "",
         "lang": "Hizkuntza",
-        "lastRead": "",
+        "lastRead": "Azken Irakurketa",
         "moreInfo": "Informazio gehiago",
         "myBooks": "Nire liburuak",
         "noPublicationHelpL1": "Lerratu argitalpen bat hemen",
@@ -89,9 +88,9 @@
             "auth": {
                 "cancel": "Utzi",
                 "login": "Hasi saioa",
-                "password": "",
-                "register": "",
-                "username": ""
+                "password": "Pasahitza",
+                "register": "Izena eman",
+                "username": "Erabiltzaile izena / Helbide elektronikoa"
             },
             "info": {
                 "availableSince": "Noiztik",
@@ -116,13 +115,26 @@
         "readBook": "Irakurri",
         "released": "Hemen argitaratua",
         "sort": "Ordenatu honen arabera",
-        "tag": "",
-        "tagCount": "Etiketa kopurua",
+        "tag": "Etiketa",
         "tags": "Etiketak",
-        "update": ""
+        "update": "Editatu"
     },
     "dialog": {
+        "annotations": {
+            "descAuthor": "",
+            "descCreator": "",
+            "descList": "",
+            "descNewer": "",
+            "descOlder": "",
+            "descTitle": "",
+            "importAll": "",
+            "importWithoutConflict": "",
+            "origin": "",
+            "title": ""
+        },
         "cancel": "Ezeztatu",
+        "deleteAnnotations": "",
+        "deleteAnnotationsText": "",
         "deleteFeed": "Ziur zaude katalogo hau ezabatu nahi duzula?",
         "deletePublication": "Ziur zaude argitalpen hau ezabatu nahi duzula?",
         "import": "Ziur zaude fitxategi hauek inportatu nahi dituzula?",
@@ -142,31 +154,40 @@
         "allBooks": "Liburu guztiak",
         "catalogs": "Katalogoak",
         "downloads": "Deskargak",
-        "fitlerTagTitle": "",
+        "fitlerTagTitle": "Iragazi etiketaren arabera",
         "gridTitle": "Lauki-formako aurkezpena",
         "home": "Liburutegiko menu nagusia",
         "homeTitle": "Hasiera",
         "importTitle": "Inportatu argitalpena",
         "listTitle": "Zerrendako aurkezpena",
-        "myCatalogs": "",
+        "myCatalogs": "Nire katalogoak",
         "refreshTitle": "Kargatu",
         "searchPlaceholder": "Bilatu",
         "searchTitle": "Hasi bilaketa",
         "settings": "Konfigurazio-aukerak",
-        "viewMode": ""
+        "viewMode": "Ikusi modua"
     },
     "library": {
         "lcp": {
-            "hint": "(Adierazi : {{- hint}})",
+            "hint": "Adierazi : ",
+            "open": "",
             "password": "Pasahitza",
             "sentence": "Argitalpen honek LCP pasahitza behar du irekitzeko: ",
             "urlHint": "Pasahitza ahaztu duzu? Bilatu laguntza hemen",
-            "whatIsLcp?": "",
-            "whatIsLcpInfoDetails": "",
-            "whatIsLcpInfoDetailsLink": ""
+            "whatIsLcp?": "Zer da LCP?",
+            "whatIsLcpInfoDetails": "LCP \"Lizentziadun edukien babesa\" esan nahi du.",
+            "whatIsLcpInfoDetailsLink": "Gehiago jakiteko, egin klik EDRLab webgunerako esteka honetan."
         }
     },
     "message": {
+        "annotations": {
+            "alreadyImported": "",
+            "emptyFile": "",
+            "errorParsing": "",
+            "noBelongTo": "",
+            "nothing": "",
+            "success": ""
+        },
         "download": {
             "error": "{- title}}-ren deskargak huts egin du [{- err}]"
         },
@@ -184,18 +205,18 @@
             "addButton": "Erantsi",
             "name": "Izena:",
             "namePlaceholder": "Izena",
-            "url": "Lotura:",
-            "urlPlaceholder": "Lotura"
+            "url": "Link:",
+            "urlPlaceholder": "Link"
         },
         "addFormApiapp": {
-            "title": ""
+            "title": "Liburutegiko kontua gehitu"
         },
         "addMenu": "OPDS katalogoa gehitzea",
         "breadcrumbRoot": "Katalogoak",
-        "documentation": "",
+        "documentation": "OPDS webgune ofiziala",
         "empty": "Ez da argitalpenik aurkitu",
         "firstPage": "Lehena",
-        "informations": "",
+        "informations": "Imajinatu mundu bat non liburutegi publikoen eta liburu-saltzaile digitalen argitalpen digitalak arakatu eta deskargatu ditzakezun klik batzuekin. Horixe da Argitalpen Irekien Banaketa Sistemak eskaintzen duena. OPDSekin, hainbat ebook hornitzaileren katalogoetan nabiga dezakezu, izena eman, maileguan hartu, argitalpen bat erosi edo zure apalategi pertsonala bisitatu. Ebook bat edo audioliburu bat deskarga dezakezu zuzenean Thorium Reader-era, berehala irakurtzeko.\nNola aurkitzen duzu OPDS katalogo bat? Erraza da. Bilatu hiperesteka bat (URL) katalogora joateko. Kopiatu URL hau goiko Link eremuan. Kontuan izan ez dagoela leihatila bakar bat OPDS katalogo aktibo guztientzat. Zure liburutegi edo liburu-saltzailearekin harremanetan jarri eta OPDS katalogoaren URLa eskatu beharko duzu. Ez bazaude ziur nondik hasi, Wikipediak baditu OPDS katalogen erregistro batzuk hainbat hizkuntzatan, lagungarriak izan daitezkeenak.\nIzena eremua zure esku uzten da; Thorium Reader-eko pentsua identifikatzeko modu erraza eskaintzen du.\n",
         "lastPage": "Azkena",
         "menu": {
             "aboutBook": "Liburu honi buruz",
@@ -216,45 +237,45 @@
         "previous": "Aurrekoa",
         "shelf": "Apala",
         "updateForm": {
-            "name": "",
-            "title": "",
-            "updateButton": "",
-            "url": ""
+            "name": "Izena:",
+            "title": "Editatu OPDS jarioa",
+            "updateButton": "Editatu",
+            "url": "Link:"
         },
-        "whatIsOpds": ""
+        "whatIsOpds": "Zer da OPDS?"
     },
     "publication": {
         "accessibility": {
             "accessModeSufficient": {
-                "textual": ""
+                "textual": "TTS eta pantaila-irakurgailu egokiak"
             },
             "accessibilityFeature": {
-                "alternativeText": "",
-                "displayTransformability": "",
-                "longDescription": "",
-                "printPageNumbers": "",
-                "readingOrder": "",
-                "synchronizedAudioText": "",
-                "tableOfContents": ""
+                "alternativeText": "Testu alternatiboa dauka",
+                "displayTransformability": "Testu eta diseinu moldagarriak",
+                "longDescription": "Baliabide grafikoetarako deskribapen osoak",
+                "printPageNumbers": "Liburu inprimatuaren orrialdeei buruzko erreferentzia",
+                "readingOrder": "Irakurketa-ordena dauka",
+                "synchronizedAudioText": "Testu eta audio sinkronizatuak",
+                "tableOfContents": "Eduki-taula barne"
             },
             "accessibilityHazard": {
-                "flashing": "",
-                "motionSimulation": "",
-                "name": "",
-                "noFlashing": "",
-                "noMotionSimulation": "",
-                "noSound": "",
-                "none": "",
-                "sound": "",
-                "unknown": ""
+                "flashing": "Distirak",
+                "motionSimulation": "Animazioa",
+                "name": "Arriskua:",
+                "noFlashing": "Distirarik gabe",
+                "noMotionSimulation": "Animaziorik gabe",
+                "noSound": "Soinurik gabe",
+                "none": "Bat ere ez",
+                "sound": "Soinua",
+                "unknown": "Ezezaguna"
             },
-            "certifierReport": "",
-            "conformsTo": "",
-            "moreInformation": "",
-            "name": "",
-            "noA11y": ""
+            "certifierReport": "Ziurtagiriaren txostena",
+            "conformsTo": "Ados:",
+            "moreInformation": "Informazio gehiago",
+            "name": "Irisgarritasuna",
+            "noA11y": "Ez dago eskuragarritasunari buruzko informaziorik"
         },
-        "actions": "",
+        "actions": "Ekintzak",
         "audio": {
             "tracks": "Tracks"
         },
@@ -265,29 +286,31 @@
         "cover": {
             "img": "Azaleko irudia"
         },
-        "day": "",
-        "days": "",
+        "day": "eguna",
+        "days": "egunak",
         "duration": {
             "title": "Iraupena"
         },
-        "expired": "",
+        "encryptedNoLicense": "",
+        "expired": "Mailegua iraungi",
         "expiredLcp": "Liburu hau ezin da irakurri LCP lizentzia iraungi delako.",
+        "incorrectPassphrase": "",
         "lcpEnd": "Amaiera",
         "lcpRightsCopy": "Pertsonaien kopia",
         "lcpRightsPrint": "Inprimagailuaren kopia",
         "lcpStart": "Hasiera",
-        "licenceLCP": "",
+        "licenceLCP": "Lizentzia (LCP)",
+        "licenseCertificateDateInvalid": "Lizentzia-sinaduraren data ez da baliozkoa",
         "licenseOutOfDate": "Lizentzia ez dago eguneratuta",
-        "licenseSignatureDateInvalid": "Lizentzia-sinaduraren data ez da baliozkoa",
         "licenseSignatureInvalid": "Lizentziaren sinadura ez da baliozkoa",
-        "licensed": "",
-        "markAsRead": "",
-        "notStarted": "",
-        "onGoing": "",
+        "licensed": "Lizentziarekin",
+        "markAsRead": "Markatu irakurritako gisa",
+        "notStarted": "Hasi gabe",
+        "onGoing": "Abian",
         "progression": {
             "title": "Aurrerapena"
         },
-        "read": "",
+        "read": "Bukatuta",
         "remainingTime": "",
         "renewButton": "Berritu",
         "returnButton": "Itzuli",
@@ -301,67 +324,109 @@
     },
     "reader": {
         "annotations": {
-            "Color": "",
-            "addNote": "",
-            "advancedMode": "",
-            "annotationsOptions": "",
-            "highlight": "",
-            "noSelectionToast": "",
-            "quickAnnotations": "",
-            "saveNote": "",
-            "toggleMarginMarks": ""
+            "Color": "Kolore",
+            "addNote": "Apuntatu",
+            "advancedMode": "Berehalako modua (sortu automatikoki hautatu ondoren)",
+            "annotationsExport": {
+                "description": "",
+                "title": ""
+            },
+            "annotationsOptions": "Aukerak",
+            "colors": {
+                "bluegreen": "",
+                "cyan": "",
+                "green": "",
+                "lightblue": "",
+                "orange": "",
+                "purple": "",
+                "red": "",
+                "yellow": ""
+            },
+            "date": "",
+            "export": "",
+            "filter": {
+                "all": "",
+                "filterByColor": "",
+                "filterByCreator": "",
+                "filterByDrawtype": "",
+                "filterByTag": "",
+                "filterOptions": "",
+                "none": ""
+            },
+            "hide": "Ez erakutsi",
+            "highlight": "Nabarmendu",
+            "noSelectionToast": "Ez dago aukeraketarik",
+            "note": "",
+            "quickAnnotations": "Sortu azkarra (saltatu editorea)",
+            "saveNote": "Gorde",
+            "sorting": {
+                "lastcreated": "",
+                "lastmodified": "",
+                "progression": "",
+                "sortingOptions": ""
+            },
+            "toggleMarginMarks": "Marjinetan bistaratzea",
+            "type": {
+                "outline": "Eskema",
+                "solid": "Hondo sendoa",
+                "strikethrough": "Markatua",
+                "underline": "Azpimarratu"
+            }
         },
         "divina": {
             "mute": "isildu",
             "unmute": "isiltzeari utzi"
         },
         "fxl": {
-            "fit": ""
+            "fit": "Egokitu"
         },
+        "goToContent": "",
         "marks": {
             "annotations": "Oharrak",
             "bookmarks": "Markatzaileak",
             "delete": "Ezabatu",
             "edit": "Editatu",
-            "goTo": "",
+            "goTo": "Joan orrialdera",
             "landmarks": "Erreferentzia-puntuak",
-            "saveMark": "",
+            "progression": "",
+            "saveMark": "Gorde laster-marka",
             "search": "Bilatu",
-            "searchResult": "",
+            "searchResult": "Bilatu [{{- searchText}}]",
             "toc": "Eduki-taula"
         },
         "media-overlays": {
             "activate": "Aktibatu ozenki irakurtzea",
             "captions": "Testu sinkronizatua/aurkezpen diafanoa",
-            "captionsDescription": "",
+            "captionsDescription": "Testuaren ikuspegi sinplifikatua, gutxieneko epigrafeen estiloarekin.",
             "next": "Hurrengoa (ozenki irakurtzea)",
             "pause": "Geldiarazi (ozenki irakurri)",
             "play": "Erreproduzitu (ozenki irakurtzea)",
             "previous": "Aurrekoa (ozenki irakurtzea)",
             "skip": "Ez jarri informazio osagarririk",
-            "skipDescription": "",
+            "skipDescription": "Saltatu / baztertu eduki laguntzaileak, hala nola orrialde-jauziak, oin-oharrak/amaiera-oharrak, etab.",
             "speed": "Ozen irakurtzeko erreprodukzio-abiadura",
             "stop": "Gelditu ozenki irakurtzea",
             "title": "Ozenki irakurtzea"
         },
         "navigation": {
-            "annotationTitle": "",
+            "ZenModeExit": "",
+            "ZenModeTitle": "",
+            "annotationTitle": "oharpena",
             "backHomeTitle": "Itzuli liburutegira",
             "bookmarkTitle": "Markatzailea",
             "currentPage": "Uneko orrialdea: {{- current}}",
             "currentPageTotal": "Uneko orrialdea: {{- current}}/{{- total}}",
             "detachWindowTitle": "Liburutegiko leihoa erakutsi",
-            "fullscreenTitle": "Pantaila osoaren modua ireki",
             "goTo": "Joan hona",
             "goToError": "Orrialde-jauzi hori ez dago",
             "goToPlaceHolder": "Sartu orrialde-zenbaki bat",
             "goToTitle": "Orrialdera joan",
-            "historyNext": "",
-            "historyPrevious": "",
+            "historyNext": "Aurrera egin",
+            "historyPrevious": "Jauzi atzera",
             "infoTitle": "Informazioa",
             "magnifyingGlassButton": "bilatu argitalpenean",
             "openTableOfContentsTitle": "Nabigazioa",
-            "page": "",
+            "page": "Orria",
             "pdfscalemode": "Orriaren doikuntza edo zabalera",
             "settingsTitle": "Konfigurazio-aukerak"
         },
@@ -372,7 +437,7 @@
                 "next": "Hurrengoa",
                 "notFound": "ez dago bat etortzerik",
                 "previous": "Aurrekoa",
-                "results": "",
+                "results": "Emaitzak",
                 "submit": "Aurkitu"
             },
             "searchTitle": "Bilatu:"
@@ -384,23 +449,25 @@
                 "title": "Zutabeak",
                 "two": "2 zutabeak"
             },
-            "customizeReader": "",
-            "disabled": "",
+            "customFontSelected": "",
+            "customizeReader": "Pertsonalizatu testuaren formatua",
+            "disabled": "desgaituta",
             "display": "Bistaratzea",
             "disposition": {
                 "title": "Xedapena"
             },
             "font": "Iturria",
             "fontSize": "Letra-tamaina",
-            "infoCustomFont": "",
+            "infoCustomFont": "Hautatu sistema eragileko letra-tipo pertsonalizatua bere izena idatziz",
             "justification": "Lerrokadura",
             "justify": "Justifikatu",
             "letterSpacing": "Letren tartea",
             "lineSpacing": "Lerroartea",
             "margin": "Marjina",
             "noFootnotes": "Oin-oharrak desaktibatu",
-            "noRTLFlip": "",
-            "noRuby": "",
+            "noRTLFlip": "Desgaitu eskuinetik ezkerrera UI",
+            "noRuby": "Ezkutatu Japoniako Ruby",
+            "noTemporaryNavTargetOutline": "",
             "paginated": "Orrazkera",
             "paraSpacing": "Paragrafoen arteko tartea",
             "pdfZoom": {
@@ -416,20 +483,30 @@
                 },
                 "title": "Zoom"
             },
-            "preview": "",
+            "preset": {
+                "apply": "",
+                "applyDetails": "",
+                "detail": "",
+                "reset": "",
+                "resetDetails": "",
+                "save": "",
+                "saveDetails": "",
+                "title": ""
+            },
+            "preview": "Aurrebista",
             "reduceMotion": "Mugimendua gutxitu",
             "scrolled": "Desplazagarria",
             "spacing": "Tartea",
             "text": "Testua",
             "theme": {
                 "name": {
-                    "Contrast1": "",
-                    "Contrast2": "",
-                    "Contrast3": "",
-                    "Contrast4": "",
+                    "Contrast1": "Kontrastea 1",
+                    "Contrast2": "Kontrastea 2",
+                    "Contrast3": "Kontrastea 3",
+                    "Contrast4": "Kontrastea 4",
                     "Neutral": "Neutrala",
                     "Night": "Gauez",
-                    "Paper": "",
+                    "Paper": "Papera",
                     "Sepia": "Sepia"
                 },
                 "title": "Antolamendu"
@@ -445,26 +522,36 @@
         },
         "tts": {
             "activate": "Aktibatu testua ahotsarekin",
-            "default": "Ahotsa: sisteman lehenetsia",
+            "language": "",
             "next": "Hurrengoa (testua ahotsez)",
             "pause": "Ahotsezko testua eten",
             "play": "Erreproduzitu (testua ahotsez)",
             "previous": "Aurrekoa (testua ahotsez)",
             "sentenceDetect": "Zatitu (testua ahotsez)",
-            "sentenceDetectDescription": "",
+            "sentenceDetectDescription": "Paragrafo luzeak esalditan zatitu.",
             "speed": "Ahotsezko testurako erreprodukzio-abiadura",
             "stop": "Ahotsezko testua gelditu",
             "voice": "TTSrako ahotsa"
         }
     },
     "settings": {
+        "annotationCreator": {
+            "creator": "",
+            "help": "",
+            "name": "",
+            "organization": "",
+            "person": "",
+            "type": ""
+        },
         "auth": {
+            "help": "",
+            "title": "",
             "wipeData": "Autentifikazio-datuak garbitzea"
         },
         "keyboard": {
             "advancedMenu": "Menu nagusia",
             "cancel": "Indargabetu ",
-            "disclaimer": "",
+            "disclaimer": "Lasterbideak QWERTY teklatuaren diseinutik definitu ziren.",
             "editUserJson": "Editatu erabiltzaile-fitxategia",
             "keyboardShortcuts": "Teklatuko lasterbideak",
             "loadUserJson": "Kargatu erabiltzaile-fitxategia",
@@ -474,50 +561,52 @@
         "language": {
             "languageChoice": "Hizkuntza hautatzea"
         },
+        "library": {
+            "enableAPIAPP": "",
+            "title": ""
+        },
         "session": {
-            "no": "Desgaitu",
-            "title": "Gorde saioa",
-            "yes": "Gaitu"
+            "title": "Gorde saioa"
         },
         "tabs": {
-            "appearance": "",
-            "general": "",
-            "keyboardShortcuts": ""
+            "appearance": "Itxura",
+            "general": "Orokorra",
+            "keyboardShortcuts": "Teklatuko lasterbideak"
         },
         "theme": {
-            "auto": "",
-            "dark": "",
-            "description": "",
-            "light": "",
-            "title": ""
+            "auto": "Automatikoa",
+            "dark": "Iluna",
+            "description": "Aplikazioaren gaia sistema eragilearekin bat dator.",
+            "light": "Argia",
+            "title": "Aplikazioaren gaia"
         }
     },
     "wizard": {
         "buttons": {
-            "discover": "",
-            "goToBooks": "",
-            "next": ""
+            "discover": "Ezagutu zer berri",
+            "goToBooks": "Joan nire argitalpenetara",
+            "next": "Hurrengoa"
         },
         "description": {
-            "annotations": "",
-            "catalogs": "",
-            "home": "",
-            "readingView1": "",
-            "readingView2": "",
-            "yourBooks": ""
+            "annotations": "Nabarmendu dokumentuaren testua, aukeratu estiloa eta kolorea, erantsi ohar pertsonalak. Sortu oharrak \"bizkorra\" moduan editorea saihesteko (geroago testua sar dezakezu eta estiloak pertsonaliza ditzakezu). Abiadura gehigarria lortzeko, erabili dokumentuaren testua nabarmendu ondoren oharrak sortzen dituen \"berehalako\" modua!",
+            "catalogs": "Hartu argitalpenak zure tokiko liburutegitik edo aurkitu argitalpenak OPDS iturrien bidez. Sar zaitez hainbat iturritako argitalpenetara lineako katalogoei esker.",
+            "home": "Thorium itxura ezberdina du! Ezagutu dezagun zer berri...",
+            "readingView1": "Pertsonalizatu irakurketa- eta entzute-hobespenak: Thorium-ek kolore-gai ugari eskaintzen ditu orain bai erabiltzaile-interfazerako bai argitalpen dokumentuetarako. Orain errazagoa da 'irakurtzeko' liburu elektronikoak hizkera sintetikoa eta testu/audio narrazio sinkronizatuarekin konfiguratzea.",
+            "readingView2": "Thorium-en erabiltzaile-interfaze hobetuari esker, errazagoa da testua aurkitzea argitalpenetan, bilaketa-emaitzak arakatzea, orri zehatzetara jotzea, aurkibidea arakatzea, laster-markak sortzea, etab. «Akokatuta» panel berriei esker. Pantaila osoko irakurketa moduak distrakziorik gabeko ingurunea eskaintzen jarraitzen du.",
+            "yourBooks": "Ongi etorri birmoldatutako apalategi pertsonalera! 'Sareta' ikuspegian, iragazi erraz etiketen arabera edo aurkitu argitalpenak gako-hitzen arabera. 'Taula' ikuspegi aurreratuan, hautatu eta ordenatu argitalpenak autore, izenburu, data, formatu eta abarren arabera."
         },
-        "dontShow": "",
+        "dontShow": "Ez erakutsi berriro",
         "tab": {
-            "annotations": "",
-            "catalogs": "",
-            "home": "",
-            "readingView": "",
-            "yourBooks": ""
+            "annotations": "Oharpenak",
+            "catalogs": "Katalogoak",
+            "home": "Hasiera",
+            "readingView": "Irakurketa ikuspegia",
+            "yourBooks": "Zure argitalpenak"
         },
         "title": {
-            "allBooks": "",
-            "newFeature": "",
-            "welcome": ""
+            "allBooks": "Nire argitalpen guztiak",
+            "newFeature": "Ezaugarri berria: oharrak",
+            "welcome": "Ongi etorri Thorium 3.0ra"
         }
     }
 }

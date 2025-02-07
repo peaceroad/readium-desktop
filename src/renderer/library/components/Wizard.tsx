@@ -5,16 +5,18 @@
 // that can be found in the LICENSE file exposed on Github (readium) in the project repository.
 // ==LICENSE-END==
 
+import * as stylesModals from "readium-desktop/renderer/assets/styles/components/modals.scss";
+import * as stylesSettings from "readium-desktop/renderer/assets/styles/components/settings.scss";
+import * as stylesButtons from "readium-desktop/renderer/assets/styles/components/buttons.scss";
+import * as stylesGlobal from "readium-desktop/renderer/assets/styles/global.scss";
+
 import * as React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Tabs from "@radix-ui/react-tabs";
 import SVG from "readium-desktop/renderer/common/components/SVG";
-import * as stylesModals from "readium-desktop/renderer/assets/styles/components/modals.scss";
-import * as stylesSettings from "readium-desktop/renderer/assets/styles/components/settings.scss";
 import classNames from "classnames";
 import { useTranslator } from "readium-desktop/renderer/common/hooks/useTranslator";
 import * as HomeIcon from "readium-desktop/renderer/assets/icons/home-icon.svg";
-import * as stylesButtons from "readium-desktop/renderer/assets/styles/components/buttons.scss";
 import * as QuitIcon from "readium-desktop/renderer/assets/icons/close-icon.svg";
 import HomeImage from "readium-desktop/renderer/assets/images/thorium_guided_1.png";
 import BooksImage from "readium-desktop/renderer/assets/images/thorium_guided_2.png";
@@ -30,6 +32,8 @@ import { useDispatch } from "readium-desktop/renderer/common/hooks/useDispatch";
 import { wizardActions } from "readium-desktop/common/redux/actions";
 import { useSelector } from "readium-desktop/renderer/common/hooks/useSelector";
 import { ILibraryRootState } from "readium-desktop/common/redux/states/renderer/libraryRootState";
+import * as CheckIcon from "readium-desktop/renderer/assets/icons/singlecheck-icon.svg";
+
 
 const TabTitle = (props: React.PropsWithChildren<{ title: string }>) => {
     return (
@@ -41,14 +45,14 @@ const TabTitle = (props: React.PropsWithChildren<{ title: string }>) => {
 };
 
 const TabHeader = (props: React.PropsWithChildren<{ title: string }>) => {
-
+    const [__] = useTranslator();
     return (
         <div key="modal-header" className={stylesSettings.close_button_div}>
             <TabTitle title={props.title}>
                 {props.children}
             </TabTitle>
             <Dialog.Close asChild>
-                <button className={stylesButtons.button_transparency_icon} aria-label="Close" >
+                <button data-css-override="" className={stylesButtons.button_transparency_icon} aria-label={__("accessibility.closeDialog")} >
                     <SVG ariaHidden={true} svg={QuitIcon} />
                 </button>
             </Dialog.Close>
@@ -61,7 +65,7 @@ export const WizardModal = () => {
     const dispatch = useDispatch();
     const opened = useSelector((state: ILibraryRootState) => state.wizard.opened);
 
-    const [checked, setChecked] = React.useState(true);
+    const [checked, setChecked] = React.useState(false);
 
     return <Dialog.Root defaultOpen={!opened} onOpenChange={(openState: boolean) => {
         if (checked && openState == false) {
@@ -76,7 +80,7 @@ export const WizardModal = () => {
         </Dialog.Trigger> */}
         <Dialog.Portal>
             <div className={stylesModals.modal_dialog_overlay}></div>
-            <Dialog.Content className={classNames(stylesModals.modal_dialog)}>
+            <Dialog.Content className={classNames(stylesModals.modal_dialog)} aria-describedby={undefined}>
                 <Tabs.Root defaultValue="tab1" data-orientation="vertical" orientation="vertical" className={stylesSettings.settings_container}>
                     <Tabs.List className={stylesSettings.settings_tabslist} data-orientation="vertical" aria-orientation="vertical">
                         <Tabs.Trigger value="tab1">
@@ -100,24 +104,58 @@ export const WizardModal = () => {
                             <h4>{__("wizard.tab.annotations")}</h4>
                         </Tabs.Trigger>
                         <div style={{display: "flex", alignItems: "center", gap: "10px", position: "absolute", bottom: "30px", left: "30px"}}>
-                            <input type="checkbox" checked={checked} onChange={() => setChecked(!checked)} id="wizardCheckbox" name="wizardCheckbox" />
-                            <label htmlFor="wizardCheckbox">{__("wizard.dontShow")}</label>
+                            <input type="checkbox" checked={checked} onChange={() => { setChecked(!checked); }} id="wizardCheckbox" name="wizardCheckbox" className={stylesGlobal.checkbox_custom_input} />
+                            {/* label htmlFor clicked with mouse cursor causes onChange() of input (which is display:none), but keyboard interaction (tab stop and space bar toggle) occurs with the div role="checkbox" below! (onChange is not called, only onKeyUp) */}
+                            <label htmlFor="wizardCheckbox" className={stylesGlobal.checkbox_custom_label}>
+                                <div
+                                    tabIndex={0}
+                                    role="checkbox"
+                                    aria-checked={checked}
+                                    aria-label={__("wizard.dontShow")}
+                                    onKeyDown={(e) => {
+                                        // if (e.code === "Space") {
+                                        if (e.key === " ") {
+                                            e.preventDefault(); // prevent scroll
+                                        }
+                                    }}
+                                    onKeyUp={(e) => {
+                                        // Includes screen reader tests:
+                                        // if (e.code === "Space") { WORKS
+                                        // if (e.key === "Space") { DOES NOT WORK
+                                        // if (e.key === "Enter") { WORKS
+                                        if (e.key === " ") { // WORKS
+                                            e.preventDefault();
+                                            setChecked(!checked);
+                                        }
+                                    }}
+                                    className={stylesGlobal.checkbox_custom}
+                                    style={{ border: checked ? "2px solid transparent" : "2px solid var(--color-primary)", backgroundColor: checked ? "var(--color-blue)" : "transparent" }}>
+                                    {checked ?
+                                        <SVG ariaHidden svg={CheckIcon} />
+                                        :
+                                        <></>
+                                    }
+                                </div>
+                                <span aria-hidden>
+                                {__("wizard.dontShow")}
+                                </span>
+                            </label>
                         </div>
                     </Tabs.List>
                     <div className={classNames(stylesSettings.settings_content, stylesModals.guidedTour_content)} style={{ marginTop: "70px" }}>
-                        <Tabs.Content value="tab1" tabIndex={-1}>
+                        <Tabs.Content value="tab1" tabIndex={-1} className="R2_CSS_CLASS__FORCE_NO_FOCUS_OUTLINE">
                             <TabHeader title={""} />
                             <div className={classNames(stylesSettings.settings_tab, stylesModals.guidedTour_tab)}>
                                 <h3>{__("wizard.title.welcome")}</h3>
                                 <p>{__("wizard.description.home")}</p>
-                                <img src={HomeImage} />
+                                <img src={HomeImage} aria-hidden="true" />
                                 <div className={stylesModals.guidedTour_buttons}>
                                     <Dialog.Close className={stylesButtons.button_nav_primary}>
                                         <SVG ariaHidden svg={ShelfIcon} />
                                         {__("wizard.buttons.goToBooks")}
                                     </Dialog.Close>
                                     <Tabs.List>
-                                        <Tabs.Trigger value="tab2" className={stylesButtons.button_primary_blue}>
+                                        <Tabs.Trigger value="tab2" className={stylesButtons.button_primary_blue} onFocus={(e) => e.preventDefault()}>
                                             <SVG ariaHidden svg={ArrowRightIcon} />
                                             {__("wizard.buttons.discover")}
                                         </Tabs.Trigger>
@@ -126,17 +164,17 @@ export const WizardModal = () => {
                                 </div>
                             </div>
                         </Tabs.Content>
-                        <Tabs.Content value="tab2" tabIndex={-1}>
+                        <Tabs.Content value="tab2" tabIndex={-1} className="R2_CSS_CLASS__FORCE_NO_FOCUS_OUTLINE">
                             <TabHeader title={""} />
                             <div className={classNames(stylesSettings.settings_tab, stylesModals.guidedTour_tab)}>
                                 <h3>{__("wizard.title.allBooks")}</h3>
                                 <p>
                                     {__("wizard.description.yourBooks")}
                                 </p>
-                                <img src={BooksImage} />
+                                <img src={BooksImage} aria-hidden="true" />
                                 <div className={stylesModals.guidedTour_buttons}>
                                     <Tabs.List>
-                                        <Tabs.Trigger value="tab3" className={stylesButtons.button_primary_blue}>
+                                        <Tabs.Trigger value="tab3" className={stylesButtons.button_primary_blue} onFocus={(e) => e.preventDefault()}>
                                             <SVG ariaHidden svg={ArrowRightIcon} />
                                             {__("wizard.buttons.next")}
                                         </Tabs.Trigger>
@@ -144,17 +182,17 @@ export const WizardModal = () => {
                                 </div>
                             </div>
                         </Tabs.Content>
-                        <Tabs.Content value="tab3" tabIndex={-1}>
+                        <Tabs.Content value="tab3" tabIndex={-1} className="R2_CSS_CLASS__FORCE_NO_FOCUS_OUTLINE">
                             <TabHeader title={""} />
                             <div className={classNames(stylesSettings.settings_tab, stylesModals.guidedTour_tab)}>
                                 <h3>{__("wizard.tab.catalogs")}</h3>
                                 <p>
                                     {__("wizard.description.catalogs")}
                                 </p>
-                                <img src={CatalogsImage} />
+                                <img src={CatalogsImage} aria-hidden="true" />
                                 <div className={stylesModals.guidedTour_buttons}>
                                     <Tabs.List>
-                                        <Tabs.Trigger value="tab4" className={stylesButtons.button_primary_blue} >
+                                        <Tabs.Trigger value="tab4" className={stylesButtons.button_primary_blue} onFocus={(e) => e.preventDefault()}>
                                             <SVG ariaHidden svg={ArrowRightIcon} />
                                             {__("wizard.buttons.next")}
                                         </Tabs.Trigger>
@@ -162,16 +200,16 @@ export const WizardModal = () => {
                                 </div>
                             </div>
                         </Tabs.Content>
-                        <Tabs.Content value="tab4" tabIndex={-1}>
+                        <Tabs.Content value="tab4" tabIndex={-1} className="R2_CSS_CLASS__FORCE_NO_FOCUS_OUTLINE">
                             <TabHeader title={""} />
                             <div className={classNames(stylesSettings.settings_tab, stylesModals.guidedTour_tab)}>
                                 <h3>{__("wizard.tab.readingView")}</h3>
-                                <p>
-                                    {__("wizard.description.readingView1")}<br />{__("wizard.description.readingView2")}</p>
-                                <img src={ReadingImage} />
+                                <p>{__("wizard.description.readingView1")}</p>
+                                <p>{__("wizard.description.readingView2")}</p>
+                                <img src={ReadingImage} aria-hidden="true" />
                                 <div className={stylesModals.guidedTour_buttons}>
                                     <Tabs.List>
-                                        <Tabs.Trigger value="tab5" className={stylesButtons.button_primary_blue}>
+                                        <Tabs.Trigger value="tab5" className={stylesButtons.button_primary_blue} onFocus={(e) => e.preventDefault()}>
                                             <SVG ariaHidden svg={ArrowRightIcon} />
                                             {__("wizard.buttons.next")}
                                         </Tabs.Trigger>
@@ -179,13 +217,13 @@ export const WizardModal = () => {
                                 </div>
                             </div>
                         </Tabs.Content>
-                        <Tabs.Content value="tab5" tabIndex={-1}>
+                        <Tabs.Content value="tab5" tabIndex={-1} className="R2_CSS_CLASS__FORCE_NO_FOCUS_OUTLINE">
                             <TabHeader title={""} />
                             <div className={classNames(stylesSettings.settings_tab, stylesModals.guidedTour_tab)}>
                                 <h3>{__("wizard.title.newFeature")}</h3>
                                 <p>
                                     {__("wizard.description.annotations")}</p>
-                                <img src={AnnotationsImage} />
+                                <img src={AnnotationsImage} aria-hidden="true" />
                                 <div className={stylesModals.guidedTour_buttons}>
                                     <Dialog.Close className={stylesButtons.button_primary_blue}>
                                         <SVG ariaHidden svg={ShelfIcon} />
@@ -199,7 +237,7 @@ export const WizardModal = () => {
 
                 {/* <div className={stylesSettings.close_button_div}>
                     <Dialog.Close asChild>
-                        <button className={stylesButtons.button_transparency_icon} aria-label="Close">
+                        <button data-css-override="" className={stylesButtons.button_transparency_icon} aria-label={__("accessibility.closeDialog")}>
                             <SVG ariaHidden={true} svg={QuitIcon} />
                         </button>
                     </Dialog.Close>

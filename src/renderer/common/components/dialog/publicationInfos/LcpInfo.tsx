@@ -5,19 +5,20 @@
 // that can be found in the LICENSE file exposed on Github (readium) in the project repository.
 // ==LICENSE-END==
 
-import classNames from "classnames";
-import * as moment from "moment";
-import * as React from "react";
-import { PublicationView } from "readium-desktop/common/views/publication";
 import * as stylesBookDetailsDialog from "readium-desktop/renderer/assets/styles/bookDetailsDialog.scss";
 import * as stylesGlobal from "readium-desktop/renderer/assets/styles/global.scss";
 import * as stylePublication from "readium-desktop/renderer/assets/styles/publicationInfos.scss";
 
-import {
-    TranslatorProps, withTranslator,
-} from "readium-desktop/renderer/common/components/hoc/translator";
+import classNames from "classnames";
+import * as moment from "moment";
+import * as React from "react";
+import { PublicationView } from "readium-desktop/common/views/publication";
 
 import { StatusEnum } from "@r2-lcp-js/parser/epub/lsd";
+import { formatTime } from "readium-desktop/common/utils/time";
+import { connect } from "react-redux";
+import { IRendererCommonRootState } from "readium-desktop/common/redux/states/rendererCommonRootState";
+import { TranslatorProps, withTranslator } from "../../hoc/translator";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IBaseProps extends TranslatorProps {
@@ -28,7 +29,7 @@ interface IBaseProps extends TranslatorProps {
 // ReturnType<typeof mapStateToProps>
 // ReturnType<typeof mapDispatchToProps>
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface IProps extends IBaseProps {
+interface IProps extends IBaseProps, ReturnType<typeof mapStateToProps> {
 }
 
 class LcpInfo extends React.Component<IProps, undefined> {
@@ -39,9 +40,8 @@ class LcpInfo extends React.Component<IProps, undefined> {
 
     public render() {
 
-        const { publicationLcp, __ } = this.props;
+        const { publicationLcp, locale, __ } = this.props;
 
-        const locale = this.props.translator.getLocale();
         // https://momentjs.com/docs/#/displaying/
         moment.locale(locale);
 
@@ -84,12 +84,19 @@ class LcpInfo extends React.Component<IProps, undefined> {
             } else if (timeEndDif === 1) {
                 remainingDays = `${timeEndDif} ${__("publication.day")}`;
             } else {
-                remainingDays = `${__("publication.expired")}`;
+                // const nowUTC = (new Date()).toISOString();
+                // const momentNow = moment(nowUTC);
+                if (now.isAfter(momentEnd)) {
+                    remainingDays = `${__("publication.expired")}`;
+                } else {
+                    // remainingDays = `${__("publication.licensed")}`;
+                    remainingDays = `${formatTime(momentEnd.diff(now, "seconds"))}`;
+                }
             }
 
         }
 
-        
+
 
         // TODO: fix r2-lcp-js to handle encrypted fields
         // (need lcp.node with userkey decrypt, not contentkey):
@@ -145,7 +152,7 @@ class LcpInfo extends React.Component<IProps, undefined> {
                         </>
                     }
                     {
-                    futureDays ? 
+                    futureDays ?
                         <>
                             <strong>{__("publication.lcpStart")}: </strong>
                             <span>{futureDays} ({lcpRightsStartDateStr})</span>
@@ -153,7 +160,7 @@ class LcpInfo extends React.Component<IProps, undefined> {
                         </>
                         : <></>
                     }
-                    {lcpRightsEndDateStr ? 
+                    {lcpRightsEndDateStr ?
                     <>
                         <strong>{__("publication.timeLeft")}: </strong>
                         <span>{remainingDays} ({lcpRightsEndDateStr})</span>
@@ -184,4 +191,8 @@ class LcpInfo extends React.Component<IProps, undefined> {
 
 }
 
-export default withTranslator(LcpInfo);
+const mapStateToProps = (state: IRendererCommonRootState) => ({
+    locale: state.i18n.locale, // refresh
+});
+
+export default connect(mapStateToProps)(withTranslator(LcpInfo));

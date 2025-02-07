@@ -1,6 +1,6 @@
-/*
-=-=-= publications.scss
-*/
+.CSS_START_components_publications {
+  display: none;
+}
 
 .publication_wrapper {
   width: 200px;
@@ -9,6 +9,7 @@
   flex-direction: column;
   align-items: flex-start;
   justify-content: space-between;
+  margin: 2px;
 }
 
 .publication_main_container {
@@ -24,6 +25,8 @@
   perspective: 1000px;
   overflow: hidden;
   position: relative;
+  height: auto;
+  align-items: start;
 
     &:hover {
       img, .no_img_wrapper {
@@ -96,6 +99,7 @@
     justify-content: center;
     transform-origin: 100% 0;
     transition: transform 0.3s ease-in-out;
+    width: 100%;
 
     & .no_img {
       border: 1px black solid;
@@ -111,6 +115,7 @@
         word-break: break-all;
         display: -webkit-inline-box;
         -webkit-line-clamp: 3;
+        line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
         text-align: center;
@@ -128,6 +133,8 @@
     overflow: hidden;
     min-height: 30px;
     margin-left: 4px;
+    width: 100%;
+    text-align: start;
 
     & p {
       margin: 0;
@@ -179,6 +186,7 @@
   font-size: 15px;
   gap: 10px;
   padding: 0 6px;
+  margin-bottom: 4px;
 
   & button {
     width: 20px;
@@ -219,7 +227,7 @@
   justify-content: center;
   gap: 5px;
   font-size: 12px;
-  cursor: pointer;
+  /* cursor: pointer; */
 
   svg {
     width: 13px;
@@ -525,6 +533,7 @@
     word-break: break-all;
     display: -webkit-inline-box;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
 
     /* autoprefixer: ignore next */
     -webkit-box-orient: vertical;
@@ -589,6 +598,6 @@
   }
 }
 
-.___DEBUG___COMPONENTS_PUBLICATIONS_CSS {
+.CSS_END_components_publications {
   display: none;
 }

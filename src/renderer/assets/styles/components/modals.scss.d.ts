@@ -1,6 +1,9 @@
 export declare const add_dialog: string;
+export declare const button_secondary_blue: string;
 export declare const c_dialog__box: string;
 export declare const close_button: string;
+export declare const CSS_END_components_modals: string;
+export declare const CSS_START_components_modals: string;
 export declare const display_options_item: string;
 export declare const field: string;
 export declare const guidedTour_buttons: string;

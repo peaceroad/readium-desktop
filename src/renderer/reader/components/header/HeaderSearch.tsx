@@ -5,14 +5,15 @@
 // that can be found in the LICENSE file exposed on Github (readium) in the project repository.
 // ==LICENSE-END==
 
+import * as stylesReader from "readium-desktop/renderer/assets/styles/reader-app.scss";
+import * as stylesReaderHeader from "readium-desktop/renderer/assets/styles/components/readerHeader.scss";
+
 import * as React from "react";
-import * as Popover from "@radix-ui/react-popover";
+// import * as Popover from "@radix-ui/react-popover";
 import { connect } from "react-redux";
 import { DEBUG_KEYBOARD, keyboardShortcutsMatch } from "readium-desktop/common/keyboard";
 import { IReaderRootState } from "readium-desktop/common/redux/states/renderer/readerRootState";
 import * as magnifyingGlass from "readium-desktop/renderer/assets/icons/magnifying_glass.svg";
-import * as stylesReader from "readium-desktop/renderer/assets/styles/reader-app.scss";
-import * as stylesReaderHeader from "readium-desktop/renderer/assets/styles/components/readerHeader.scss";
 import {
     TranslatorProps, withTranslator,
 } from "readium-desktop/renderer/common/components/hoc/translator";
@@ -104,54 +105,46 @@ class HeaderSearch extends React.Component<IProps> {
     public render() {
         const { __ } = this.props;
         return (
-            <Popover.Root open={this.props.isOnSearch} onOpenChange={(v) => { console.log("SearchPopoverMenu enabled=", v); this.enableSearch(v);}}>
-                <Popover.Trigger asChild>
-                    <button
-                        disabled={this.props.isAudiobook || this.props.isDivina}
-                        aria-pressed={this.props.isOnSearch}
-                        aria-label={__("reader.navigation.magnifyingGlassButton")}
-                        className={stylesReader.menu_button}
-                        // onClick={this.enableSearch}
-                        // ref={this.settingsMenuButtonRef}
-                        title={__("reader.navigation.magnifyingGlassButton")}
-                    >
-                        <SVG ariaHidden={true} svg={this.props.isOnSearch ? QuitIcon : magnifyingGlass} className={this.props.isOnSearch ? stylesReaderHeader.active_svg : ""} />
-                    </button>
-                </Popover.Trigger>
-                <Popover.Portal>
-                    <Popover.Content className={stylesReaderHeader.picker_container}
-                        align="start"
-                        onPointerDownOutside={(e) => { e.preventDefault(); console.log("SearchPopover onPointerDownOutside"); }}
-                        onInteractOutside={(e) => { e.preventDefault(); console.log("SearchPopover onInteractOutside"); }}
-                        sideOffset={14}
-                    >
-                        <div style={{display: "flex", gap:"10%", alignItems: "center", height: "50px", width: "100vw", justifyContent: "end"}}>
-                            <SearchPicker
-                                showSearchResults={this.props.showSearchResults}
-                                isPdf={this.props.isPdf}
-                            />
+            <>
+                <button
+                    disabled={this.props.isAudiobook || this.props.isDivina}
+                    aria-pressed={this.props.isOnSearch}
+                    aria-label={__("reader.navigation.magnifyingGlassButton")}
+                    className={stylesReader.menu_button}
+                    onClick={() => { this.enableSearch(!this.props.isOnSearch); }}
+                    // ref={this.settingsMenuButtonRef}
+                    title={__("reader.navigation.magnifyingGlassButton")}
+                    id="search-button-trigger"
+                >
+                    <SVG ariaHidden={true} svg={this.props.isOnSearch ? QuitIcon : magnifyingGlass} className={this.props.isOnSearch ? stylesReaderHeader.active_svg : ""} />
+                </button>
 
-                            {/* <Popover.Close asChild>
-                                <button
-                                    style={{
-                                        width: "25px",
-                                        marginRight: "0.4em",
-                                        backgroundColor: "transparent",
-                                        color: "var(--color-blue)",
-                                        fill: "var(--color-blue)",
-                                    }}
-                                    type="button"
-                                    aria-label={__("accessibility.closeDialog")}
-                                    title={__("accessibility.closeDialog")}
-                                >
-                                    <SVG ariaHidden={true} svg={QuitIcon} />
-                                </button>
-                            </Popover.Close> */}
+                {
+                    this.props.isOnSearch ?
+                        <div className={stylesReaderHeader.picker_container}
+                            onKeyDown={this.props.isOnSearch ? (e) => {
+                                if (e.key === "Escape") {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    this.enableSearch(false);
+                                    setTimeout(() => {
+                                        const el = document.getElementById("search-button-trigger");
+                                        el?.blur();
+                                        el?.focus();
+                                    }, 100);
+                                }
+                            } : undefined}
+                        >
+                            <div style={{ display: "flex", gap: "10%", alignItems: "center", height: "50px", width: "100vw", justifyContent: "end" }}>
+                                <SearchPicker
+                                    showSearchResults={this.props.showSearchResults}
+                                    isPdf={this.props.isPdf}
+                                />
                             </div>
-                        {/* <Popover.Arrow /> */}
-                    </Popover.Content>
-                </Popover.Portal>
-            </Popover.Root>
+                        </div>
+                        : <></>
+                }
+            </>
         );
     }
 
@@ -183,6 +176,7 @@ class HeaderSearch extends React.Component<IProps> {
 const mapStateToProps = (state: IReaderRootState) => ({
     keyboardShortcuts: state.keyboard.shortcuts,
     isOnSearch: state.search.enable,
+    locale: state.i18n.locale, // refresh
 });
 
 const mapDispatchToProps = (dispatch: TDispatch) => ({

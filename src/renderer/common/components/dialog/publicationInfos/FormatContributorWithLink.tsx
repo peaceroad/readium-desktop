@@ -5,24 +5,28 @@
 // that can be found in the LICENSE file exposed on Github (readium) in the project repository.
 // ==LICENSE-END==
 
-import classNames from "classnames";
-import * as React from "react";
-import { Translator } from "readium-desktop/common/services/translator";
-import { IOpdsContributorView } from "readium-desktop/common/views/opds";
 import * as stylesBookDetailsDialog from "readium-desktop/renderer/assets/styles/bookDetailsDialog.scss";
 import * as stylesButtons from "readium-desktop/renderer/assets/styles/components/buttons.scss";
 import * as stylesPublications from "readium-desktop/renderer/assets/styles/publicationInfos.scss";
 
+import classNames from "classnames";
+import * as React from "react";
+import { translateContentFieldHelper } from "readium-desktop/common/services/translator";
+import { IOpdsContributorView } from "readium-desktop/common/views/opds";
+import { useSelector } from "readium-desktop/renderer/common/hooks/useSelector";
+import { ICommonRootState } from "readium-desktop/common/redux/states/commonRootState";
+
 interface IProps {
     contributors: string[] | IOpdsContributorView[] | undefined;
-    translator: Translator;
     onClickLinkCb?: (newContributor: IOpdsContributorView) => () => void;
     className?: string;
 }
 
 export const FormatContributorWithLink: React.FC<IProps> = (props) => {
 
-    const { contributors, translator, onClickLinkCb, className } = props;
+    const { contributors, onClickLinkCb, className } = props;
+
+    const locale = useSelector((state: ICommonRootState) => state.i18n.locale);
 
     const retElement: JSX.Element[] = [];
 
@@ -40,21 +44,28 @@ export const FormatContributorWithLink: React.FC<IProps> = (props) => {
                 // FIXME : add pointer hover on 'a' links
                 retElement.push(
                     <a onClick={onClickLinkCb(newContributor)}
-                        className={classNames(stylesButtons.button_link, className  ? stylesPublications.authors : "")} tabIndex={0}
+                        onKeyUp={(e) => { // necessary because no href (with href, preventDefault() inside onClick would be necessary to avoid SHIT and OPT/ALT key mods on the hyperlink, and CSS visited styles would need to be added)
+                            if (e.key === "Enter") {
+                               onClickLinkCb(newContributor)();
+                               e.preventDefault();
+                            }
+                        }}
+                        className={classNames(stylesButtons.button_link, className ? stylesPublications.authors : "")}
+                        tabIndex={0}
                     >
-                        {translator.translateContentField(newContributor.name)}
+                        {translateContentFieldHelper(newContributor.name, locale)}
                     </a>,
                 );
             } else if (typeof newContributor === "object") {
                 retElement.push(
                     <span className={classNames(stylesBookDetailsDialog.allowUserSelect, className  ? stylesPublications.authors : "")}>
-                        {translator.translateContentField(newContributor.name)}
+                        {translateContentFieldHelper(newContributor.name, locale)}
                     </span>,
                 );
             } else {
                 retElement.push(
                     <span className={classNames(stylesBookDetailsDialog.allowUserSelect, className  ? stylesPublications.authors : "")}>
-                        {translator.translateContentField(newContributor)}
+                        {translateContentFieldHelper(newContributor, locale)}
                     </span>,
                 );
             }

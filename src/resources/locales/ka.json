@@ -6,7 +6,6 @@
         "leftSlideButton": "სიის მარცხნივ ჩაწევა",
         "mainContent": "ძირითადი შიგთავსი",
         "rightSlideButton": "სიის მარჯვნივ ჩაწევა",
-        "searchBook": "სათაურით ძიება",
         "skipLink": "შიგთავსზე გადახტომა",
         "toolbar": "ინსტრუმენტთა პანელი"
     },
@@ -35,6 +34,7 @@
                         "no": "არა",
                         "yes": "დიახ"
                     },
+                    "help": "",
                     "message": "გსურს შევინახოთ სესია ?",
                     "title": "სესიის შენახვა"
                 }
@@ -69,13 +69,12 @@
         "emptyTagList": "არ გაქვს არცერთი იარლიყიანი ელ-წიგნი.",
         "entry": {
             "continueReading": "კითხვის გაგრძელება",
-            "continueReadingAudioBooks": "მოსმენის გაგრძელება",
-            "continueReadingDivina": "დივინას გაგრძელება",
-            "continueReadingPdf": "კითხვის გაგრძელება",
             "lastAdditions": "ახლახანს დამატებული"
         },
         "export": "გატანა",
+        "exportAnnotation": "",
         "format": "",
+        "importAnnotation": "",
         "lang": "ენა",
         "lastRead": "",
         "moreInfo": "მეტი ინფორმაცია",
@@ -117,12 +116,25 @@
         "released": "გამოცემის თარიღი",
         "sort": "დალაგება",
         "tag": "",
-        "tagCount": "იარლიყების რაოდენობა",
         "tags": "იარლიყები",
         "update": ""
     },
     "dialog": {
+        "annotations": {
+            "descAuthor": "",
+            "descCreator": "",
+            "descList": "",
+            "descNewer": "",
+            "descOlder": "",
+            "descTitle": "",
+            "importAll": "",
+            "importWithoutConflict": "",
+            "origin": "",
+            "title": ""
+        },
         "cancel": "გადაფიქრება",
+        "deleteAnnotations": "",
+        "deleteAnnotationsText": "",
         "deleteFeed": "ნამდვილად გსურთ ამ კატალოგის წაშლა ?",
         "deletePublication": "ნამდვილად გსურთ ამ პუბლიკაციის წაშლა ?",
         "import": "ნამდვილად გსურთ ამ ფაილების შემოტანა :",
@@ -157,7 +169,8 @@
     },
     "library": {
         "lcp": {
-            "hint": "(მინიშნება: {{- hint}})",
+            "hint": "მინიშნება: ",
+            "open": "",
             "password": "კოდური ფრაზა",
             "sentence": "ეს პუბლიკაცია საჭიროებს LCP კოდურ ფრაზას გასახსნელად: ",
             "urlHint": "დაგავიწყდა კოდური ფრაზა? აქ მოიძიე დახმარება",
@@ -167,6 +180,14 @@
         }
     },
     "message": {
+        "annotations": {
+            "alreadyImported": "",
+            "emptyFile": "",
+            "errorParsing": "",
+            "noBelongTo": "",
+            "nothing": "",
+            "success": ""
+        },
         "download": {
             "error": "{{- title}} გადმოტვირთვა უშედეგოდ დასრულდა: [{{- err}}]"
         },
@@ -270,15 +291,17 @@
         "duration": {
             "title": "ხანგრძლივობა"
         },
+        "encryptedNoLicense": "",
         "expired": "",
         "expiredLcp": "ამ წიგნის წაკითხვა შეუძლებელია რადგან LCP ლიცენზიას ვადა გაუვიდა.",
+        "incorrectPassphrase": "",
         "lcpEnd": "დასასრული",
         "lcpRightsCopy": "ასლისთვის სიმბოლოების რაოდენობა",
         "lcpRightsPrint": "ბეჭდისთვის ნებადართული გვერდების რაოდენობა",
         "lcpStart": "დაწყება",
         "licenceLCP": "",
+        "licenseCertificateDateInvalid": "ლიცენზიის ხელმოწერის თარიღი არასწორია",
         "licenseOutOfDate": "ლიცენზია მოძველდა",
-        "licenseSignatureDateInvalid": "ლიცენზიის ხელმოწერის თარიღი არასწორია",
         "licenseSignatureInvalid": "ლიცენზიის ხელმოწერა არასწორია",
         "licensed": "",
         "markAsRead": "",
@@ -304,12 +327,51 @@
             "Color": "",
             "addNote": "",
             "advancedMode": "",
+            "annotationsExport": {
+                "description": "",
+                "title": ""
+            },
             "annotationsOptions": "",
+            "colors": {
+                "bluegreen": "",
+                "cyan": "",
+                "green": "",
+                "lightblue": "",
+                "orange": "",
+                "purple": "",
+                "red": "",
+                "yellow": ""
+            },
+            "date": "",
+            "export": "",
+            "filter": {
+                "all": "",
+                "filterByColor": "",
+                "filterByCreator": "",
+                "filterByDrawtype": "",
+                "filterByTag": "",
+                "filterOptions": "",
+                "none": ""
+            },
+            "hide": "",
             "highlight": "",
             "noSelectionToast": "",
+            "note": "",
             "quickAnnotations": "",
             "saveNote": "",
-            "toggleMarginMarks": ""
+            "sorting": {
+                "lastcreated": "",
+                "lastmodified": "",
+                "progression": "",
+                "sortingOptions": ""
+            },
+            "toggleMarginMarks": "",
+            "type": {
+                "outline": "",
+                "solid": "",
+                "strikethrough": "",
+                "underline": ""
+            }
         },
         "divina": {
             "mute": "გაჩუმება",
@@ -318,6 +380,7 @@
         "fxl": {
             "fit": ""
         },
+        "goToContent": "",
         "marks": {
             "annotations": "ანოტაციები",
             "bookmarks": "სანიშნეები",
@@ -325,6 +388,7 @@
             "edit": "გადაკეთება",
             "goTo": "",
             "landmarks": "ორიენტირები",
+            "progression": "",
             "saveMark": "",
             "search": "ძიება",
             "searchResult": "",
@@ -345,13 +409,14 @@
             "title": "ტექსტის მეტყველება"
         },
         "navigation": {
+            "ZenModeExit": "",
+            "ZenModeTitle": "",
             "annotationTitle": "",
             "backHomeTitle": "წიგნების თაროში დაბრუნება",
             "bookmarkTitle": "სანიშნე",
             "currentPage": "წინა გვერდი: {{- current}}",
             "currentPageTotal": "მიმდინარე გვერდი: {{- current}}/{{- total}}",
             "detachWindowTitle": "მანახე ბიბლიოთეკა / წიგნების კარადის ფანჯარა",
-            "fullscreenTitle": "სრულ ეკრანზე გახსნა",
             "goTo": "გადადით",
             "goToError": "ამ გვერდის წყვეტა არ არსებობს",
             "goToPlaceHolder": "შეიტანეთ გვერდის ნომერი",
@@ -384,6 +449,7 @@
                 "title": "სვეტები",
                 "two": "2 სვეტი"
             },
+            "customFontSelected": "",
             "customizeReader": "",
             "disabled": "",
             "display": "გამოსახულება",
@@ -401,6 +467,7 @@
             "noFootnotes": "სქოლიოს გათიშვა",
             "noRTLFlip": "",
             "noRuby": "",
+            "noTemporaryNavTargetOutline": "",
             "paginated": "დანომრილი",
             "paraSpacing": "პარაგრაფების დაშორება",
             "pdfZoom": {
@@ -415,6 +482,16 @@
                     "width": "გვერდის სიგანე"
                 },
                 "title": "მოახლოება"
+            },
+            "preset": {
+                "apply": "",
+                "applyDetails": "",
+                "detail": "",
+                "reset": "",
+                "resetDetails": "",
+                "save": "",
+                "saveDetails": "",
+                "title": ""
             },
             "preview": "",
             "reduceMotion": "მოძრაობის შემცირება",
@@ -445,7 +522,7 @@
         },
         "tts": {
             "activate": "ტექსტის მეტყველების გააქტიურება",
-            "default": "ხმა: სისტემის ნაგულისხმევი",
+            "language": "",
             "next": "მომდევნო ტექსტის წარმოთქმა",
             "pause": "ტექსტის მეტყველების დაპაუზება",
             "play": "ტექსტის მეტყველების დაკვრა",
@@ -458,7 +535,17 @@
         }
     },
     "settings": {
+        "annotationCreator": {
+            "creator": "",
+            "help": "",
+            "name": "",
+            "organization": "",
+            "person": "",
+            "type": ""
+        },
         "auth": {
+            "help": "",
+            "title": "",
             "wipeData": "აუტენტიფიკაციის მონაცემების გასუფთავება"
         },
         "keyboard": {
@@ -474,10 +561,12 @@
         "language": {
             "languageChoice": "ენის არჩევანი"
         },
+        "library": {
+            "enableAPIAPP": "",
+            "title": ""
+        },
         "session": {
-            "no": "გამორთულია",
-            "title": "სესიის შენახვა",
-            "yes": "ჩართულია"
+            "title": "სესიის შენახვა"
         },
         "tabs": {
             "appearance": "",

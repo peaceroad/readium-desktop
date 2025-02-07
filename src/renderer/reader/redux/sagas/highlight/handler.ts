@@ -73,6 +73,18 @@ function* pop(action: readerLocalActionHighlights.handler.pop.TAction) {
 
 function* hrefChanged(action: readerLocalActionLocatorHrefChanged.TAction) {
 
+    // divina,
+    const { info, locator } = yield* selectTyped((state: IReaderRootState) => state.reader);
+    // typeof divina !== "undefined" ||
+    const skip = info?.publicationView?.isDivina ||
+        locator?.audioPlaybackInfo || info?.publicationView?.isAudio ||
+        info?.publicationView?.isPDF;
+    if (skip) {
+        // divina,
+        debug("hrefChanged SKIP annot", skip, info?.publicationView?.isDivina, locator?.audioPlaybackInfo, info?.publicationView?.isAudio, info?.publicationView?.isPDF);
+        return;
+    }
+
     debug(`hrefChanged (unmountHightlight+mountHighlight) -- action.payload: [${JSON.stringify(action.payload, null, 4)}]`);
 
     // yield* callTyped(() => highlightsDrawMargin(_drawMargin)); // should probably be invoked in mounter, not handler
@@ -94,10 +106,10 @@ function* hrefChanged(action: readerLocalActionLocatorHrefChanged.TAction) {
         yield call(unmountHightlight, prevHref2, uuids);
     }
 
-    if (href) {
+    if (href && (!prevHref || href !== prevHref)) {
         yield call(unmountHightlight, href, uuids);
     }
-    if (href2) {
+    if (href2 && (!prevHref2 || href2 !== prevHref2)) {
         yield call(unmountHightlight, href2, uuids);
     }
 

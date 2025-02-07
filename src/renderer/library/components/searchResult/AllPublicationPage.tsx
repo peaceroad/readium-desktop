@@ -7,14 +7,18 @@
 
 import "regenerator-runtime/runtime"; // for react-table (useAsyncDebounce()) see: https://github.com/TanStack/react-table/issues/2071#issuecomment-679999096
 
+import * as stylesPublication from "readium-desktop/renderer/assets/styles/components/allPublicationsPage.scss";
+import * as stylesInput from "readium-desktop/renderer/assets/styles/components/inputs.scss";
+import * as stylesButtons from "readium-desktop/renderer/assets/styles/components/buttons.scss";
+import * as stylesDropDown from "readium-desktop/renderer/assets/styles/components/dropdown.scss";
+// import * as stylesTags from "readium-desktop/renderer/assets/styles/components/tags.scss";
+import * as stylesPublications from "readium-desktop/renderer/assets/styles/components/publications.scss";
+
 import { HoverEvent } from "@react-types/shared";
 import { convertMultiLangStringToString, langStringIsRTL } from "readium-desktop/renderer/common/language-string";
 import { IStringMap } from "@r2-shared-js/models/metadata-multilang";
 import { Location } from "history";
 import SVG from "readium-desktop/renderer/common/components/SVG";
-import * as stylesPublication from "readium-desktop/renderer/assets/styles/components/allPublicationsPage.scss";
-import * as stylesInput from "readium-desktop/renderer/assets/styles/components/inputs.scss";
-import * as stylesButtons from "readium-desktop/renderer/assets/styles/components/buttons.scss";
 import * as ArrowLastIcon from "readium-desktop/renderer/assets/icons/arrowLast-icon.svg";
 import * as SearchIcon from "readium-desktop/renderer/assets/icons/search-icon.svg";
 import * as ArrowFirstIcon from "readium-desktop/renderer/assets/icons/arrowFirst-icon.svg";
@@ -56,9 +60,9 @@ import {
 } from "react-table";
 import { Column, useTable, useFilters, useSortBy, usePagination, useGlobalFilter, useAsyncDebounce } from "react-table";
 import { formatTime } from "readium-desktop/common/utils/time";
-import * as DOMPurify from "dompurify";
+import DOMPurify from "dompurify";
 import * as moment from "moment";
-import { AvailableLanguages, I18nTyped, Translator } from "readium-desktop/common/services/translator";
+import { availableLanguages, I18nFunction } from "readium-desktop/common/services/translator";
 import * as React from "react";
 import { connect } from "react-redux";
 import { PublicationView } from "readium-desktop/common/views/publication";
@@ -82,12 +86,11 @@ import { ipcRenderer } from "electron";
 import PublicationCard from "../publication/PublicationCard";
 import classNames from "classnames";
 import * as Popover from "@radix-ui/react-popover";
-import * as stylesDropDown from "readium-desktop/renderer/assets/styles/components/dropdown.scss";
+
 // import { PublicationInfoLibWithRadix, PublicationInfoLibWithRadixContent, PublicationInfoLibWithRadixTrigger } from "../dialog/publicationInfos/PublicationInfo";
 import { useSearchParams } from "react-router-dom";
 // import * as FilterIcon from "readium-desktop/renderer/assets/icons/filter-icon.svg";
 // import * as DeleteFilter from "readium-desktop/renderer/assets/icons/deleteFilter-icon.svg";
-// import * as stylesTags from "readium-desktop/renderer/assets/styles/components/tags.scss";
 import { MySelectProps, Select } from "readium-desktop/renderer/common/components/Select";
 import { ComboBox, ComboBoxItem } from "readium-desktop/renderer/common/components/ComboBox";
 import * as CalendarIcon from "readium-desktop/renderer/assets/icons/calendar2-icon.svg";
@@ -95,13 +98,15 @@ import * as CalendarIcon from "readium-desktop/renderer/assets/icons/calendar2-i
 // import * as DoubleCheckIcon from "readium-desktop/renderer/assets/icons/doubleCheck-icon.svg";
 import * as KeyIcon from "readium-desktop/renderer/assets/icons/key-icon.svg";
 import AboutThoriumButton from "../catalog/AboutThoriumButton";
-import * as stylesPublications from "readium-desktop/renderer/assets/styles/components/publications.scss";
 import Menu from "readium-desktop/renderer/common/components/menu/Menu";
 import CatalogMenu from "../publication/menu/CatalogMenu";
 import * as MenuIcon from "readium-desktop/renderer/assets/icons/menu.svg";
 import { IOpdsPublicationView } from "readium-desktop/common/views/opds";
 import * as ValidatedIcon from "readium-desktop/renderer/assets/icons/doubleCheck-icon.svg";
 import * as OnGoingBookIcon from "readium-desktop/renderer/assets/icons/ongoingBook-icon.svg";
+import debounce from "debounce";
+import { useSelector } from "readium-desktop/renderer/common/hooks/useSelector";
+import { ICommonRootState } from "readium-desktop/common/redux/states/commonRootState";
 
 // import GridTagButton from "../catalog/GridTagButton";
 
@@ -214,7 +219,7 @@ export class AllPublicationPage extends React.Component<IProps, IState> {
     public render(): React.ReactElement<{}> {
         const displayType = (this.props.location?.state && (this.props.location.state as IRouterLocationState).displayType) || DisplayType.Grid;
 
-        const { __ } = this.props;
+        const { __, location, tags, openReader, displayPublicationInfo } = this.props;
 
         const secondaryHeader = <Header />;
         // const breadCrumb = <BreadCrumb breadcrumb={[{ name: __("catalog.myBooks"), path: "/library" }, { name: title }]}/>;
@@ -229,15 +234,14 @@ export class AllPublicationPage extends React.Component<IProps, IState> {
                     this.state.publicationViews ?
                         <TableView
                             accessibilitySupportEnabled={this.state.accessibilitySupportEnabled}
-                            location={this.props.location}
+                            location={location}
                             displayType={displayType}
                             __={__}
-                            translator={this.props.translator}
                             publicationViews={this.state.publicationViews}
-                            displayPublicationInfo={this.props.displayPublicationInfo}
-                            openReader={this.props.openReader}
+                            displayPublicationInfo={displayPublicationInfo}
+                            openReader={openReader}
                             focusInputRef={this.focusInputRef}
-                            tags={this.props.tags}
+                            tags={tags}
                         />
                         // (displayType === DisplayType.Grid ?
                         //     <GridView normalOrOpdsPublicationViews={this.state.publicationViews} /> :
@@ -326,6 +330,7 @@ const mapStateToProps = (state: ILibraryRootState) => ({
     location: state.router.location,
     keyboardShortcuts: state.keyboard.shortcuts,
     tags: state.publication.tag,
+    locale: state.i18n.locale, // refresh
 });
 
 const mapDispatchToProps = (dispatch: TDispatch, _props: IBaseProps) => {
@@ -358,8 +363,7 @@ const commonCellStyles = (props: ITableCellProps_Column & ITableCellProps_Generi
 };
 
 interface ITableCellProps_GlobalFilter {
-    __: I18nTyped;
-    translator: Translator;
+    __: I18nFunction;
     displayType: DisplayType;
 
     preGlobalFilteredRows: Row<IColumns>[];
@@ -381,6 +385,7 @@ const CellGlobalFilter: React.FC<ITableCellProps_GlobalFilter> = (props) => {
     // const [value, setValue] = React.useState(props.globalFilter);
     // const [, forceReRender] = React.useState(NaN);
 
+    // https://github.com/TanStack/table/blob/7535f8fd51a2aa784949e32a68b9bb24c8a6c811/src/publicUtils.js#L163
     const onInputChange = useAsyncDebounce((v) => {
 
         // if (v) {}
@@ -393,11 +398,11 @@ const CellGlobalFilter: React.FC<ITableCellProps_GlobalFilter> = (props) => {
     // className={classNames(classStyleExample)}
 
     return (
-        <div className={stylesInput.form_group}>
+        <div className={classNames(stylesInput.form_group, stylesInput.form_group_allPubSearch)}>
             <label
                 id="globalSearchLabel"
                 htmlFor="globalSearchInput"
-                style={{ display: "flex", gap: "5px" }}>
+                style={{ display: "flex", gap: "2px" }}>
                 {`${props.__("header.searchPlaceholder")}`}
                 <div
                     aria-live="assertive">
@@ -442,8 +447,7 @@ const CellGlobalFilter: React.FC<ITableCellProps_GlobalFilter> = (props) => {
 };
 
 interface ITableCellProps_Filter {
-    __: I18nTyped;
-    translator: Translator;
+    __: I18nFunction;
     displayType: DisplayType;
 
     showColumnFilters: boolean,
@@ -501,9 +505,16 @@ const CellColumnFilter: React.FC<ITableCellProps_Filter & ITableCellProps_Column
     //     return <></>;
     // }
 
+    // https://github.com/TanStack/table/blob/7535f8fd51a2aa784949e32a68b9bb24c8a6c811/src/publicUtils.js#L163
+    const onInputChange = useAsyncDebounce((v) => {
+        props.column.setFilter(v);
+    }, 500);
+
     const [searchParams] = useSearchParams();
+    const searchParamsFocus = searchParams.get("focus");
+    const searchParamsValue = searchParams.get("value");
     React.useEffect(() => {
-        if (searchParams.get("focus") === "tags" && props.column.id === "colTags") {
+        if (searchParamsFocus === "tags" && props.column.id === "colTags") {
             console.log("focus=tags");
             if (!inputRef.current) {
                 console.log("NO REF!");
@@ -511,7 +522,7 @@ const CellColumnFilter: React.FC<ITableCellProps_Filter & ITableCellProps_Column
 
             }
             inputRef.current.focus();
-            inputRef.current.value = decodeURIComponent(searchParams.get("value") || "");
+            inputRef.current.value = decodeURIComponent(searchParamsValue || "");
             if (!props.accessibilitySupportEnabled) {
                 onInputChange((inputRef.current.value || "").trim() || undefined);
             }
@@ -522,11 +533,7 @@ const CellColumnFilter: React.FC<ITableCellProps_Filter & ITableCellProps_Column
                     (inputRef?.current?.value || "").trim() || undefined);
             }
         }
-    }, []);
-
-    const onInputChange = useAsyncDebounce((v) => {
-        props.column.setFilter(v);
-    }, 500);
+    }, [props.column.id, props.accessibilitySupportEnabled, props.column, searchParamsFocus, searchParamsValue, onInputChange]);
 
     return props.showColumnFilters ?
         <div className={stylesPublication.showColFilters_wrapper}>
@@ -562,7 +569,7 @@ const CellColumnFilter: React.FC<ITableCellProps_Filter & ITableCellProps_Column
                     }
                 }}
                 aria-label={`${props.__("header.searchPlaceholder")} (${props.column.Header})`}
-                placeholder={`${props.__("header.searchPlaceholder")} (${props.column.Header})`}
+                placeholder={"" /* `${props.column.Header}` */}
                 className={stylesPublication.showColFilters_input}
                 style={{
                     width: props.accessibilitySupportEnabled ? "calc(100% - 30px)" : "100%",
@@ -624,7 +631,7 @@ const CellFormat: React.FC<ITableCellProps_Column & ITableCellProps_GenericCell 
         return <a
             title={`${t} (${props.__("header.searchPlaceholder")})`}
             tabIndex={0}
-            onKeyPress={(e) => {
+            onKeyUp={(e) => {
                 if (e.key === "Enter") {
                     e.preventDefault();
                     // props.column.setFilter(t);
@@ -659,7 +666,7 @@ const CellLangs: React.FC<ITableCellProps_Column & ITableCellProps_GenericCell &
         return <a
             title={`${t} (${props.__("header.searchPlaceholder")})`}
             tabIndex={0}
-            onKeyPress={(e) => {
+            onKeyUp={(e) => {
                 if (e.key === "Enter") {
                     e.preventDefault();
                     // props.column.setFilter(t);
@@ -711,7 +718,7 @@ const CellPublishers: React.FC<ITableCellProps_Column & ITableCellProps_GenericC
         return <a
             title={`${t} (${props.__("header.searchPlaceholder")})`}
             tabIndex={0}
-            onKeyPress={(e) => {
+            onKeyUp={(e) => {
                 if (e.key === "Enter") {
                     e.preventDefault();
                     // props.column.setFilter(t);
@@ -763,7 +770,7 @@ const CellAuthors: React.FC<ITableCellProps_Column & ITableCellProps_GenericCell
         return <a
             title={`${t} (${props.__("header.searchPlaceholder")})`}
             tabIndex={0}
-            onKeyPress={(e) => {
+            onKeyUp={(e) => {
                 if (e.key === "Enter") {
                     e.preventDefault();
                     // props.column.setFilter(t);
@@ -828,7 +835,7 @@ const CellTags: React.FC<ITableCellProps_Column & ITableCellProps_GenericCell & 
         return <a
             title={`${t} (${props.__("header.searchPlaceholder")})`}
             tabIndex={0}
-            onKeyPress={(e) => {
+            onKeyUp={(e) => {
                 if (e.key === "Enter") {
                     e.preventDefault();
                     // props.column.setFilter(t);
@@ -929,7 +936,7 @@ const CellDescription: React.FC<ITableCellProps_Column & ITableCellProps_Generic
 //         return <a
 //             title={`${t} (${props.__("header.searchPlaceholder")})`}
 //             tabIndex={0}
-//             onKeyPress={(e) => { if (e.key === "Enter") {
+//             onKeyUp={(e) => { if (e.key === "Enter") {
 //                 e.preventDefault();
 //                 props.column.setFilter(t);
 //                 props.setShowColumnFilters(true);
@@ -1017,7 +1024,7 @@ const CellDescription: React.FC<ITableCellProps_Column & ITableCellProps_Generic
 //         return <a
 //             title={`${t} (${props.__("header.searchPlaceholder")})`}
 //             tabIndex={0}
-//             onKeyPress={(e) => { if (e.key === "Enter") {
+//             onKeyUp={(e) => { if (e.key === "Enter") {
 //                 e.preventDefault();
 //                 props.column.setFilter(t);
 //                 props.setShowColumnFilters(true);
@@ -1109,7 +1116,7 @@ const CellDate: React.FC<ITableCellProps_Column & ITableCellProps_GenericCell & 
                 <a
                     title={`${props.value.label} (${props.__("header.searchPlaceholder")})`}
                     tabIndex={0}
-                    onKeyPress={(e) => {
+                    onKeyUp={(e) => {
                         if (e.key === "Enter") {
                             e.preventDefault();
                             const t = props.value.label.substring(0, props.column.id === "colLastReadTimestamp" ? 7 : 4); // YYYY or YYYY-MM
@@ -1149,8 +1156,10 @@ interface ITableCellProps_Value_Actions {
 
 const CellTitle: React.FC<ITableCellProps_Column & ITableCellProps_GenericCell & ITableCellProps_Value_Title> = (props) => {
 
+    const locale = useSelector((state: ICommonRootState) => state.i18n.locale);
+
     // props.value.label
-    const pubTitleLangStr = convertMultiLangStringToString(props.translator, props.value.pubTitle);
+    const pubTitleLangStr = convertMultiLangStringToString(props.value.pubTitle, locale);
     const pubTitleLang = pubTitleLangStr && pubTitleLangStr[0] ? pubTitleLangStr[0].toLowerCase() : "";
     const pubTitleIsRTL = langStringIsRTL(pubTitleLang);
     const pubTitleStr = pubTitleLangStr && pubTitleLangStr[1] ? pubTitleLangStr[1] : "";
@@ -1164,9 +1173,16 @@ const CellTitle: React.FC<ITableCellProps_Column & ITableCellProps_GenericCell &
         dir={pubTitleIsRTL ? "rtl" : undefined}
     >
                 <a
+                    tabIndex={0}
                     className={stylesPublication.cell_bookTitle}
-                    title={`${pubTitleStr} (${props.__("catalog.bookInfo")})`}
                     onClick={() => props.openReader(props.value.publicationViewIdentifier)}
+                    onKeyUp={(e) => {
+                        // ALTERNATIVE IMPLEMENTATION:
+                        // href="" ==> automatically sets up ENTER key and keyboard tab, but also requires preventDefault inside onClick (otherwise user can hit the options/alt key to download the href current location!), and introduces hyperlink visited style so CSS must account for this!
+                        if (e.key === "Enter") {
+                            props.openReader(props.value.publicationViewIdentifier);
+                        }
+                    }}
                 >
                     {pubTitleStr}
                 </a>
@@ -1179,7 +1195,7 @@ const CellRemainingDays: React.FC<ITableCellProps_Column & ITableCellProps_Gener
         return <a
             title={`${t} (${props.__("header.searchPlaceholder")})`}
             tabIndex={0}
-            onKeyPress={(e) => {
+            onKeyUp={(e) => {
                 if (e.key === "Enter") {
                     e.preventDefault();
                     // props.column.setFilter(t);
@@ -1216,7 +1232,7 @@ const CellReadingState: React.FC<ITableCellProps_Column & ITableCellProps_Generi
         return <a
             title={`${t} (${props.__("header.searchPlaceholder")})`}
             tabIndex={0}
-            onKeyPress={(e) => {
+            onKeyUp={(e) => {
                 if (e.key === "Enter") {
                     e.preventDefault();
                     // props.column.setFilter(t);
@@ -1343,8 +1359,7 @@ type MyTableInstance<T extends object> =
     };
 
 interface ITableCellProps_Common {
-    __: I18nTyped;
-    translator: Translator;
+    __: I18nFunction;
     displayType: DisplayType;
 
     displayPublicationInfo: ReturnType<typeof mapDispatchToProps>["displayPublicationInfo"];
@@ -1360,37 +1375,37 @@ interface ITableCellProps_TableView {
 
 export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Common> = (props) => {
 
-    const [showColumnFilters, setShowColumnFilters] = React.useState(true);
+    const [showColumnFilters, setShowColumnFilters] = React.useState(false);
     const [selectedTag, setSelectedTag] = React.useState("");
 
     const scrollToViewRef = React.useRef(null);
 
-    const { __ } = props;
+    const { openReader, displayPublicationInfo, displayType, __, focusInputRef, publicationViews, accessibilitySupportEnabled, tags } = props;
+
+    const locale = useSelector((state: ICommonRootState) => state.i18n.locale);
 
     const renderProps_Filter: ITableCellProps_Filter =
     {
-        __: props.__,
-        translator: props.translator,
-        displayType: props.displayType,
+        __,
+        displayType,
 
         showColumnFilters,
-        accessibilitySupportEnabled: props.accessibilitySupportEnabled,
+        accessibilitySupportEnabled,
 
-        selectedTag: selectedTag,
-        setSelectedTag: setSelectedTag,
+        selectedTag,
+        setSelectedTag,
     };
 
     const renderProps_Cell: ITableCellProps_GenericCell =
     {
-        __: props.__,
-        translator: props.translator,
-        displayType: props.displayType,
+        __,
+        displayType,
 
-        selectedTag: selectedTag,
-        setSelectedTag: setSelectedTag,
+        selectedTag,
+        setSelectedTag,
 
-        displayPublicationInfo: props.displayPublicationInfo,
-        openReader: props.openReader,
+        displayPublicationInfo,
+        openReader,
 
         setShowColumnFilters: (show: boolean, columnId: string, filterValue: string) => {
             setShowColumnFilters(show);
@@ -1405,16 +1420,16 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
         },
     };
 
-    // const locale = props.translator.getLocale();
+    // const locale = translator.getLocale();
     // // https://momentjs.com/docs/#/displaying/
     // moment.locale(locale);
 
     const tableRows = React.useMemo(() => {
-        return props.publicationViews.slice().reverse().map((publicationView) => {
+        return publicationViews.slice().reverse().map((publicationView) => {
 
             // translator.translateContentField(author)
-            // const authors = publicationView.authors ? formatContributorToString(publicationView.authors, props.translator) : "";
-            // const publishers = publicationView.publishers ? formatContributorToString(publicationView.publishers, props.translator) : "";
+            // const authors = publicationView.authors ? formatContributorToString(publicationView.authors, translator) : "";
+            // const publishers = publicationView.publishers ? formatContributorToString(publicationView.publishers, translator) : "";
 
             // publicationView.publishedAt = r2Publication.metadata.PublicationDate && moment(metadata.PublicationDate).toISOString();
             const momPublishedDate_ = publicationView.publishedAt ? moment(publicationView.publishedAt) : undefined;
@@ -1425,7 +1440,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
             let publishedDateVisual = publishedDateCanonical;
             if (publishedDateCanonical) {
                 try {
-                    publishedDateVisual = new Intl.DateTimeFormat(props.translator.getLocale(), { dateStyle: "medium", timeStyle: undefined }).format(new Date(publishedDateCanonical));
+                    publishedDateVisual = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: undefined }).format(new Date(publishedDateCanonical));
                 } catch (err) {
                     console.log(err);
                 }
@@ -1439,7 +1454,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
             let lastReadDateVisual = lastReadDateCanonical;
             if (lastReadDateCanonical) {
                 try {
-                    lastReadDateVisual = new Intl.DateTimeFormat(props.translator.getLocale(), { dateStyle: "medium", timeStyle: "short" }).format(new Date(lastReadDateCanonical));
+                    lastReadDateVisual = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(lastReadDateCanonical));
                 } catch (err) {
                     console.log(err);
                 }
@@ -1459,8 +1474,15 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                 } else if (timeEndDif === 1) {
                     remainingDays = `${timeEndDif} ${__("publication.day")}`;
                 } else {
-                    remainingDays = `${__("publication.expired")}`;
-                    hasEnded = true;
+                    // const nowUTC = (new Date()).toISOString();
+                    // const momentNow = moment(nowUTC);
+                    if (now.isAfter(momentEnd)) {
+                        remainingDays = `${__("publication.expired")}`;
+                        hasEnded = true;
+                    } else {
+                        // remainingDays = `${__("publication.licensed")}`;
+                        remainingDays = `${formatTime(momentEnd.diff(now, "seconds"))}`;
+                    }
                 }
             }
 
@@ -1471,8 +1493,8 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                 // Note: "pt-PT" in the i18next ResourceBundle is not captured because key match reduced to "pt"
                 // Also: pt-pt vs. pt-PT case sensitivity
                 // Also zh-CN (mandarin chinese)
-                const l = lang.split("-")[0] as keyof typeof AvailableLanguages;
-                const ll = AvailableLanguages[l] || lang;
+                const l = lang.split("-")[0] as keyof typeof availableLanguages;
+                const ll = availableLanguages[l] || lang;
 
                 const note = (lang !== ll) ? ` (${lang})` : "";
 
@@ -1485,7 +1507,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
 
             const format = publicationView.isAudio ? "Audio" : publicationView.isDivina ? "Divina" : publicationView.isPDF ? "PDF" : publicationView.isDaisy ? "DAISY" : publicationView.isFixedLayoutPublication ? "EPUB (FXL)" : "EPUB";
 
-            const duration = (publicationView.duration ? formatTime(publicationView.duration) : "") + (publicationView.nbOfTracks ? ` (${props.__("publication.audio.tracks")}: ${publicationView.nbOfTracks})` : "");
+            const duration = (publicationView.duration ? formatTime(publicationView.duration) : "") + (publicationView.nbOfTracks ? ` (${__("publication.audio.tracks")}: ${publicationView.nbOfTracks})` : "");
 
             // const identifier = publicationView.workIdentifier ? publicationView.workIdentifier : "";
             // const publicationType = publicationView.RDFType ? publicationView.RDFType : "";
@@ -1493,7 +1515,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
             let strA11Summary = "";
             if (publicationView.a11y_accessibilitySummary) {
 
-                const langStr = convertMultiLangStringToString(props.translator, publicationView.a11y_accessibilitySummary);
+                const langStr = convertMultiLangStringToString(publicationView.a11y_accessibilitySummary, locale);
 
                 if (langStr && langStr[1]) {
                     strA11Summary = DOMPurify.sanitize(langStr[1]).replace(/font-size:/g, "font-sizexx:");
@@ -1518,7 +1540,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                     authors: publicationView.authors,
                 },
                 colReadingState: { // IColumnValue_Authors
-                    label: publicationView.readingFinished ? `${props.__("publication.read")}` : publicationView.lastReadingLocation ? `${props.__("publication.onGoing")}` : `${props.__("publication.notStarted")}`,
+                    label: publicationView.readingFinished ? `${__("publication.read")}` : publicationView.lastReadingLocation ? `${__("publication.onGoing")}` : `${__("publication.notStarted")}`,
                 },
                 colRemainingDays: { // IColumnValue_Remain
                     label: remainingDays,
@@ -1599,7 +1621,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
             };
             return cols;
         });
-    }, [props.publicationViews]);
+    }, [locale, publicationViews, __]);
 
     const sortFunction = (rowA: Row<IColumns>, rowB: Row<IColumns>, columnId: IdType<IColumns>, desc?: boolean) => {
         let res = 0;
@@ -1639,7 +1661,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
             UseGlobalFiltersColumnOptions<IColumns> &
             UseFiltersColumnOptions<IColumns>)[] = [
                 {
-                    Header: props.__("publication.cover.img"),
+                    Header: __("publication.cover.img"),
                     accessor: "colCover",
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-expect-error
@@ -1648,7 +1670,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                     sortType: sortFunction,
                 },
                 {
-                    Header: props.__("publication.title"),
+                    Header: __("publication.title"),
                     accessor: "colTitle",
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-expect-error
@@ -1657,7 +1679,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                     sortType: sortFunction,
                 },
                 {
-                    Header: props.__("publication.author"),
+                    Header: __("publication.author"),
                     accessor: "colAuthors",
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-expect-error
@@ -1666,7 +1688,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                     sortType: sortFunction,
                 },
                 {
-                    Header: props.__("publication.progression.title"),
+                    Header: __("publication.progression.title"),
                     accessor: "colReadingState",
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-expect-error
@@ -1675,7 +1697,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                     sortType: sortFunction,
                 },
                 {
-                    Header: props.__("publication.remainingTime"),
+                    Header: __("publication.remainingTime"),
                     accessor: "colRemainingDays",
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-expect-error
@@ -1684,7 +1706,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                     sortType: sortFunction,
                 },
                 {
-                    Header: props.__("catalog.lang"),
+                    Header: __("catalog.lang"),
                     accessor: "colLanguages",
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-expect-error
@@ -1693,7 +1715,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                     sortType: sortFunction,
                 },
                 {
-                    Header: props.__("catalog.tags"),
+                    Header: __("catalog.tags"),
                     accessor: "colTags",
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-expect-error
@@ -1702,7 +1724,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                     sortType: sortFunction,
                 },
                 {
-                    Header: props.__("catalog.format"),
+                    Header: __("catalog.format"),
                     accessor: "colFormat",
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-expect-error
@@ -1710,7 +1732,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                     sortType: sortFunction,
                 },
                 {
-                    Header: props.__("catalog.lastRead"),
+                    Header: __("catalog.lastRead"),
                     accessor: "colLastReadTimestamp",
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-expect-error
@@ -1719,7 +1741,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                     sortType: sortFunction,
                 },
                 {
-                    Header: props.__("catalog.publisher"),
+                    Header: __("catalog.publisher"),
                     accessor: "colPublishers",
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-expect-error
@@ -1728,7 +1750,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                     sortType: sortFunction,
                 },
                 {
-                    Header: props.__("catalog.released"),
+                    Header: __("catalog.released"),
                     accessor: "colPublishedDate",
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-expect-error
@@ -1742,12 +1764,12 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                     sortType: sortFunction,
                 },
                 {
-                    Header: props.__("publication.duration.title"),
+                    Header: __("publication.duration.title"),
                     accessor: "colDuration",
                     sortType: sortFunction,
                 },
                 {
-                    Header: props.__("catalog.description"),
+                    Header: __("catalog.description"),
                     accessor: "colDescription",
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-expect-error
@@ -1756,7 +1778,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                 },
 
                 {
-                    Header: props.__("publication.accessibility.name"),
+                    Header: __("publication.accessibility.name"),
                     accessor: "col_a11y_accessibilitySummary",
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-expect-error
@@ -1764,7 +1786,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                     sortType: sortFunction,
                 },
                 {
-                    Header: props.__("publication.actions"),
+                    Header: __("publication.actions"),
                     accessor: "colActions",
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-expect-error
@@ -1830,7 +1852,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                 // },
 
                 // {
-                //     Header: props.__("publication.progression.title"),
+                //     Header: __("publication.progression.title"),
                 //     accessor: "colProgression",
                 // sortType: sortFunction,
                 // },
@@ -1846,7 +1868,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                 // },
             ];
         return arr;
-    }, [props.displayType]);
+    }, [__]);
 
     const defaultColumn = React.useMemo(
         () => ({
@@ -1903,10 +1925,13 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
 
     // infinite render loop
     // tableInstance.setPageSize(pageSize);
+
+    const PAGESIZE = 50;
+
     const initialState: UsePaginationState<IColumns> & TableState<IColumns> = {
-        pageSize: 50, // props.displayType === DisplayType.List ? 20 : 10;
+        pageSize: PAGESIZE, // displayType === DisplayType.List ? 20 : 10;
         pageIndex: 0,
-        hiddenColumns: props.displayType === DisplayType.Grid ? ["colLanguages", "colPublishers", "colPublishedDate", "colLCP", "colDuration", "colDescription", "col_a11y_accessibilitySummary"] : [],
+        hiddenColumns: displayType === DisplayType.Grid ? ["colLanguages", "colPublishers", "colPublishedDate", "colLCP", "colDuration", "colDescription", "col_a11y_accessibilitySummary"] : [],
     };
     const opts:
         TableOptions<IColumns> &
@@ -1927,6 +1952,103 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
     const tableInstance =
         useTable<IColumns>(opts, useFilters, useGlobalFilter, useSortBy, usePagination) as MyTableInstance<IColumns>;
 
+    const keyboardShortcuts = useSelector((state: ILibraryRootState) => state.keyboard.shortcuts);
+
+    const onKeyboardNavigateFirst = React.useCallback(() => {
+        tableInstance.gotoPage(0);
+    }, [tableInstance]);
+    const onKeyboardNavigatePrevious = React.useCallback(() => {
+        tableInstance.previousPage();
+    }, [tableInstance]);
+    const onKeyboardNavigateNext = React.useCallback(() => {
+        tableInstance.nextPage();
+    }, [tableInstance]);
+    const onKeyboardNavigateLast = React.useCallback(() => {
+        tableInstance.gotoPage(tableInstance.pageCount - 1);
+    }, [tableInstance]);
+
+    const registerAllKeyboardListeners = React.useCallback(() => {
+
+        registerKeyboardListener(
+            true, // listen for key up (not key down)
+            keyboardShortcuts.NavigatePreviousLibraryPageAlt,
+            onKeyboardNavigateFirst);
+        registerKeyboardListener(
+            true, // listen for key up (not key down)
+            keyboardShortcuts.NavigatePreviousLibraryPage,
+            onKeyboardNavigatePrevious);
+        registerKeyboardListener(
+            true, // listen for key up (not key down)
+            keyboardShortcuts.NavigateNextLibraryPage,
+            onKeyboardNavigateNext);
+        registerKeyboardListener(
+            true, // listen for key up (not key down)
+            keyboardShortcuts.NavigateNextLibraryPageAlt,
+            onKeyboardNavigateLast);
+    }, [onKeyboardNavigateFirst, onKeyboardNavigateLast, onKeyboardNavigateNext, onKeyboardNavigatePrevious,
+        keyboardShortcuts.NavigatePreviousLibraryPageAlt,
+        keyboardShortcuts.NavigatePreviousLibraryPage,
+        keyboardShortcuts.NavigateNextLibraryPage,
+        keyboardShortcuts.NavigateNextLibraryPageAlt,
+    ]);
+
+    const unregisterAllKeyboardListeners = React.useCallback(() => {
+        unregisterKeyboardListener(onKeyboardNavigateFirst);
+        unregisterKeyboardListener(onKeyboardNavigateLast);
+        unregisterKeyboardListener(onKeyboardNavigatePrevious);
+        unregisterKeyboardListener(onKeyboardNavigateNext);
+    }, [onKeyboardNavigateFirst, onKeyboardNavigateLast, onKeyboardNavigateNext, onKeyboardNavigatePrevious]);
+
+    // const firstMountRef = React.useRef(true);
+    // const keyboardShortcutsRef = React.useRef(keyboardShortcuts);
+    React.useEffect(() => {
+        ensureKeyboardListenerIsInstalled();
+
+        // if (firstMountRef.current) {
+        //     registerAllKeyboardListeners();
+        //     firstMountRef.current = false;
+        // }
+
+        // if (!keyboardShortcutsMatch(keyboardShortcutsRef.current, keyboardShortcuts)) {
+            unregisterAllKeyboardListeners();
+            registerAllKeyboardListeners();
+            // keyboardShortcutsRef.current = keyboardShortcuts;
+        // }
+
+        return () => {
+            unregisterAllKeyboardListeners();
+        };
+    }, [registerAllKeyboardListeners, unregisterAllKeyboardListeners, keyboardShortcuts]);
+
+    React.useEffect(() => {
+
+        const cb = () => {
+            if (displayType === DisplayType.Grid) {
+                const body = document.getElementById("publicationsTableBody") as HTMLTableSectionElement;
+                const bodyWidth = body?.offsetWidth;
+                if (!bodyWidth) {
+                    return;
+                }
+
+                const coverWidth = 205;
+                const col = Math.floor(bodyWidth/coverWidth);
+                const nbItemMissing = col - PAGESIZE%col;
+
+                tableInstance.setPageSize(PAGESIZE+nbItemMissing);
+            } else {
+                tableInstance.setPageSize(PAGESIZE);
+            }
+        };
+        cb();
+
+        const cdDebounce = debounce(cb, 500);
+
+        window.addEventListener("resize", cdDebounce);
+
+        return () => {
+            window.removeEventListener("resize", cdDebounce);
+        };
+    }, [tableInstance, displayType]);
 
     // <pre>
     // <code>
@@ -1945,7 +2067,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
     // {tableInstance.state.pageIndex + 1} / {tableInstance.pageOptions.length}
     // </span>
     // <span>
-    // {props.__("reader.navigation.goTo")}
+    // {__("reader.navigation.goTo")}
     // <input
     //     type="number"
     //     defaultValue={tableInstance.state.pageIndex + 1}
@@ -1976,8 +2098,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
         <Select refButEl={forwardedRef} {...props}></Select>);
     SelectRef.displayName = "ComboBox";
 
-    const tagsOptions = props.tags.map((v, i) => ({ id: i, value: i, name: v }));
-
+    const tagsOptions = tags.map((v, i) => ({ id: i, value: i, name: v }));
 
     return (
         <>
@@ -1986,15 +2107,14 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                 <div className={stylesPublication.allBooks_header_navigation}>
                     <div className={stylesPublication.allBooks_header_navigation_inputs}>
                         <CellGlobalFilter
-                            accessibilitySupportEnabled={props.accessibilitySupportEnabled}
+                            accessibilitySupportEnabled={accessibilitySupportEnabled}
                             preGlobalFilteredRows={tableInstance.preGlobalFilteredRows}
                             globalFilteredRows={tableInstance.globalFilteredRows}
                             globalFilter={tableInstance.state.globalFilter}
                             setGlobalFilter={tableInstance.setGlobalFilter}
-                            __={props.__}
-                            translator={props.translator}
-                            displayType={props.displayType}
-                            focusInputRef={props.focusInputRef}
+                            __={__}
+                            displayType={displayType}
+                            focusInputRef={focusInputRef}
 
                             setShowColumnFilters={(show: boolean) => {
                                 const currentShow = showColumnFilters;
@@ -2003,13 +2123,14 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                                     if (currentShow && !show) {
                                         for (const col of tableInstance.allColumns) {
                                             tableInstance.setFilter(col.id, "");
+
                                         }
                                     }
                                 }, 200);
                             }}
                         />
                         {
-                            (props.tags.length > 0) && (props.displayType === DisplayType.Grid)
+                            (tags.length > 0) && (displayType === DisplayType.Grid)
                                 ?
                                 // <div className={stylesPublication.filter_container}>
                                 // <SelectRef
@@ -2031,16 +2152,34 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
 
                                 <div className={stylesPublication.filter_container}>
                                     <ComboBox
-                                        label={__("header.fitlerTagTitle")}
                                         defaultItems={tagsOptions}
-                                        defaultSelectedKey={tagsOptions.find((tag) => tag.name?.toLowerCase().includes(selectedTag?.toLowerCase()))?.id || undefined}
-                                        onSelectionChange={(i) => {
-                                            setSelectedTag(tagsOptions.find((tag) => tag.id === i)?.name);
-                                            tableInstance.setFilter("colTags", tagsOptions.find((tag) => tag.id === i)?.name);
-                                            // console.log(tableInstance.columns.find((element) => element.Header === "Tags"))
+                                        defaultSelectedKey={
+                                            tagsOptions.findIndex((tag) =>
+                                                tag.name?.toLowerCase() === selectedTag.toLowerCase())
+                                        }
+                                        selectedKey={
+                                            tagsOptions.findIndex((tag) =>
+                                                tag.name?.toLowerCase() === selectedTag.toLowerCase())
+                                        }
+                                        onSelectionChange={(key) => {
+
+                                            if (key === null) {
+                                                // nothing
+                                            } else {
+
+                                                const found = tagsOptions.find((tag) => tag.id === key);
+                                                if (found) {
+                                                    setSelectedTag(found.name);
+                                                }
+                                                tableInstance.setFilter("colTags", found?.name || undefined);
+                                            }
                                         }}
                                         svg={TagIcon}
                                         allowsCustomValue
+                                        onInputChange={(v) => setSelectedTag(v)}
+                                        inputValue={selectedTag}
+                                        defaultInputValue={selectedTag}
+                                        aria-label={__("header.fitlerTagTitle")}
                                     >
                                         {item => <ComboBoxItem
                                             onHoverStart={(e: HoverEvent) => {
@@ -2069,7 +2208,7 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                                 //                 <SVG ariaHidden svg={DeleteFilter} />
                                 //             </button>
                                 //             <div>
-                                //                 {props.tags.map((tag, i: number) => {
+                                //                 {tags.map((tag, i: number) => {
                                 //                     return (
                                 //                         <span
                                 //                             key={i + 1000}
@@ -2088,12 +2227,12 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                                 : <></>
                         }
                     </div>
-                    <div style={{ position: "relative" }}>
+                    <div className={stylesPublication.allBooks_header_pagination}>
                         <label htmlFor="pageSelect" className={stylesPublication.allBooks_header_pagination_title}>{__("catalog.numberOfPages")}</label>
                         <div className={stylesPublication.allBooks_header_pagination_container}>
                             <button
                                 className={stylesPublication.allBooks_header_pagination_arrow}
-                                aria-label={`${props.__("opds.firstPage")}`}
+                                aria-label={`${__("opds.firstPage")}`}
                                 onClick={() => tableInstance.gotoPage(0)}
                                 disabled={!tableInstance.canPreviousPage}>
                                 <SVG ariaHidden={true} svg={ArrowFirstIcon} />
@@ -2103,14 +2242,14 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                                 style={{
                                     transform: "rotate(180deg)",
                                 }}
-                                aria-label={`${props.__("opds.previous")}`}
+                                aria-label={`${__("opds.previous")}`}
                                 onClick={() => tableInstance.previousPage()}
                                 disabled={!tableInstance.canPreviousPage}>
                                 <SVG ariaHidden={true} svg={ChevronRight} />
                             </button>
                             <select
                                 id="pageSelect"
-                                aria-label={`${props.__("reader.navigation.currentPageTotal", { current: tableInstance.state.pageIndex + 1, total: tableInstance.pageOptions.length })}`}
+                                aria-label={`${__("reader.navigation.currentPageTotal", { current: tableInstance.state.pageIndex + 1, total: tableInstance.pageOptions.length })}`}
                                 className={stylesPublication.allBooks_header_pagination_select}
                                 value={tableInstance.state.pageIndex}
                                 onChange={(e) => {
@@ -2130,14 +2269,14 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                             </select>
                             <button
                                 className={stylesPublication.allBooks_header_pagination_arrow}
-                                aria-label={`${props.__("opds.next")}`}
+                                aria-label={`${__("opds.next")}`}
                                 onClick={() => tableInstance.nextPage()}
                                 disabled={!tableInstance.canNextPage}>
                                 <SVG ariaHidden={true} svg={ChevronRight} />
                             </button>
                             <button
                                 className={stylesPublication.allBooks_header_pagination_arrow}
-                                aria-label={`${props.__("opds.lastPage")}`}
+                                aria-label={`${__("opds.lastPage")}`}
                                 onClick={() => tableInstance.gotoPage(tableInstance.pageCount - 1)}
                                 disabled={!tableInstance.canNextPage}>
                                 <SVG ariaHidden={true} svg={ArrowLastIcon} />
@@ -2152,10 +2291,11 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                     style={{ visibility: "hidden" }}>{" "}</span>
                 <table {...tableInstance.getTableProps()}
                     className={stylesPublication.allBook_table}
+                    role= {displayType === DisplayType.Grid ? "presentation" : "table"}
                     style={{
                         display: "table",
                     }}>
-                    {props.displayType === DisplayType.Grid ? ""
+                    {displayType === DisplayType.Grid ? ""
                         :
                         <thead>{tableInstance.headerGroups.map((headerGroup, index) =>
                         (<tr key={`headtr_${index}`} {...headerGroup.getHeaderGroupProps()}>{
@@ -2219,11 +2359,11 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                                                 }}
                                                 aria-label={
                                                     `${column.Header}${column.isSorted ? (column.isSortedDesc ?
-                                                        ` (${props.__("catalog.column.descending")})`
+                                                        ` (${__("catalog.column.descending")})`
                                                         :
-                                                        ` (${props.__("catalog.column.ascending")})`)
+                                                        ` (${__("catalog.column.ascending")})`)
                                                         :
-                                                        ` (${props.__("catalog.column.unsorted")})`
+                                                        ` (${__("catalog.column.unsorted")})`
                                                     }`
                                                 }
                                             >
@@ -2250,17 +2390,48 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                                             // aria-label={`${column.Header}`}
                                             //     >
                                             //     {
-                                            //     // props.displayType === DisplayType.List ? "" : column.render("Header")
+                                            //     // displayType === DisplayType.List ? "" : column.render("Header")
                                             //     // column.render("Header")
                                             //     }
                                             // </span>
                                             <><input
-                                                aria-label={props.__("header.searchPlaceholder")}
+                                                aria-label={__("header.searchPlaceholder")}
                                                 id="setShowColumnFiltersCheckbox"
                                                 type="checkbox"
                                                 checked={showColumnFilters ? true : false}
-                                                onChange={() => {
+                                                onFocus={()=>{
+                                                    const el = window.document.getElementById("setShowColumnFiltersCheckboxLabel");
+                                                    if (el) {
+                                                        el.setAttribute("data-focussed", "true");
+                                                    }
+                                                }}
+                                                onBlur={()=>{
+                                                    const el = window.document.getElementById("setShowColumnFiltersCheckboxLabel");
+                                                    if (el) {
+                                                        el.removeAttribute("data-focussed");
+                                                    }
+                                                }}
+                                                onKeyUp={(ev)=>{
+                                                    if (ev.key === "Enter") {
+                                                        // (ev.target as HTMLInputElement).checked = showColumnFilters ? false : true;
+                                                        (ev.target as HTMLElement).click();
 
+                                                        // const show = showColumnFilters;
+                                                        // setShowColumnFilters(!showColumnFilters);
+
+                                                        // setTimeout(() => {
+                                                        //     if (!show) {
+                                                        //         tableInstance.setGlobalFilter("");
+                                                        //     }
+                                                        //     if (show) {
+                                                        //         for (const col of tableInstance.allColumns) {
+                                                        //             tableInstance.setFilter(col.id, "");
+                                                        //         }
+                                                        //     }
+                                                        // }, 200);
+                                                    }
+                                                }}
+                                                onChange={() => {
                                                     const show = showColumnFilters;
                                                     setShowColumnFilters(!showColumnFilters);
 
@@ -2277,6 +2448,8 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                                                 }}
                                                 style={{ position: "absolute", left: "-999px" }}
                                             /><label
+                                                id="setShowColumnFiltersCheckboxLabel"
+                                                className={stylesPublication.setShowColumnFiltersCheckboxLabel}
                                                 aria-hidden="true"
                                                 htmlFor="setShowColumnFiltersCheckbox"
                                                 style={{ cursor: "pointer", padding: "0.2em", color: "var(--color-blue)", paddingBottom: "0", display: "inline-block", width: "20px" }}>
@@ -2297,9 +2470,9 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                                 //         globalFilteredRows={tableInstance.globalFilteredRows}
                                 //         globalFilter={tableInstance.state.globalFilter}
                                 //         setGlobalFilter={tableInstance.setGlobalFilter}
-                                //         __={props.__}
-                                //         translator={props.translator}
-                                //         displayType={props.displayType}
+                                //         __={__}
+                                //         translator={translator}
+                                //         displayType={displayType}
                                 //     />
                                 // </th>
                                 // </tr>
@@ -2308,8 +2481,10 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                         </thead>}
                     <tbody {...tableInstance.getTableBodyProps()}
                         className={stylesPublication.allBook_table_body}
+                        id="publicationsTableBody"
+                        role= {displayType === DisplayType.Grid ? "presentation" : "rowgroup"}
                         style={{
-                            display: props.displayType === DisplayType.Grid ? "grid" : "",
+                            display: displayType === DisplayType.Grid ? "grid" : "",
                         }}
                     >
                         {tableInstance.page.map((row, index) => {
@@ -2317,15 +2492,15 @@ export const TableView: React.FC<ITableCellProps_TableView & ITableCellProps_Com
                             tableInstance.prepareRow(row);
 
                             const pubView: PublicationView = row.values?.colActions?.publication || undefined;
-                            if (props.displayType === DisplayType.Grid && !pubView) {
+                            if (displayType === DisplayType.Grid && !pubView) {
                                 console.log("#### pubView !! not defined for row :");
                                 console.log(row);
                                 console.log("####");
                                 return (<tr key={index}></tr>);
                             }
-                        
+
                             return (
-                                props.displayType === DisplayType.Grid ?
+                                displayType === DisplayType.Grid ?
                                     <tr key={index}>
                                         <td><PublicationCard publicationViewMaybeOpds={pubView} isReading={pubView.lastReadingLocation ? true : false} /></td>
                                     </tr>

@@ -6,15 +6,14 @@
         "leftSlideButton": "Desprazar lista á esquerda",
         "mainContent": "Contido principal",
         "rightSlideButton": "Desprazar lista á dereita",
-        "searchBook": "Buscar por título",
         "skipLink": "Pasar ao contido",
         "toolbar": "Barra de ferramentas"
     },
     "apiapp": {
-        "documentation": "",
-        "howItWorks": "",
-        "informations": "",
-        "noLibraryFound": ""
+        "documentation": "DocumentaciónThorium ",
+        "howItWorks": "Como traballa?",
+        "informations": "En Francia, moitos as bibliotecas públicas proporcionan unha máquina-readable catalogar (similar a OPDS mais non idéntico), deixando os mecenas descargan publicacións dixitais desde o seu persoal bookshelf. Integrando esta tecnoloxía en Thorium o lector déixate  para descargar un ebook ou audiobook directamente a Thorium Lector para o instante que le.\nComo  conectas a vosa conta de biblioteca pública francesa a Thorium Lector? É sinxelo. Introducir unha cidade francesa ('París') ou parte do nome de biblioteca no campo de Procura e pegar o botón de Procura. Unha lista das bibliotecas públicas que corresponden á vosa procura aparecerá. Selecto unha biblioteca e o impacto Engaden. Na lista actualizada de cataloga, selecciona esta biblioteca: un authentication a forma é mostrada. Introducir o voso username/enderezo de correo electrónico e contrasinal, e impacto Login. Agora podes ver o contido do voso persoal bookshelf, desde o cal podes descargar e ler o ebooks e audiobooks anteriormente pediches prestado.",
+        "noLibraryFound": "Ningunha biblioteca atopou ({{- name}})"
     },
     "app": {
         "edit": {
@@ -35,14 +34,15 @@
                         "no": "No",
                         "yes": "Sí"
                     },
+                    "help": "",
                     "message": "Queres gardar a sesión?",
                     "title": "Gardar sesión"
                 }
             }
         },
         "update": {
-            "message": "",
-            "title": ""
+            "message": "A versión nova dispoñíbel, clic para aprender máis.",
+            "title": "{{- appName}} software actualiza."
         },
         "window": {
             "showLibrary": "Mostrar biblioteca"
@@ -69,15 +69,14 @@
         "emptyTagList": "Non tes libros etiquetaxes.",
         "entry": {
             "continueReading": "Reiniciar lectura",
-            "continueReadingAudioBooks": "Reiniciar reproducción",
-            "continueReadingDivina": "Reiniciar divina",
-            "continueReadingPdf": "Reiniciar PDF",
             "lastAdditions": "Engadidos recentemente"
         },
         "export": "Exportar",
-        "format": "",
+        "exportAnnotation": "",
+        "format": "Formato",
+        "importAnnotation": "",
         "lang": "Idioma",
-        "lastRead": "",
+        "lastRead": "Último Lido",
         "moreInfo": "Máis información",
         "myBooks": "Os meus libros",
         "noPublicationHelpL1": "Arrastra unha publicación aquí",
@@ -89,9 +88,9 @@
             "auth": {
                 "cancel": "Cancelar",
                 "login": "Iniciar sesión",
-                "password": "",
-                "register": "",
-                "username": ""
+                "password": "Password",
+                "register": "Rexistro",
+                "username": "Username / Enderezo de correo electrónico"
             },
             "info": {
                 "availableSince": "Desde",
@@ -116,13 +115,26 @@
         "readBook": "Ler",
         "released": "Publicado en",
         "sort": "Ordenar por",
-        "tag": "",
-        "tagCount": "Número de etiquetas",
+        "tag": "Etiqueta",
         "tags": "Etiquetas",
-        "update": ""
+        "update": "Edita"
     },
     "dialog": {
+        "annotations": {
+            "descAuthor": "",
+            "descCreator": "",
+            "descList": "",
+            "descNewer": "",
+            "descOlder": "",
+            "descTitle": "",
+            "importAll": "",
+            "importWithoutConflict": "",
+            "origin": "",
+            "title": ""
+        },
         "cancel": "Cancelar",
+        "deleteAnnotations": "",
+        "deleteAnnotationsText": "",
         "deleteFeed": "Seguro que queres eliminar este catálogo?",
         "deletePublication": "Seguro que queres eliminar esta publicación?",
         "import": "Seguro que queres importar estes ficheiros?",
@@ -142,31 +154,40 @@
         "allBooks": "Todos os libros",
         "catalogs": "Catálogos",
         "downloads": "Descargas",
-        "fitlerTagTitle": "",
+        "fitlerTagTitle": "Filtrar por etiqueta",
         "gridTitle": "Presentación en cuadrícula",
         "home": "Menú biblioteca",
         "homeTitle": "Inicio",
         "importTitle": "Importar publicación",
         "listTitle": "Presentación en lista",
-        "myCatalogs": "",
+        "myCatalogs": "A miña cataloga",
         "refreshTitle": "Recargar",
         "searchPlaceholder": "Buscar",
         "searchTitle": "Iniciar procura",
         "settings": "Opcións de configuración",
-        "viewMode": ""
+        "viewMode": "Modo de vista"
     },
     "library": {
         "lcp": {
-            "hint": "(Pista : {{- hint}})",
+            "hint": "Pista : ",
+            "open": "",
             "password": "Contrasinal",
             "sentence": "Esta publicación require un contrasinal LCP para abrirse: ",
             "urlHint": "Esqueciches o teu contrasinal? Atopa axuda aquí",
-            "whatIsLcp?": "",
-            "whatIsLcpInfoDetails": "",
-            "whatIsLcpInfoDetailsLink": ""
+            "whatIsLcp?": "Que é LCP?",
+            "whatIsLcpInfoDetails": "Apoios de LCP para 'Protección de Contido con licenza'.",
+            "whatIsLcpInfoDetailsLink": "Para aprender máis, clic esta ligazón ao EDRLab sitio web."
         }
     },
     "message": {
+        "annotations": {
+            "alreadyImported": "",
+            "emptyFile": "",
+            "errorParsing": "",
+            "noBelongTo": "",
+            "nothing": "",
+            "success": ""
+        },
         "download": {
             "error": "A descarga de {{-  title}} fallou: [{{-  err}}]"
         },
@@ -188,14 +209,14 @@
             "urlPlaceholder": "Link"
         },
         "addFormApiapp": {
-            "title": ""
+            "title": "Engade conta de biblioteca"
         },
         "addMenu": "Engadir catálogo OPDS",
         "breadcrumbRoot": "Catálogos",
-        "documentation": "",
+        "documentation": "OPDS sitio web oficial",
         "empty": "Non se atoparon publicacións",
         "firstPage": "Primeira",
-        "informations": "",
+        "informations": "Imaxinar un mundo onde podes explorar e descargar publicacións dixitais desde bibliotecas públicas e dixital booksellers con xusto uns cantos clics. Aquilo é exactamente o que o Sistema de Distribución de Publicación Aberto (OPDS) cataloga ofertas de formato. Con OPDS, podes navigate por cataloga desde #varios ebook provedores, ficha, pide prestado, comprar unha publicación, ou visitar o voso persoal bookshelf. Mesmo podes descargar un ebook ou audiobook directamente a Thorium Lector para o instante que le.\nTan, como  atopas un OPDS cataloga? É sinxelo. Buscar un hyperlink (URL) liderando ao catalogar. Copia este URL ao campo de Ligazón encima. Mantén en mente que hai  ninguén-tenda de parón para toda OPDS activa cataloga. Necesitarás contactar a vosa biblioteca preferida ou bookseller e pedir os seus OPDS catalogan URL. Se non es seguro onde para arrancar, Wikipedia ten uns cantos registries de OPDS cataloga en varias linguas que poderían ser útil.\nO campo de Nome fica na vosa comodidade; proporciona un xeito fácil de identificar o alimentar en Thorium Lector.",
         "lastPage": "Última",
         "menu": {
             "aboutBook": "Acerca deste libro",
@@ -216,45 +237,45 @@
         "previous": "Anterior",
         "shelf": "Estante",
         "updateForm": {
-            "name": "",
-            "title": "",
-            "updateButton": "",
-            "url": ""
+            "name": "Nome:",
+            "title": "Editar fonte OPDS",
+            "updateButton": "Editar",
+            "url": "Link:"
         },
-        "whatIsOpds": ""
+        "whatIsOpds": "Que é OPDS?"
     },
     "publication": {
         "accessibility": {
             "accessModeSufficient": {
-                "textual": ""
+                "textual": "TTS e lector de pantalla amigables"
             },
             "accessibilityFeature": {
-                "alternativeText": "",
-                "displayTransformability": "",
-                "longDescription": "",
-                "printPageNumbers": "",
-                "readingOrder": "",
-                "synchronizedAudioText": "",
-                "tableOfContents": ""
+                "alternativeText": "Contén texto alternativo",
+                "displayTransformability": "Texto e deseño adaptables",
+                "longDescription": "Descricións completas para recursos gráficos",
+                "printPageNumbers": "Referencia á paxinación do libro impreso",
+                "readingOrder": "Contén orde de lectura",
+                "synchronizedAudioText": "Texto e audio sincronizados",
+                "tableOfContents": "Inclúe táboa de contido"
             },
             "accessibilityHazard": {
-                "flashing": "",
-                "motionSimulation": "",
-                "name": "",
-                "noFlashing": "",
-                "noMotionSimulation": "",
-                "noSound": "",
-                "none": "",
-                "sound": "",
-                "unknown": ""
+                "flashing": "Escintileos",
+                "motionSimulation": "Animacións",
+                "name": "Risco:",
+                "noFlashing": "Sen escintileos",
+                "noMotionSimulation": "Sen animacións",
+                "noSound": "Sen sons",
+                "none": "Ningún",
+                "sound": "Son",
+                "unknown": "Desconocido"
             },
-            "certifierReport": "",
-            "conformsTo": "",
-            "moreInformation": "",
-            "name": "",
-            "noA11y": ""
+            "certifierReport": "Informe de la entidade certificadora",
+            "conformsTo": "Conforme con:",
+            "moreInformation": "Más información",
+            "name": "Accesibilidade",
+            "noA11y": "Non hai dispoñible información sobre accesibilidade"
         },
-        "actions": "",
+        "actions": "Accións",
         "audio": {
             "tracks": "Pistas"
         },
@@ -265,29 +286,31 @@
         "cover": {
             "img": "Imaxe de portada"
         },
-        "day": "",
-        "days": "",
+        "day": "día",
+        "days": "días",
         "duration": {
             "title": "Duración"
         },
-        "expired": "",
+        "encryptedNoLicense": "",
+        "expired": "Préstamo expirado",
         "expiredLcp": "Este libro non se pode ler porque a licenza  LCP expirou.",
+        "incorrectPassphrase": "",
         "lcpEnd": "Fin",
         "lcpRightsCopy": "Copia de personaxes",
         "lcpRightsPrint": "Copia de impresora",
         "lcpStart": "Inicio",
-        "licenceLCP": "",
-        "licenseOutOfDate": "A licenza está  desactualizada",
-        "licenseSignatureDateInvalid": "A data da firma da licenza non é válida",
+        "licenceLCP": "Licenza (LCP)",
+        "licenseCertificateDateInvalid": "A data da firma da licenza non é válida",
+        "licenseOutOfDate": "A licenza está  desactualizada.",
         "licenseSignatureInvalid": "A firma da licenza non é válida",
-        "licensed": "",
-        "markAsRead": "",
-        "notStarted": "",
-        "onGoing": "",
+        "licensed": "Con licenza",
+        "markAsRead": "Marcar como lido",
+        "notStarted": "Non iniciado",
+        "onGoing": "En curso",
         "progression": {
             "title": "Progreso"
         },
-        "read": "",
+        "read": "Finalizado",
         "remainingTime": "",
         "renewButton": "Renovar",
         "returnButton": "Devolver",
@@ -301,67 +324,109 @@
     },
     "reader": {
         "annotations": {
-            "Color": "",
-            "addNote": "",
-            "advancedMode": "",
-            "annotationsOptions": "",
-            "highlight": "",
-            "noSelectionToast": "",
-            "quickAnnotations": "",
-            "saveNote": "",
-            "toggleMarginMarks": ""
+            "Color": "Cor",
+            "addNote": "Anotar",
+            "advancedMode": "Modo instantáneo (creación automática ao seleccionar)",
+            "annotationsExport": {
+                "description": "",
+                "title": ""
+            },
+            "annotationsOptions": "Opcións",
+            "colors": {
+                "bluegreen": "",
+                "cyan": "",
+                "green": "",
+                "lightblue": "",
+                "orange": "",
+                "purple": "",
+                "red": "",
+                "yellow": ""
+            },
+            "date": "",
+            "export": "",
+            "filter": {
+                "all": "",
+                "filterByColor": "",
+                "filterByCreator": "",
+                "filterByDrawtype": "",
+                "filterByTag": "",
+                "filterOptions": "",
+                "none": ""
+            },
+            "hide": "Non mostrar",
+            "highlight": "Destacar",
+            "noSelectionToast": "Sen selección",
+            "note": "",
+            "quickAnnotations": "Creación rápida (omitir editor)",
+            "saveNote": "Gardar",
+            "sorting": {
+                "lastcreated": "",
+                "lastmodified": "",
+                "progression": "",
+                "sortingOptions": ""
+            },
+            "toggleMarginMarks": "Mostrar en marxes",
+            "type": {
+                "outline": "Describir",
+                "solid": "Fondo adoitado",
+                "strikethrough": "Tachado",
+                "underline": "Subliñado"
+            }
         },
         "divina": {
             "mute": "silenciar",
             "unmute": "deixar de silenciar"
         },
         "fxl": {
-            "fit": ""
+            "fit": "Axustar"
         },
+        "goToContent": "",
         "marks": {
             "annotations": "Anotacións",
             "bookmarks": "Marcadores",
             "delete": "Eliminar",
             "edit": "Editar",
-            "goTo": "",
+            "goTo": "Vai a páxina",
             "landmarks": "Puntos de referencia",
-            "saveMark": "",
+            "progression": "",
+            "saveMark": "Gardar marcador\n",
             "search": "Buscar",
-            "searchResult": "",
+            "searchResult": "Buscar [{{- searchText}}]",
             "toc": "Táboa de contido"
         },
         "media-overlays": {
             "activate": "Activar lectura en voz alta",
             "captions": "Texto sincronizado/presentación diáfana",
-            "captionsDescription": "",
+            "captionsDescription": "Vista de texto simplificada con estilo de subtítulos mínimo.",
             "next": "Seguinte (Lectura en voz alta)",
             "pause": "Pausar (Lectura en voz alta)",
             "play": "Reproducir (Lectura en voz alta)",
             "previous": "Anterior (Lectura en voz alta)",
             "skip": "Omitir información auxiliar",
-            "skipDescription": "",
+            "skipDescription": "Saltar/ignorar contido auxiliar como saltos de páxina, notas ao pé/notas finais etc.",
             "speed": "Velocidade de reprodución para lectura en voz alta",
             "stop": "Deter lectura en voz alta",
             "title": "Lectura en voz alta"
         },
         "navigation": {
-            "annotationTitle": "",
+            "ZenModeExit": "",
+            "ZenModeTitle": "",
+            "annotationTitle": "anotación",
             "backHomeTitle": "Volver á biblioteca",
             "bookmarkTitle": "Marcador",
             "currentPage": "Páxina actual: {{- current}}",
             "currentPageTotal": "Páxina actual: {{- current}}/{{- total}}",
             "detachWindowTitle": "Mostrar xanela de biblioteca",
-            "fullscreenTitle": "Abrir modo pantalla completa",
             "goTo": "Ir a",
             "goToError": "Este salto de páxina non existe",
             "goToPlaceHolder": "Introduce un número de páxina",
             "goToTitle": "Ir a páxina",
-            "historyNext": "",
-            "historyPrevious": "",
+            "historyNext": "Avanzar",
+            "historyPrevious": "Retroceder",
             "infoTitle": "Información",
             "magnifyingGlassButton": "buscar na publicación",
             "openTableOfContentsTitle": "Navegación",
-            "page": "",
+            "page": "Páxina",
             "pdfscalemode": "Axuste ou ancho de páxina",
             "settingsTitle": "Opcións de configuración"
         },
@@ -372,7 +437,7 @@
                 "next": "Seguinte",
                 "notFound": "non hai coincidencias",
                 "previous": "Anterior",
-                "results": "",
+                "results": "Resultados",
                 "submit": "Atopar"
             },
             "searchTitle": "Buscar:"
@@ -384,23 +449,25 @@
                 "title": "Columnas",
                 "two": "2 cols."
             },
-            "customizeReader": "",
-            "disabled": "",
+            "customFontSelected": "",
+            "customizeReader": "Personalizar o estilo do texto",
+            "disabled": "desactivado",
             "display": "Visualización",
             "disposition": {
                 "title": "Disposición"
             },
             "font": "Fonte",
             "fontSize": "Tamaño de fonte",
-            "infoCustomFont": "",
+            "infoCustomFont": "Selecciona unha fonte personalizada do sistema operativo escribindo o seu nome\n",
             "justification": "Aliñación",
             "justify": "Xustificar",
             "letterSpacing": "Espazado de letras",
             "lineSpacing": "Interlineado",
             "margin": "Marxe",
             "noFootnotes": "Desactivar notas ao pé",
-            "noRTLFlip": "",
-            "noRuby": "",
+            "noRTLFlip": "Deshabilitar a interface de usuario de dereita a esquerda\n",
+            "noRuby": "Ocultar Ruby xaponés",
+            "noTemporaryNavTargetOutline": "",
             "paginated": "Paginado",
             "paraSpacing": "Espazado de parágrafos",
             "pdfZoom": {
@@ -416,20 +483,30 @@
                 },
                 "title": "Zoom"
             },
-            "preview": "",
+            "preset": {
+                "apply": "",
+                "applyDetails": "",
+                "detail": "",
+                "reset": "",
+                "resetDetails": "",
+                "save": "",
+                "saveDetails": "",
+                "title": ""
+            },
+            "preview": "Previsualizar",
             "reduceMotion": "Diminuír movemento",
             "scrolled": "Desplazable",
             "spacing": "Espazado",
             "text": "Texto",
             "theme": {
                 "name": {
-                    "Contrast1": "",
-                    "Contrast2": "",
-                    "Contrast3": "",
-                    "Contrast4": "",
+                    "Contrast1": "Contraste 1",
+                    "Contrast2": "Contraste 2",
+                    "Contrast3": "Contraste 3",
+                    "Contrast4": "Contraste 4",
                     "Neutral": "Neutral",
                     "Night": "Noite",
-                    "Paper": "",
+                    "Paper": "Papel",
                     "Sepia": "Sepia"
                 },
                 "title": "Disposición"
@@ -445,26 +522,36 @@
         },
         "tts": {
             "activate": "Activar texto a voz",
-            "default": "Voz:  predeterminada no sistema",
+            "language": "",
             "next": "Seguinte (Texto a voz)",
             "pause": "Pausar texto a voz",
             "play": "Reproducir (Texto a voz)",
             "previous": "Anterior (Texto a voz)",
             "sentenceDetect": "Dividir (Texto a voz)",
-            "sentenceDetectDescription": "",
+            "sentenceDetectDescription": "Dividir parágrafos longos en frases.",
             "speed": "Velocidade de reproducción para texto a voz",
             "stop": "Deter texto a voz",
             "voice": "Voz para TTS"
         }
     },
     "settings": {
+        "annotationCreator": {
+            "creator": "",
+            "help": "",
+            "name": "",
+            "organization": "",
+            "person": "",
+            "type": ""
+        },
         "auth": {
+            "help": "",
+            "title": "",
             "wipeData": "Limpar datos de autenticación"
         },
         "keyboard": {
             "advancedMenu": "Menú",
             "cancel": "Cancelar",
-            "disclaimer": "",
+            "disclaimer": "Os atallos definíronse a partir da distribución do teclado QWERTY.",
             "editUserJson": "Editar arquivo de usuario",
             "keyboardShortcuts": "Atallos de teclado",
             "loadUserJson": "Cargar arquivo de usuario",
@@ -474,50 +561,52 @@
         "language": {
             "languageChoice": "Selección de idioma"
         },
+        "library": {
+            "enableAPIAPP": "",
+            "title": ""
+        },
         "session": {
-            "no": "Deshabilitar",
-            "title": "Gardar sesión",
-            "yes": "Habilitar"
+            "title": "Gardar sesión"
         },
         "tabs": {
-            "appearance": "",
-            "general": "",
-            "keyboardShortcuts": ""
+            "appearance": "Aspecto visual",
+            "general": "General",
+            "keyboardShortcuts": "Atallos de teclado"
         },
         "theme": {
-            "auto": "",
-            "dark": "",
-            "description": "",
-            "light": "",
-            "title": ""
+            "auto": "Automático\n",
+            "dark": "Escuro",
+            "description": "O deseño da aplicación coincide co sistema operativo.",
+            "light": "Claro",
+            "title": "Deseño da aplicación\n"
         }
     },
     "wizard": {
         "buttons": {
-            "discover": "",
-            "goToBooks": "",
-            "next": ""
+            "discover": "Descobre as novidades",
+            "goToBooks": "Ir aos meus libros",
+            "next": "Seguinte"
         },
         "description": {
-            "annotations": "",
-            "catalogs": "",
-            "home": "",
-            "readingView1": "",
-            "readingView2": "",
-            "yourBooks": ""
+            "annotations": "Resalta texto do documento, elixe estilo e cor, adxunta notas persoais. Crea anotacións en modo \"rápido\" para omitir o editor (podes introducir texto e personalizar estilos posteriormente). Para maior velocidade, utiliza o \"modo 'instantáneo\", que crea anotacións inmediatamente despois de resaltar texto do documento.",
+            "catalogs": "Pide prestadas publicacións da túa biblioteca local ou descobre publicacións mediante canles OPDS. Accede a unha variedade de publicacións de múltiples fontes grazas aos catálogos en liña.",
+            "home": "Thorium vese diferente! Descubramos as novidades...",
+            "readingView1": "Personaliza as túas preferencias de lectura e reprodución: Thorium agora ofrece múltiples deseños de cor, tanto para a interface de usuario como para os documentos de publicacións. Agora tamén é máis fácil configurar libros electrónicos para lectura en voz alta con síntese de voz e narración mediante texto/audio sincronizados.",
+            "readingView2": "A interface de usuario mellorada de Thorium fai que sexa máis fácil atopar texto en publicacións, explorar resultados de procura, ir a páxinas específicas, explorar a táboa de contido, crear marcadores etc., grazas aos novos paneis \"axustados\". O modo de lectura en pantalla completa segue ofrecendo unha contorna libre de distraccións.",
+            "yourBooks": "Bienvenido á túa biblioteca persoal redeseñada! Na vista de \"cuadrícula\", filtra facilmente por etiquetas ou busca publicacións por palabras chave. Na vista avanzada de 'táboa', selecciona e ordena publicacións por autores, título, data, formato etc."
         },
-        "dontShow": "",
+        "dontShow": "Non volver mostrar",
         "tab": {
-            "annotations": "",
-            "catalogs": "",
-            "home": "",
-            "readingView": "",
-            "yourBooks": ""
+            "annotations": "Anotacións",
+            "catalogs": "Catálogos",
+            "home": "Inicio",
+            "readingView": "Vista de lectura",
+            "yourBooks": "As túas publicacións"
         },
         "title": {
-            "allBooks": "",
-            "newFeature": "",
-            "welcome": ""
+            "allBooks": "Todas as miñas publicacións",
+            "newFeature": "Nova función: Anotacións",
+            "welcome": "Bienvenido a Thorium 3.0"
         }
     }
 }

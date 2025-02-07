@@ -1,6 +1,6 @@
-/*
-=-=-= popoverDialog.scss
-*/
+.CSS_START_components_popoverDialog {
+  display: none;
+}
 
 .modal_dialog_reader {
   transform: translate(-50%, -50%);
@@ -39,8 +39,8 @@
     }
   }
 
-  @media screen and (height <= 700px) {
-    height: 450px;
+  @media screen and (height <= 750px) {
+    height: calc(100dvh - 150px);
 }
 }
 
@@ -84,7 +84,7 @@
   } 
 
   .settings_container {
-    height: calc(100dvh - 230px);
+    height: calc(100dvh - 230px)!important;
     padding: 0;
     overflow: hidden auto;
 
@@ -109,7 +109,8 @@
     border-bottom: 1px solid var(--color-extralight-grey-alt);
 
     .my_combobox_container {
-      width: calc(100% - 10px);
+      width: 310px;
+      height: 30px;
 
       > button {
         width: 100%!important;
@@ -193,6 +194,7 @@
   padding: 10px;
   background-color: var(--color-docked-header);
   border-bottom: 1px solid var(--color-extralight-grey-alt);
+  height: 32px;
 
   .my_combobox_container button {
     min-width: 110px;
@@ -313,7 +315,7 @@
 .navigation_container {
   display: flex;
   align-items: end;
-  justify-content: end;
+  justify-content: center;
   gap: 10px;
   margin-bottom: 20px;
 
@@ -367,7 +369,7 @@
 }
 
 .bookmarks_line {
-  width: calc(100% - 10px);
+  // width: calc(100% - 10px);
   position: relative;
   text-align: left;
   padding: 20px 0;
@@ -400,7 +402,7 @@
   }
 
   .bookmark_infos {
-    width: 100%;
+    // width: 100%;
     display: flex;
     background-color: var(--color-extralight-grey);
     border-left: 2px solid var(--color-blue);
@@ -427,6 +429,7 @@
         display: inherit;
         align-items: center;
         gap: 5px;
+        margin: 2px;
 
         p {
           margin: 0;
@@ -440,15 +443,15 @@
       }
 
       &_buttons svg {
-        fill: var(--color-blue);
-        color: var(--color-blue);
+        fill: var(--color-blue-alt);
+        color: var(--color-blue-alt);
       }
 
       button {
         height: unset;
 
         &:focus {
-          border: 1px solid var(--color-blue);
+          // border: 1px solid var(--color-blue);
           border-radius: 5px;
           background-color: var(--color-light-blue);
         }
@@ -535,13 +538,15 @@
       .react_aria_Label {
         position: absolute;
         left: 10px;
-        top: -15px;
+        top: -13px;
         padding: 0 5px;
         background-color: var(--color-secondary);
         text-overflow: ellipsis;
         overflow: hidden;
         max-width: 250px;
         white-space: nowrap;
+        line-height: 97%;
+        height: unset;
     }
 
       & input {
@@ -572,15 +577,11 @@
     }
 
     button {
-      background-color: var(--color-blue);
-      color: var(--color-secondary);
-      width: fit-content;
-      border-radius: 6px;
-      display: flex;
-      flex-wrap: nowrap;
       padding: 3px 5px;
       text-wrap: nowrap;
       box-sizing: content-box;
+      height: 28px;
+      min-width: unset;
 
       svg {
         width: 15px;
@@ -622,7 +623,7 @@
     }
 
     .react_aria_Button svg {
-      width: 15px;
+      // width: 15px;
       color: var(--color-primary)!important;
     }
   }
@@ -645,6 +646,26 @@
 //     }
 //   }
 // }
+
+.modal_dialog_reader .pages select, .popover_dialog_reader .pages select {
+  width: 160px;
+  height: 30px;
+  padding: 0!important;
+  // padding-left: 10px!important;
+  text-align: center;
+  border: 1px solid var(--color-dark-grey-alt);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-right: 0 !important;
+  background-color: inherit;
+  color: var(--color-primary);
+
+  option {
+    background-color: var(--color-secondary);
+  }
+}
 
 .modal_dialog_reader, .popover_dialog_reader {
   .pages .react_aria_ComboBox .my_combobox_container {
@@ -675,4 +696,52 @@
 .react_aria_ComboBox [role="group"]:focus-within {
   outline: var(--color-blue) solid 2px !important;
   outline-offset: -2px;
+}
+
+.delete_item_edition {
+  color: var(--color-blue);
+  margin-left: 5px;
+
+  &:hover {
+    background-color: var(--color-secondary);
+  }
+
+  svg {
+    color: var(--color-blue)!important;
+  }
+}
+
+
+.delete_item, .delete_item_edition {
+  z-index: 1000;
+  border: 1px solid var(--color-blue);
+  background-color: var(--color-light-blue);
+  border-radius: 5px;
+  transition: 200ms;
+
+  button {
+    padding: 5px;
+    color: var(--color-blue);
+    height: unset;
+    border-radius: 5px;
+
+    &:hover {
+      background-color: var(--color-secondary);
+    }
+
+    &:focus {
+      background-color: var(--color-blue);
+      border: 1px solid var(--color-secondary);
+      outline: 1px solid var(--color-blue);
+      color: var(--color-secondary);
+    }
+
+    svg {
+      width: 10px;
+    }
+  }
+}
+
+.CSS_END_components_popoverDialog {
+  display: none;
 }

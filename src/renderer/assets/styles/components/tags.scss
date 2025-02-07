@@ -1,6 +1,6 @@
-/*
-=-=-= tags.scss
-*/
+.CSS_START_components_tags {
+  display: none;
+}
 
 .tags_wrapper {
   display: flex;
@@ -22,6 +22,12 @@
   transition: all 0.2s;
   margin-right: 10px;
   margin-bottom: 5px;
+
+
+  &:has(a:focus) {
+    outline: var(--color-blue) solid 2px !important;
+    outline-offset: -2px;
+  }
 
 
   a {
@@ -98,25 +104,29 @@
   }
 }
 
-.___DEBUG___COMPONENTS_TAGS_CSS {
-  display: none;
-}
-
 .Popover_delete_tag {
   z-index: 1000;
   border: 1px solid var(--color-blue);
   background-color: var(--color-light-blue);
-  border-radius: 6px;
+  border-radius: 5px;
   transition: 200ms;
-
-  &:hover {
-    background-color: #e7f1fb;
-  }
 
   button {
     padding: 5px;
     color: var(--color-blue);
     height: unset;
+    border-radius: 5px;
+
+    &:hover {
+      background-color: var(--color-secondary);
+    }
+
+    &:focus {
+      background-color: var(--color-blue);
+      border: 1px solid var(--color-secondary);
+      outline: 1px solid var(--color-blue);
+      color: var(--color-secondary);
+    }
 
     svg {
       width: 10px;
@@ -188,4 +198,8 @@
       fill: var(--color-error-dark);
     }
   }
+}
+
+.CSS_END_components_tags {
+  display: none;
 }

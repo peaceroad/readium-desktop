@@ -1,6 +1,8 @@
-/*
-=-=-= settings.scss
-*/
+@use '../partials/mixin' as mx;
+
+.CSS_START_components_settings {
+    display: none;
+}
 
 $settings_bg: var(--color-light-blue);
 $setting_color: var(--color-blue);
@@ -13,11 +15,23 @@ $setting_color: var(--color-blue);
         accent-color: $setting_color;
     }
 
+    &:not(:has(.guidedTour_content)) {
+        @media screen and (height <= 700px) {
+            height: 450px;
+        }
+    }
+
+    &:has(.guidedTour_content) {
+        @media screen and (height <= 700px) {
+            height: 510px;
+        }
+    }
+
     .section {
         padding-bottom: 15px ;
         border-bottom: 2px solid var(--color-extralight-grey);
         margin: 10px 0 20px;
-        width: 100%;
+        width: calc(100% - 40px);
         display: flex;
         flex-direction: column;
         gap: 5px;
@@ -86,8 +100,8 @@ $setting_color: var(--color-blue);
 
 .modal_dialog_reader .settings_container {
     &:not(:has(.guidedTour_content)) {
-        @media screen and (height <= 700px) {
-            height: 450px;
+        @media screen and (height <= 750px) {
+            height: calc(100dvh - 150px);
         }
     }
 } 
@@ -235,19 +249,9 @@ $setting_color: var(--color-blue);
     flex: 2;
     overflow: hidden scroll;
     margin-top: 50px;
+    margin-bottom: 5px;
 
-    &::-webkit-scrollbar-thumb {
-        border-radius: 5px;
-    }
-
-    &::-webkit-scrollbar {
-    width: 10px;
-    background: var(--color-secondary);
-    }
-
-    &:hover::-webkit-scrollbar-thumb {
-        background-color: var(--scrollbar-thumb);
-    }
+    @include mx.scrollbar_styling;
 
     .button_transparency_icon {
         position: relative;
@@ -263,7 +267,7 @@ $setting_color: var(--color-blue);
 }
 
 [data-theme="dark"] {
-    .button_transparency_icon:not([aria-label= "Close"]) svg {
+    .button_transparency_icon:not([data-css-override]) svg {
         color: var(--color-primary);
         fill: var(--color-primary);
     }
@@ -271,7 +275,7 @@ $setting_color: var(--color-blue);
 
 [data-theme="system"] {
     @media (prefers-color-scheme: dark) {
-        .button_transparency_icon:not([aria-label= "Close"]) svg {
+        .button_transparency_icon:not([data-css-override]) svg {
             color: var(--color-primary);
             fill: var(--color-primary);
         }
@@ -280,13 +284,13 @@ $setting_color: var(--color-blue);
 
 .close_button_div {
     position: absolute;
-    top: 10px;
-    right: 20px;
+    top: 5px;
+    right: 10px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    background-color: var(--color-secondary);
+    background-color: transparent;
     padding: 10px;
     width: 60%;
     z-index: 10;
@@ -323,6 +327,10 @@ $setting_color: var(--color-blue);
     svg {
         color: var(--color-blue);
     }
+}
+
+.popover_dialog_reader .settings_tab {
+    margin: 30px 20px 0!important;
 }
 
 .settings_tab {
@@ -362,6 +370,10 @@ $setting_color: var(--color-blue);
         &_spacing {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
+
+            @media screen and (width <= 820px) {
+                display: block;
+            }
 
             .section {
                 width: 90%!important;
@@ -456,7 +468,7 @@ $setting_color: var(--color-blue);
         align-items: start;
         justify-content: flex-start;
         gap: 10px;
-        width: 320px;
+        width: fit-content;
         font-size: 14px;
         background-color: var(--color-extralight-grey);
         color: var(--color-primary);
@@ -863,4 +875,54 @@ div[data-radix-popper-content-wrapper] {
         top: 2px;
         right: 5px;
     }
+}
+
+.preset_settings_container {
+    > div {
+        button {
+            margin-bottom: 10px;
+        }
+
+        &:nth-child(-n + 2) {
+            margin-bottom: 20px;
+        }
+
+        &:last-child {
+            position: absolute;
+            bottom: 10px;
+
+            // @media screen and (height <= 600px) {
+            //     position: relative;
+            // }
+        }
+    }
+}
+
+.notification_preset {
+    position: absolute;
+    top: 8px;
+    right: 20px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--color-blue);
+    animation: blink 3s ease-in-out infinite;
+
+    @keyframes blink {
+        0% {
+          opacity: 1;
+        }
+
+        50% {
+            opacity: 0.1;
+        }
+      
+        100% {
+          opacity: 1;
+        }
+      }
+}
+
+.CSS_END_components_settings {
+    display: none;
 }

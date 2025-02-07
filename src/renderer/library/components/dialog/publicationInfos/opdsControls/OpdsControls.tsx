@@ -5,6 +5,9 @@
 // that can be found in the LICENSE file exposed on Github (readium) in the project repository.
 // ==LICENSE-END==
 
+import * as stylesButtons from "readium-desktop/renderer/assets/styles/components/buttons.scss";
+import * as stylesGlobal from "readium-desktop/renderer/assets/styles/global.scss";
+
 import classNames from "classnames";
 import * as React from "react";
 import { connect } from "react-redux";
@@ -13,8 +16,6 @@ import { IOpdsLinkView, IOpdsPublicationView } from "readium-desktop/common/view
 import * as CartFillIcon from "readium-desktop/renderer/assets/icons/cart-icon.svg";
 import * as BorrowIcon from "readium-desktop/renderer/assets/icons/borrow-icon.svg";
 import * as ImportIcon from "readium-desktop/renderer/assets/icons/import.svg";
-import * as stylesButtons from "readium-desktop/renderer/assets/styles/components/buttons.scss";
-import * as stylesGlobal from "readium-desktop/renderer/assets/styles/global.scss";
 import {
     TranslatorProps, withTranslator,
 } from "readium-desktop/renderer/common/components/hoc/translator";
@@ -25,6 +26,7 @@ import { TDispatch } from "readium-desktop/typings/redux";
 import { findExtWithMimeType, findMimeTypeWithExtension, ADOBE_ADEPT_XML } from "readium-desktop/utils/mimeTypes";
 
 import OpdsLinkProperties from "./OpdsLinkProperties";
+import { ContentType } from "readium-desktop/utils/contentType";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IBaseProps extends TranslatorProps {
@@ -58,7 +60,7 @@ export class OpdsControls extends React.Component<IProps, undefined> {
             __,
         } = this.props;
 
-        const boxStyle = { height: "50px", padding: "0.4em", paddingTop: "0.2em", marginBottom: "0.5em", marginTop: "0.4em", fontSize: "14px" };
+        const boxStyle = { minHeight: "50px", height: "fit-content", padding: "0.4em", paddingTop: "0.2em", marginBottom: "0.5em", marginTop: "0.4em", fontSize: "14px" };
 
         const m = findMimeTypeWithExtension(ADOBE_ADEPT_XML);
         const orderLinks = (links: IOpdsLinkView[]) => {
@@ -82,8 +84,8 @@ export class OpdsControls extends React.Component<IProps, undefined> {
         const adjustDisplayType = (str: string | undefined) => str?.replace("lcpl", "LCP").replace("lcpdf", "PDF").replace("pdf", "PDF").replace("epub", "EPUB");
         const typeStr = (ln: IOpdsLinkView) => {
             return ln.properties?.indirectAcquisitionTypes?.top ?
-                ` (${adjustDisplayType(findExtWithMimeType(ln.properties.indirectAcquisitionTypes.top)) || ln.properties.indirectAcquisitionTypes.top}${ln.properties?.indirectAcquisitionTypes?.child ? ` ${adjustDisplayType(findExtWithMimeType(ln.properties.indirectAcquisitionTypes.child)) || ln.properties.indirectAcquisitionTypes.child}` : ""})` :
-                (ln.type ? ` (${adjustDisplayType(findExtWithMimeType(ln.type)) || adjustDisplayType(findExtWithMimeType(ln.type.replace("+json", "+zip")))})` : "");
+                ` (${adjustDisplayType(findExtWithMimeType(ln.properties.indirectAcquisitionTypes.top)) || ln.properties.indirectAcquisitionTypes.top}${ln.properties?.indirectAcquisitionTypes?.child ? ` ${adjustDisplayType(findExtWithMimeType(ln.properties.indirectAcquisitionTypes.child)) || ln.properties.indirectAcquisitionTypes.child}` : ""})`
+                : (ln.type ? ` (${adjustDisplayType(findExtWithMimeType(ln.type)) || adjustDisplayType(findExtWithMimeType(ln.type.replace("+json", "+zip")))})` : "");
         };
 
         const openAccessLinksButton = () =>
@@ -92,12 +94,23 @@ export class OpdsControls extends React.Component<IProps, undefined> {
                     (ln, idx) =>
                         <div key={`openAccessControl-${idx}`} style={ln.properties && Object.keys(ln.properties).length ? boxStyle : {}}>
                             <button
-                                onClick={() => verifyImport(
-                                    ln,
-                                    opdsPublicationView,
-                                )}
+                                onClick={() => {
+
+                                    if (ln.type === ContentType.Html || ln.type === ContentType.Xhtml) {
+                                        this.props.link(
+                                            ln,
+                                            this.props.location,
+                                        );
+                                    } else {
+
+                                        verifyImport(
+                                            ln,
+                                            opdsPublicationView,
+                                        );
+                                    }
+                                }}
                                 className={feedLinksList.length > 0 ? stylesButtons.button_secondary : stylesButtons.button_primary}
-                                disabled={openAccessButtonIsDisabled()}
+                                disabled={openAccessButtonIsDisabled(ln.url)}
                                 title={ln.title || __("catalog.addBookToLib")}
                             >
                                 {`${__("catalog.addBookToLib")}${typeStr(ln)}`}
@@ -115,12 +128,23 @@ export class OpdsControls extends React.Component<IProps, undefined> {
                     (ln, idx) =>
                         <div key={`sampleControl-${idx}`} style={ln.properties && Object.keys(ln.properties).length ? boxStyle : {}}>
                             <button
-                                onClick={() => verifyImport(
-                                    ln,
-                                    opdsPublicationView,
-                                )}
+                                onClick={() => {
+
+                                    if (ln.type === ContentType.Html || ln.type === ContentType.Xhtml) {
+                                        this.props.link(
+                                            ln,
+                                            this.props.location,
+                                        );
+                                    } else {
+
+                                        verifyImport(
+                                            ln,
+                                            opdsPublicationView,
+                                        );
+                                    }
+                                }}
                                 className={stylesButtons.button_secondary}
-                                disabled={sampleButtonIsDisabled()}
+                                disabled={sampleButtonIsDisabled(ln.url)}
                                 title={ln.title || __("opds.menu.addExtract")}
                             >
                                 <SVG ariaHidden={true} svg={ImportIcon} />
@@ -170,7 +194,7 @@ export class OpdsControls extends React.Component<IProps, undefined> {
                                         ln,
                                         this.props.location,
                                         `${__("opds.menu.goLoanBook")} (${opdsPublicationView.documentTitle})`)}
-                                    disabled={ln.properties.indirectAcquisitionTypes?.top === findMimeTypeWithExtension(ADOBE_ADEPT_XML)}
+                                    disabled={ln.properties?.indirectAcquisitionTypes?.top === findMimeTypeWithExtension(ADOBE_ADEPT_XML)}
                                 >
                                     <SVG ariaHidden svg={BorrowIcon} />
                                     {__("opds.menu.goLoanBook")}
@@ -280,24 +304,35 @@ const mapDispatchToProps = (dispatch: TDispatch, _props: IBaseProps) => {
     };
 };
 
-const mapStateToProps = (state: ILibraryRootState, props: IBaseProps) => {
+const mapStateToProps = (state: ILibraryRootState, _props: IBaseProps) => {
     return {
         breadcrumb: state.opds.browser.breadcrumb,
         location: state.router.location,
-        openAccessButtonIsDisabled: () => {
+        openAccessButtonIsDisabled: (url: string) => {
             return !!state.download.find(
-                ([{ downloadUrl }]) => props.opdsPublicationView.openAccessLinks.find(
-                    (ln) => ln.url === downloadUrl,
-                ),
+                (tuple) => {
+                    // tuple[0] ==== Payload
+                    // tuple[1] ==== number
+                    return tuple[0].downloadUrls.find((u) => u === url);
+                    // return props.opdsPublicationView.openAccessLinks.find(
+                    //     (ln) => tuple[0].downloadUrls.find((u) => u === ln.url),
+                    // );
+                },
             );
         },
-        sampleButtonIsDisabled: () => {
+        sampleButtonIsDisabled: (url: string) => {
             return !!state.download.find(
-                ([{ downloadUrl }]) => props.opdsPublicationView.sampleOrPreviewLinks.find(
-                    (ln) => ln.url === downloadUrl,
-                ),
+                (tuple) => {
+                    // tuple[0] ==== Payload
+                    // tuple[1] ==== number
+                    return tuple[0].downloadUrls.find((u) => u === url);
+                    // return props.opdsPublicationView.sampleOrPreviewLinks.find(
+                    //     (ln) => tuple[0].downloadUrls.find((u) => u === ln.url),
+                    // );
+                },
             );
         },
+        locale: state.i18n.locale, // refresh
     };
 };
 

@@ -11,7 +11,7 @@ import * as ReactDOM from "react-dom";
 import { readerIpc } from "readium-desktop/common/ipc";
 import { IS_DEV } from "readium-desktop/preprocessor-directives";
 import { winActions } from "readium-desktop/renderer/common/redux/actions";
-import { createStoreFromDi } from "readium-desktop/renderer/reader/di";
+import { createStoreFromDi } from "readium-desktop/renderer/reader/createStore";
 
 import { TaJsonDeserialize } from "@r2-lcp-js/serializable";
 import { initGlobalConverters_OPDS } from "@r2-opds-js/opds/init-globals";
@@ -19,6 +19,9 @@ import {
     initGlobalConverters_GENERIC, initGlobalConverters_SHARED,
 } from "@r2-shared-js/init-globals";
 import { Publication as R2Publication } from "@r2-shared-js/models/publication";
+import { publicationHasMediaOverlays } from "@r2-navigator-js/electron/renderer";
+import { pushTags } from "./tags";
+import { getTranslator } from "readium-desktop/common/services/translator";
 
 // let devTron: any;
 let axe: any;
@@ -28,7 +31,7 @@ if (IS_DEV) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     // devTron = require("devtron");
 
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-var-requires,@typescript-eslint/no-require-imports
     axe = require("@axe-core/react");
 }
 
@@ -56,15 +59,31 @@ ipcRenderer.on(readerIpc.CHANNEL,
 
                 data.payload.reader.info.r2Publication = r2Publication;
 
-                createStoreFromDi(data.payload)
-                    .then(
-                        (store) =>
-                            store.dispatch(winActions.initRequest.build(data.payload.win.identifier)),
-                    )
-                    .catch((e) => e);
-                // TODO display error ?
-                // // starting the ipc sync with redux
-                // ipcRenderer.on(syncIpc.CHANNEL, ipcSyncHandler);
+                data.payload.reader.info.navigator = {
+                    r2PublicationHasMediaOverlays: publicationHasMediaOverlays(r2Publication),
+                };
+
+                const annotationList = data.payload.reader.annotation || [];
+                for (const [,anno] of annotationList) {
+                    if (!anno.created && anno.modified) {
+                        anno.created = anno.modified;
+                    }
+                    if (!anno.created) {
+                        anno.created = (new Date()).getTime();
+                    }
+                }
+                const annotationTagsList = [];
+                for (const [_, {tags}] of annotationList) {
+                    annotationTagsList.push(...(tags || []));
+                }
+                data.payload.annotationTagsIndex = pushTags({}, annotationTagsList);
+
+                const store = createStoreFromDi(data.payload);
+                const locale = store.getState().i18n.locale;
+                getTranslator().setLocale(locale);
+
+                store.dispatch(winActions.initRequest.build(data.payload.win.identifier));
+
                 break;
         }
     });
